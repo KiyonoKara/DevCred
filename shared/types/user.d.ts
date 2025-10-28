@@ -40,12 +40,14 @@ export interface DatabaseUser extends User {
  * - `username`: The username submitted in the request (body).
  * - `password`: The password submitted in the request (body).
  * - `biography`: Optional field for biography information (body).
+ * - `type`: Optional field to specify if the user is a recruiter or talent the user is signing up
  */
 export interface UserRequest extends Request {
   body: {
     username: string;
     password: string;
     biography?: string;
+    type?: string;
   };
 }
 

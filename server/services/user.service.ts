@@ -8,6 +8,8 @@ import {
   UsersResponse,
 } from '../types/types';
 
+// TODO: Add in recruiter validation checks + Ability to sign up as recruiter
+
 /**
  * Saves a new user to the database.
  *

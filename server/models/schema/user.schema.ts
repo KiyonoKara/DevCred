@@ -8,6 +8,7 @@ import { Schema } from 'mongoose';
  * - `username`: The username of the user.
  * - `password`: The encrypted password securing the user's account.
  * - `dateJoined`: The date the user joined the platform.
+ * - `userType`: The type of the user signing up (recruiter/talent)
  */
 const userSchema: Schema = new Schema(
   {
@@ -25,6 +26,11 @@ const userSchema: Schema = new Schema(
     biography: {
       type: String,
       default: '',
+    },
+    userType: {
+      type: String,
+      enum: ['recruiter', 'talent'],
+      default: 'talent',
     },
   },
   { collection: 'User' },
