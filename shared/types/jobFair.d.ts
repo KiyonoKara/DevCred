@@ -48,11 +48,13 @@ export interface CreateJobFairRequest extends Request {
     visibility: 'public' | 'invite-only';
     scheduledDate: Date;
     invitedUsers?: string[];
+    // optional since it can be used from context
+    hostUsername?: string;
   };
 }
 
 /**
- * Rrequest for job fair operations by ID.
+ * Request for job fair operations by ID.
  */
 export interface JobFairIdRequest extends Request {
   params: {
