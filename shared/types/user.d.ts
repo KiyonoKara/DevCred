@@ -17,10 +17,14 @@ export interface UserCredentials {
  * - `password`: The user's password.
  * - `dateJoined`: The date when the user registered.
  * - `biography`: A short description or bio of the user (optional).
+ * - `profileVisibility`: Controls what parts of the user's profile are visible to others.
+ * - `dmEnabled`: Whether the user accepts direct messages.
  */
 export interface User extends UserCredentials {
   dateJoined: Date;
   biography?: string;
+  profileVisibility?: 'private' | 'public-metrics-only' | 'public-full';
+  dmEnabled?: boolean;
 }
 
 /**
