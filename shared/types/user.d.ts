@@ -17,10 +17,39 @@ export interface UserCredentials {
  * - `password`: The user's password.
  * - `dateJoined`: The date when the user registered.
  * - `biography`: A short description or bio of the user (optional).
+ * - `profileVisibility`: Whether the user's profile is PUBLIC or PRIVATE.
+ * - `allowDMs`: Whether the user allows direct messages from other users.
+ * - `showActivityHistory`: Whether the user's activity history is shown to other users.
+ * - `activityHistory`: An array of strings representing the user's activity history.
+ * - `resumeData`: An object containing the user's resume data.
+ *   - `fileName`: The name of the resume file.
+ *   - `fileData`: The binary data of the resume file.
+ *   - `contentType`: The content type of the resume file.
+ *   - `fileSize`: The size of the resume file.
+ *   - `uploadDate`: The date when the resume file was uploaded.
  */
 export interface User extends UserCredentials {
   dateJoined: Date;
   biography?: string;
+  profileVisibility?: 'PUBLIC' | 'PRIVATE';
+  allowDMs?: boolean;
+  showActivityHistory?: boolean;
+  activityHistory?: string[];
+  resumeData?: {
+    fileName?: string;
+    fileData?: Buffer;
+    contentType?: string;
+    fileSize?: number;
+    uploadDate?: Date;
+  };
+}
+
+export interface ResumeData {
+  fileName?: string;
+  fileData?: Buffer;
+  contentType?: string;
+  fileSize?: number;
+  uploadDate?: Date;
 }
 
 /**
@@ -87,5 +116,14 @@ export interface UpdateBiographyRequest extends Request {
   body: {
     username: string;
     biography: string;
+  };
+}
+
+export interface UpdateProfileSettingsRequest extends Request {
+  body: {
+    username: string;
+    profileVisibility?: 'PUBLIC' | 'PRIVATE';
+    allowDMs?: boolean;
+    showActivityHistory?: boolean;
   };
 }

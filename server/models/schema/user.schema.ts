@@ -26,6 +26,23 @@ const userSchema: Schema = new Schema(
       type: String,
       default: '',
     },
+    profileVisibility: {
+      type: String,
+      enum: ['PUBLIC', 'PRIVATE'],
+      default: 'PUBLIC',
+    },
+    allowDMs: {
+      type: Boolean,
+      default: true,
+    },
+    activityHistory: {
+      type: [String],
+      default: [],
+    },
+    activeResumeId: {
+      type: String,
+      Ref: 'Resume',
+    },
   },
   { collection: 'User' },
 );
