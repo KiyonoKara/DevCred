@@ -8,6 +8,9 @@ import { Schema } from 'mongoose';
  * - `username`: The username of the user.
  * - `password`: The encrypted password securing the user's account.
  * - `dateJoined`: The date the user joined the platform.
+ * - `biography`: An optional biography or description provided by the user.
+ * - `profileVisibility`: Controls what parts of the user's profile are visible to others.
+ * - `dmEnabled`: Whether the user accepts direct messages, user is opted-in by default.
  */
 const userSchema: Schema = new Schema(
   {
@@ -26,15 +29,6 @@ const userSchema: Schema = new Schema(
       type: String,
       default: '',
     },
-    profileVisibility: {
-      type: String,
-      enum: ['PUBLIC', 'PRIVATE'],
-      default: 'PUBLIC',
-    },
-    allowDMs: {
-      type: Boolean,
-      default: true,
-    },
     activityHistory: {
       type: [String],
       default: [],
@@ -42,6 +36,15 @@ const userSchema: Schema = new Schema(
     activeResumeId: {
       type: String,
       Ref: 'Resume',
+    },
+    profileVisibility: {
+      type: String,
+      enum: ['private', 'public-metrics-only', 'public-full'],
+      default: 'public-full',
+    },
+    dmEnabled: {
+      type: Boolean,
+      default: true,
     },
   },
   { collection: 'User' },

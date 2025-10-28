@@ -17,6 +17,7 @@ export interface UserCredentials {
  * - `password`: The user's password.
  * - `dateJoined`: The date when the user registered.
  * - `biography`: A short description or bio of the user (optional).
+<<<<<<< HEAD
  * - `profileVisibility`: Whether the user's profile is PUBLIC or PRIVATE.
  * - `allowDMs`: Whether the user allows direct messages from other users.
  * - `showActivityHistory`: Whether the user's activity history is shown to other users.
@@ -27,10 +28,15 @@ export interface UserCredentials {
  *   - `contentType`: The content type of the resume file.
  *   - `fileSize`: The size of the resume file.
  *   - `uploadDate`: The date when the resume file was uploaded.
+=======
+ * - `profileVisibility`: Controls what parts of the user's profile are visible to others.
+ * - `dmEnabled`: Whether the user accepts direct messages.
+>>>>>>> main
  */
 export interface User extends UserCredentials {
   dateJoined: Date;
   biography?: string;
+<<<<<<< HEAD
   profileVisibility?: 'PUBLIC' | 'PRIVATE';
   allowDMs?: boolean;
   showActivityHistory?: boolean;
@@ -50,6 +56,10 @@ export interface ResumeData {
   contentType?: string;
   fileSize?: number;
   uploadDate?: Date;
+=======
+  profileVisibility?: 'private' | 'public-metrics-only' | 'public-full';
+  dmEnabled?: boolean;
+>>>>>>> main
 }
 
 /**
@@ -119,6 +129,7 @@ export interface UpdateBiographyRequest extends Request {
   };
 }
 
+<<<<<<< HEAD
 export interface UpdateProfileSettingsRequest extends Request {
   body: {
     username: string;
@@ -127,3 +138,18 @@ export interface UpdateProfileSettingsRequest extends Request {
     showActivityHistory?: boolean;
   };
 }
+=======
+/**
+ * Express request for updating a user's privacy settings.
+ * - `username`: The username of user whose privacy settings are being updated.
+ * - `profileVisibility`: The profile visibility setting (optional, private by default).
+ * - `dmEnabled`: Whether DMs are enabled (optional, true by default).
+ */
+export interface UpdatePrivacySettingsRequest extends Request {
+  body: {
+    username: string;
+    profileVisibility?: 'private' | 'public-metrics-only' | 'public-full';
+    dmEnabled?: boolean;
+  };
+}
+>>>>>>> main
