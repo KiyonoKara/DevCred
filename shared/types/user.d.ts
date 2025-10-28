@@ -93,3 +93,17 @@ export interface UpdateBiographyRequest extends Request {
     biography: string;
   };
 }
+
+/**
+ * Express request for updating a user's privacy settings.
+ * - `username`: The username of user whose privacy settings are being updated.
+ * - `profileVisibility`: The profile visibility setting (optional, private by default).
+ * - `dmEnabled`: Whether DMs are enabled (optional, true by default).
+ */
+export interface UpdatePrivacySettingsRequest extends Request {
+  body: {
+    username: string;
+    profileVisibility?: 'private' | 'public-metrics-only' | 'public-full';
+    dmEnabled?: boolean;
+  };
+}

@@ -149,3 +149,56 @@ export const updateUser = async (
     return { error: `Error occurred when updating user: ${error}` };
   }
 };
+
+/**
+ * Updates user privacy settings (profile visibility and DM preferences).
+ *
+ * @param {string} username - The username of the user to update.
+ * @param {Object} privacySettings - The privacy settings to update.
+ * @param {string} privacySettings.profileVisibility - The profile visibility setting.
+ * @param {boolean} privacySettings.dmEnabled - Whether DMs are enabled.
+ * @returns {Promise<UserResponse>} - Resolves with the updated user object or an error message.
+ */
+export const updateUserPrivacySettings = async (
+  username: string,
+  privacySettings: {
+    profileVisibility?: 'private' | 'public-metrics-only' | 'public-full';
+    dmEnabled?: boolean;
+  },
+): Promise<UserResponse> => {
+  return updateUser(username, privacySettings);
+};
+
+/**
+ * Checks if a user accepts direct messages.
+ *
+ * @param {string} username - The username to check DM permissions for.
+ * @returns {Promise<boolean>} - Resolves with true if DMs are enabled, false otherwise.
+ */
+export const canReceiveDirectMessages = async (username: string): Promise<boolean> => {
+  try {
+    const user = await UserModel.findOne({ username }).select('dmEnabled');
+    return user ? user.dmEnabled !== false : true; // Default to true if not set
+  } catch (error) {
+    return false; // Default to false on error for safety
+  }
+};
+
+/**
+ * Gets the profile visibility for a user.
+ *
+ * @param {string} username - The username to check profile visibility.
+ * @returns {Promise<'private' | 'public-metrics-only' | 'public-full'>} - The user's profile visibility setting.
+ */
+export const getUserProfileVisibility = async (
+  username: string,
+): Promise<'private' | 'public-metrics-only' | 'public-full'> => {
+  try {
+    const user = await UserModel.findOne({ username }).select('profileVisibility');
+    // Default to full public visibility if not set
+    return user?.profileVisibility || 'public-full';
+  } catch (error) {
+    // Default to private on error for privacy
+    return 'private';
+  }
+};

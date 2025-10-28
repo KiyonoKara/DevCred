@@ -1006,6 +1006,29 @@ paths:
         '500':
           $ref: '#/components/responses/ErrorResponse'
 
+  /user/updatePrivacySettings:
+    patch:
+      tags:
+        - Users
+      summary: Update a user's privacy settings (profile visibility and DM preferences).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePrivacySettingsBody'
+      responses:
+        '200':
+          description: User privacy settings successfully updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
 components:
   schemas:
     # --------------------
@@ -1453,6 +1476,25 @@ components:
           minLength: 1
         biography:
           type: string
+
+    UpdatePrivacySettingsBody:
+      type: object
+      required:
+        - username
+      properties:
+        username:
+          type: string
+          minLength: 1
+        profileVisibility:
+          type: string
+          enum:
+            - private
+            - public-metrics-only
+            - public-full
+          description: Controls what parts of the user's profile are visible to others
+        dmEnabled:
+          type: boolean
+          description: Whether the user accepts direct messages
 
     User:
       type: object
