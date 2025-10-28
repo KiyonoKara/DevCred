@@ -6,6 +6,7 @@ import { SafeDatabaseUser } from './user';
 import { BaseMove, GameInstance, GameInstanceID, GameMove, GameState } from './game';
 import { DatabaseCommunity } from './community';
 import { PopulatedDatabaseCollection } from './collection';
+import { DatabaseJobFair } from './jobFair';
 
 /**
  * Payload for an answer update event.
@@ -116,6 +117,36 @@ export interface CollectionUpdatePayload {
 }
 
 /**
+ * Interface representing the payload for a job fair update event.
+ * - `type`: The type of update.
+ * - `jobFair`: The updated job fair object.
+ */
+export interface JobFairUpdatePayload {
+  type:
+    | 'created'
+    | 'updated'
+    | 'deleted'
+    | 'statusChanged'
+    | 'participantJoined'
+    | 'participantLeft';
+  jobFair: DatabaseJobFair;
+}
+
+/**
+ * Interface representing the payload for a job fair chat message event.
+ * - `jobFairId`: The ID of the job fair.
+ * - `message`: The chat message data.
+ */
+export interface JobFairChatMessagePayload {
+  jobFairId: string;
+  message: {
+    msg: string;
+    msgFrom: string;
+    msgDateTime: Date;
+  };
+}
+
+/**
  * Interface representing the events the client can emit to the server.
  * - `makeMove`: Client can emit a move in the game.
  * - `joinGame`: Client can join a game.
@@ -129,6 +160,8 @@ export interface ClientToServerEvents {
   leaveGame: (gameID: string) => void;
   joinChat: (chatID: string) => void;
   leaveChat: (chatID: string | undefined) => void;
+  joinJobFair: (jobFairId: string) => void;
+  leaveJobFair: (jobFairId: string) => void;
 }
 
 /**
@@ -145,6 +178,8 @@ export interface ClientToServerEvents {
  * - `chatUpdate`: Server sends updated chat.
  * - `communityUpdate`: Server sends updated community.
  * - `collectionUpdate`: Server sends updated collection.
+ * - `jobFairUpdate`: Server sends updated job fair.
+ * - `jobFairChatMessage`: Server sends new message in job fair chat.
  */
 export interface ServerToClientEvents {
   questionUpdate: (question: PopulatedDatabaseQuestion) => void;
@@ -159,4 +194,6 @@ export interface ServerToClientEvents {
   chatUpdate: (chat: ChatUpdatePayload) => void;
   communityUpdate: (community: CommunityUpdatePayload) => void;
   collectionUpdate: (community: CollectionUpdatePayload) => void;
+  jobFairUpdate: (jobFair: JobFairUpdatePayload) => void;
+  jobFairChatMessage: (message: JobFairChatMessagePayload) => void;
 }

@@ -851,6 +851,340 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
 
   # --------------------
+  # JOB FAIR CONTROLLER
+  # --------------------
+  /jobfair/create:
+    post:
+      tags:
+        - Job Fairs
+      summary: Create a new job fair.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateJobFairBody'
+      responses:
+        '201':
+          description: Job fair successfully created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobFair'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /jobfair/list:
+    get:
+      tags:
+        - Job Fairs
+      summary: Retrieve all accessible job fairs.
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [upcoming, live, ended]
+          description: Filter by job fair status
+        - in: query
+          name: visibility
+          schema:
+            type: string
+            enum: [public, invite-only]
+          description: Filter by job fair visibility
+      responses:
+        '200':
+          description: Successfully retrieved job fairs.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JobFair'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /jobfair/{jobFairId}:
+    get:
+      tags:
+        - Job Fairs
+      summary: Retrieve a job fair by ID.
+      parameters:
+        - in: path
+          name: jobFairId
+          required: true
+          schema:
+            type: string
+            format: object-id
+          description: The ID of the job fair
+      responses:
+        '200':
+          description: Successfully retrieved job fair.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobFair'
+        '403':
+          description: Access denied to this job fair.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '404':
+          description: Job fair not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+    delete:
+      tags:
+        - Job Fairs
+      summary: Delete a job fair (host only).
+      parameters:
+        - in: path
+          name: jobFairId
+          required: true
+          schema:
+            type: string
+            format: object-id
+          description: The ID of the job fair to delete
+      responses:
+        '200':
+          description: Job fair successfully deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobFair'
+        '401':
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '403':
+          description: Only the host can delete the job fair.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '404':
+          description: Job fair not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /jobfair/{jobFairId}/status:
+    patch:
+      tags:
+        - Job Fairs
+      summary: Update job fair status (host only).
+      parameters:
+        - in: path
+          name: jobFairId
+          required: true
+          schema:
+            type: string
+            format: object-id
+          description: The ID of the job fair
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [upcoming, live, ended]
+                  description: The new status for the job fair
+      responses:
+        '200':
+          description: Job fair status successfully updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobFair'
+        '401':
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '403':
+          description: Only the host can update job fair status.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '404':
+          description: Job fair not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /jobfair/{jobFairId}/join:
+    post:
+      tags:
+        - Job Fairs
+      summary: Join a job fair.
+      parameters:
+        - in: path
+          name: jobFairId
+          required: true
+          schema:
+            type: string
+            format: object-id
+          description: The ID of the job fair to join
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+              properties:
+                username:
+                  type: string
+                  description: The username of the participant
+      responses:
+        '200':
+          description: Successfully joined job fair.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobFair'
+        '400':
+          description: User is already a participant or other error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '403':
+          description: Access denied to this job fair.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '404':
+          description: Job fair not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /jobfair/{jobFairId}/leave:
+    post:
+      tags:
+        - Job Fairs
+      summary: Leave a job fair.
+      parameters:
+        - in: path
+          name: jobFairId
+          required: true
+          schema:
+            type: string
+            format: object-id
+          description: The ID of the job fair to leave
+      responses:
+        '200':
+          description: Successfully left job fair.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobFair'
+        '400':
+          description: User is not a participant.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '401':
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '404':
+          description: Job fair not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /jobfair/{jobFairId}/message:
+    post:
+      tags:
+        - Job Fairs
+      summary: Send a message in job fair chat.
+      parameters:
+        - in: path
+          name: jobFairId
+          required: true
+          schema:
+            type: string
+            format: object-id
+          description: The ID of the job fair
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - msg
+                - msgFrom
+                - msgDateTime
+              properties:
+                msg:
+                  type: string
+                  description: The message content
+                msgFrom:
+                  type: string
+                  description: The username of the message sender
+                msgDateTime:
+                  type: string
+                  format: date-time
+                  description: The timestamp of the message
+      responses:
+        '200':
+          description: Message successfully sent.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobFair'
+        '403':
+          description: Only participants and hosts can send messages.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '404':
+          description: Job fair not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  # --------------------
   # USER CONTROLLER
   # --------------------
   /user/signup:
@@ -997,6 +1331,29 @@ paths:
       responses:
         '200':
           description: User biography successfully updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /user/updatePrivacySettings:
+    patch:
+      tags:
+        - Users
+      summary: Update a user's privacy settings (profile visibility and DM preferences).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePrivacySettingsBody'
+      responses:
+        '200':
+          description: User privacy settings successfully updated.
           content:
             application/json:
               schema:
@@ -1453,6 +1810,126 @@ components:
           minLength: 1
         biography:
           type: string
+
+    UpdatePrivacySettingsBody:
+      type: object
+      required:
+        - username
+      properties:
+        username:
+          type: string
+          minLength: 1
+        profileVisibility:
+          type: string
+          enum:
+            - private
+            - public-metrics-only
+            - public-full
+          description: Controls what parts of the user's profile are visible to others
+        dmEnabled:
+          type: boolean
+          description: Whether the user accepts direct messages
+
+    # --------------------
+    # JOB FAIR SCHEMAS
+    # --------------------
+    CreateJobFairBody:
+      type: object
+      required:
+        - title
+        - description
+        - hostedBy
+        - startTime
+        - endTime
+        - visibility
+      properties:
+        title:
+          type: string
+          minLength: 1
+          description: The title of the job fair
+        description:
+          type: string
+          minLength: 1
+          description: A description of the job fair
+        hostedBy:
+          type: string
+          minLength: 1
+          description: The username of the job fair host
+        startTime:
+          type: string
+          format: date-time
+          description: When the job fair starts
+        endTime:
+          type: string
+          format: date-time
+          description: When the job fair ends
+        visibility:
+          type: string
+          enum: [public, invite-only]
+          description: Whether the job fair is public or invite-only
+        invitedUsers:
+          type: array
+          items:
+            type: string
+          description: List of usernames invited to the job fair (for invite-only)
+
+    JobFair:
+      type: object
+      description: A job fair object with all its properties
+      properties:
+        _id:
+          type: string
+          format: object-id
+          description: The unique identifier for the job fair
+        title:
+          type: string
+          description: The title of the job fair
+        description:
+          type: string
+          description: A description of the job fair
+        hostedBy:
+          type: string
+          description: The username of the job fair host
+        startTime:
+          type: string
+          format: date-time
+          description: When the job fair starts
+        endTime:
+          type: string
+          format: date-time
+          description: When the job fair ends
+        status:
+          type: string
+          enum: [upcoming, live, ended]
+          description: The current status of the job fair
+        visibility:
+          type: string
+          enum: [public, invite-only]
+          description: Whether the job fair is public or invite-only
+        participants:
+          type: array
+          items:
+            type: string
+          description: List of usernames who joined the job fair
+        invitedUsers:
+          type: array
+          items:
+            type: string
+          description: List of usernames invited to the job fair
+        messages:
+          type: array
+          items:
+            type: string
+            format: object-id
+          description: Array of message IDs for the job fair chat
+        createdAt:
+          type: string
+          format: date-time
+          description: When the job fair was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the job fair was last updated
 
     User:
       type: object

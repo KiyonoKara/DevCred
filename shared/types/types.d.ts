@@ -2,6 +2,7 @@ export * from './answer';
 export * from './chat';
 export * from './comment';
 export * from './game';
+export * from './jobFair';
 export * from './message';
 export * from './question';
 export * from './socket';

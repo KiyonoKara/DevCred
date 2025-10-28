@@ -6,6 +6,7 @@ import {
   UserByUsernameRequest,
   FakeSOSocket,
   UpdateBiographyRequest,
+  UpdatePrivacySettingsRequest,
 } from '../types/types';
 import {
   deleteUserByUsername,
@@ -14,6 +15,7 @@ import {
   loginUser,
   saveUser,
   updateUser,
+  updateUserPrivacySettings,
 } from '../services/user.service';
 
 const userController = (socket: FakeSOSocket) => {
@@ -193,6 +195,40 @@ const userController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Handles updating a user's privacy settings (profile visibility and DM preferences).
+   * @param req The request containing username and privacy settings in the body.
+   * @param res The response, either returning the updated user or an error.
+   * @returns A promise resolving to void.
+   */
+  const updatePrivacySettings = async (
+    req: UpdatePrivacySettingsRequest,
+    res: Response,
+  ): Promise<void> => {
+    const { username, profileVisibility, dmEnabled } = req.body;
+
+    try {
+      const updatedUser = await updateUserPrivacySettings(username, {
+        profileVisibility,
+        dmEnabled,
+      });
+
+      if ('error' in updatedUser) {
+        throw new Error(updatedUser.error);
+      }
+
+      // Emit socket event for real-time updates
+      socket.emit('userUpdate', {
+        user: updatedUser,
+        type: 'updated',
+      });
+
+      res.status(200).json(updatedUser);
+    } catch (error) {
+      res.status(500).send(`Error when updating user privacy settings: ${error}`);
+    }
+  };
+
   // Define routes for the user-related operations.
   router.post('/signup', createUser);
   router.post('/login', userLogin);
@@ -201,6 +237,7 @@ const userController = (socket: FakeSOSocket) => {
   router.get('/getUsers', getUsers);
   router.delete('/deleteUser/:username', deleteUser);
   router.patch('/updateBiography', updateBiography);
+  router.patch('/updatePrivacySettings', updatePrivacySettings);
   return router;
 };
 
