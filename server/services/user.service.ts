@@ -178,9 +178,11 @@ export const updateUserPrivacySettings = async (
 export const canReceiveDirectMessages = async (username: string): Promise<boolean> => {
   try {
     const user = await UserModel.findOne({ username }).select('dmEnabled');
-    return user ? user.dmEnabled !== false : true; // Default to true if not set
+    // Default to true if not set
+    return user ? user.dmEnabled !== false : true;
   } catch (error) {
-    return false; // Default to false on error for safety
+    // Assume false on error for privacy
+    return false;
   }
 };
 
