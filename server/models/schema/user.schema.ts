@@ -35,7 +35,7 @@ const userSchema: Schema = new Schema(
     },
     activeResumeId: {
       type: String,
-      Ref: 'Resume',
+      ref: 'Resume',
     },
     profileVisibility: {
       type: String,
