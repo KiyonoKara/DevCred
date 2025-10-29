@@ -1,5 +1,5 @@
-import supertest from 'supertest';
 import mongoose from 'mongoose';
+import supertest from 'supertest';
 import { app } from '../../app';
 import * as util from '../../services/user.service';
 import { SafeDatabaseUser, User } from '../../types/types';
@@ -8,6 +8,7 @@ const mockUser: User = {
   username: 'user1',
   password: 'password',
   dateJoined: new Date('2024-12-03'),
+  userType: 'talent',
 };
 
 const mockSafeUser: SafeDatabaseUser = {
@@ -36,6 +37,7 @@ describe('Test userController', () => {
         username: mockUser.username,
         password: mockUser.password,
         biography: 'This is a test biography',
+        userType: 'talent',
       };
 
       saveUserSpy.mockResolvedValueOnce({ ...mockSafeUser, biography: mockReqBody.biography });

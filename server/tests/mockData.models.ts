@@ -204,6 +204,7 @@ export const user: User = {
   username: 'user1',
   password: 'password',
   dateJoined: new Date('2024-12-03'),
+  userType: 'talent',
 };
 
 export const safeUser: SafeDatabaseUser = {

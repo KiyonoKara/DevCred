@@ -1,14 +1,5 @@
 import express, { Request, Response, Router } from 'express';
 import {
-  UserRequest,
-  User,
-  UserCredentials,
-  UserByUsernameRequest,
-  FakeSOSocket,
-  UpdateBiographyRequest,
-  UpdatePrivacySettingsRequest,
-} from '../types/types';
-import {
   deleteUserByUsername,
   getUserByUsername,
   getUsersList,
@@ -17,6 +8,15 @@ import {
   updateUser,
   updateUserPrivacySettings,
 } from '../services/user.service';
+import {
+  FakeSOSocket,
+  UpdateBiographyRequest,
+  UpdatePrivacySettingsRequest,
+  User,
+  UserByUsernameRequest,
+  UserCredentials,
+  UserRequest,
+} from '../types/types';
 
 const userController = (socket: FakeSOSocket) => {
   const router: Router = express.Router();
@@ -34,6 +34,7 @@ const userController = (socket: FakeSOSocket) => {
       ...requestUser,
       dateJoined: new Date(),
       biography: requestUser.biography ?? '',
+      userType: 'talent',
     };
 
     try {
