@@ -20,7 +20,7 @@ export type JobStatus = 'Submitted' | 'Archived' | 'In Review' | 'Accepted' | 'R
  */
 export interface JobApplication {
   jobPosting: JobPosting;
-  user: String;
+  user: string;
   jobStatus: JobStatus;
   applicationDate: Date;
 }
@@ -43,10 +43,10 @@ export interface DatabaseJobApplication extends JobApplication {
  */
 export interface PopulatedDatabaseJobApplication extends Omit<JobApplication, 'jobPosting'> {
   jobPosting: {
-    company: String;
-    recruiter: String;
-    title: String;
-    active: Boolean;
+    company: string;
+    recruiter: string;
+    title: string;
+    active: boolean;
   };
 }
 

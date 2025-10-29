@@ -14,14 +14,14 @@ import { Tag } from './tag';
  * - `deadline`: A date on which a job will automatically be set to inactive.
  */
 export interface JobPosting {
-  company: String;
-  recruiter: String;
-  title: String;
-  payRange?: String | null;
-  description: String;
-  location: String;
+  company: string;
+  recruiter: string;
+  title: string;
+  payRange?: string | null;
+  description: string;
+  location: string;
   tags: Tag[];
-  active: Boolean;
+  active: boolean;
   deadline?: Date | null;
 }
 
