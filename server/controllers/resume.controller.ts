@@ -1,7 +1,7 @@
 import express, { Response, Router } from 'express';
 import multer from 'multer';
-import { FakeSOSocket } from '../types/types';
 import {
+  FakeSOSocket,
   UploadResumeRequest,
   ResumeByIdRequest,
   UserResumesRequest,
@@ -103,7 +103,7 @@ const resumeController = (socket: FakeSOSocket) => {
     try {
       const result = await downloadResume(resumeId);
       if ('error' in result) throw new Error(result.error);
-      
+
       res.setHeader('Content-Type', result.contentType);
       res.setHeader('Content-Disposition', `attachment; filename="${result.fileName}"`);
       res.send(result.fileData);
@@ -141,7 +141,10 @@ const resumeController = (socket: FakeSOSocket) => {
    *
    * @returns A Promise that resolves to void.
    */
-  const setActiveResumeRoute = async (req: SetActiveResumeRequest, res: Response): Promise<void> => {
+  const setActiveResumeRoute = async (
+    req: SetActiveResumeRequest,
+    res: Response,
+  ): Promise<void> => {
     const { userId, resumeId } = req.body;
     try {
       const result = await setActiveResume(userId, resumeId);

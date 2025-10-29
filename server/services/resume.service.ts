@@ -57,7 +57,7 @@ export const downloadResume = async (resumeId: string): Promise<ResumeDownloadRe
   try {
     const resume = await ResumeModel.findById(resumeId).select('fileData fileName contentType');
     if (!resume) throw Error('Resume not found');
-    
+
     return {
       fileData: resume.fileData,
       fileName: resume.fileName,
@@ -76,7 +76,8 @@ export const downloadResume = async (resumeId: string): Promise<ResumeDownloadRe
  */
 export const deleteResume = async (resumeId: string): Promise<ResumeResponse> => {
   try {
-    const deletedResume: SafeDatabaseResume | null = await ResumeModel.findByIdAndDelete(resumeId).select('-fileData');
+    const deletedResume: SafeDatabaseResume | null =
+      await ResumeModel.findByIdAndDelete(resumeId).select('-fileData');
     if (!deletedResume) throw Error('Resume not found');
     return deletedResume;
   } catch (error) {
@@ -92,15 +93,18 @@ export const deleteResume = async (resumeId: string): Promise<ResumeResponse> =>
  * @param {string} resumeId - The ID of the resume to set as active.
  * @returns {Promise<ResumeResponse>} - Resolves with the updated resume object (without file data) or an error message.
  */
-export const setActiveResume = async (userId: string, resumeId: string): Promise<ResumeResponse> => {
+export const setActiveResume = async (
+  userId: string,
+  resumeId: string,
+): Promise<ResumeResponse> => {
   try {
     await ResumeModel.updateMany({ userId }, { isActive: false });
     const updatedResume: SafeDatabaseResume | null = await ResumeModel.findByIdAndUpdate(
       resumeId,
       { isActive: true },
-      { new: true }
+      { new: true },
     ).select('-fileData');
-    
+
     if (!updatedResume) throw Error('Resume not found');
     return updatedResume;
   } catch (error) {

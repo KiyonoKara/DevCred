@@ -19,16 +19,10 @@ export interface UserCredentials {
  * - `biography`: A short description or bio of the user (optional).
  * - `profileVisibility`: Controls what parts of the user's profile are visible to others.
  * - `dmEnabled`: Whether the user accepts direct messages.
- * - `profileVisibility`: Whether the user's profile is PUBLIC or PRIVATE.
  * - `allowDMs`: Whether the user allows direct messages from other users.
  * - `showActivityHistory`: Whether the user's activity history is shown to other users.
  * - `activityHistory`: An array of strings representing the user's activity history.
- * - `resumeData`: An object containing the user's resume data.
- *   - `fileName`: The name of the resume file.
- *   - `fileData`: The binary data of the resume file.
- *   - `contentType`: The content type of the resume file.
- *   - `fileSize`: The size of the resume file.
- *   - `uploadDate`: The date when the resume file was uploaded.
+ * - `activeResumeId`: The ID of the user's currently active resume.
  */
 export interface User extends UserCredentials {
   dateJoined: Date;
@@ -38,6 +32,7 @@ export interface User extends UserCredentials {
   allowDMs?: boolean;
   showActivityHistory?: boolean;
   activityHistory?: string[];
+  activeResumeId?: string;
 }
 
 /**

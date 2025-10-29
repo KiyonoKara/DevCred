@@ -109,8 +109,10 @@ export interface SetActiveResumeRequest extends Request {
  * - `contentType`: The MIME type of the file.
  * - `error`: An error message if the operation fails.
  */
-export type ResumeDownloadResponse = {
-  fileData: Buffer;
-  fileName: string;
-  contentType: string;
-} | { error: string };
+export type ResumeDownloadResponse =
+  | {
+      fileData: Buffer;
+      fileName: string;
+      contentType: string;
+    }
+  | { error: string };
