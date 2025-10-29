@@ -17,12 +17,12 @@ export interface JobPosting {
   company: String;
   recruiter: String;
   title: String;
-  payRange?: String;
+  payRange?: String | null;
   description: String;
   location: String;
   tags: Tag[];
   active: Boolean;
-  deadline: Date;
+  deadline?: Date | null;
 }
 
 /**
@@ -36,3 +36,15 @@ export interface DatabaseJobPosting extends JobPosting {
   createdAt: Date;
   updatedAt: Date;
 }
+
+/**
+ * Type representing possible responses for a JobPosting-related operation.
+ * - Either a `DatabaseJobPosting` object or an error message.
+ */
+export type JobPostingResponse = DatabaseJobPosting | { error: string };
+
+/**
+ * Type representing possible responses for a JobPosting Array-related operation.
+ * - Either a `DatabaseJobPosting[]` object or an error message.
+ */
+export type JobPostingListResponse = DatabaseJobPosting[] | { error: string };

@@ -25,6 +25,7 @@ export interface User extends UserCredentials {
   biography?: string;
   profileVisibility?: 'private' | 'public-metrics-only' | 'public-full';
   dmEnabled?: boolean;
+  userType: 'recruiter' | 'talent';
 }
 
 /**
@@ -68,7 +69,7 @@ export interface UserByUsernameRequest extends Request {
 /**
  * Represents a "safe" user object that excludes sensitive information like the password.
  */
-export type SafeDatabaseUser = Omit<DatabaseUser, 'password'>;
+export type SafeDatabaseUser = Omit<DatabaseUser, 'password', 'userType'>;
 
 /**
  * Represents the response for user-related operations.

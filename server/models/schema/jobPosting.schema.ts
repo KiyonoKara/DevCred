@@ -32,6 +32,7 @@ const jobPostingSchema: Schema = new Schema(
     payRange: {
       type: String,
       required: false,
+      default: null,
     },
     description: {
       type: String,
@@ -50,6 +51,7 @@ const jobPostingSchema: Schema = new Schema(
     deadline: {
       type: Date,
       required: false,
+      default: null,
     },
   },
   { collection: 'JobPosting' },

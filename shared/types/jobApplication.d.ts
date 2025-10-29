@@ -36,3 +36,36 @@ export interface DatabaseJobApplication extends JobApplication {
   createdAt: Date;
   updatedAt: Date;
 }
+
+/**
+ * Represents a Populated Database Job Application
+ * `jobPosting`: The job posting associated to the application
+ */
+export interface PopulatedDatabaseJobApplication extends Omit<JobApplication, 'jobPosting'> {
+  jobPosting: {
+    company: String;
+    recruiter: String;
+    title: String;
+    active: Boolean;
+  };
+}
+
+/**
+ * Type representing possible responses for a JobApplication-related operation.
+ * - Either a `DatabaseJobApplication` object or an error message.
+ */
+export type JobApplicationResponse = DatabaseJobApplication | { error: string };
+
+/**
+ * Type representing possible responses for a JobApplication-related operation.
+ * - Either a `PopulatedDatabaseJobApplication` object or an error message.
+ */
+export type PopulatedJobApplicationResponse = PopulatedDatabaseJobApplication | { error: string };
+
+/**
+ * Type representing possible responses for a JobApplication array-related operation.
+ * - Either a `PopulatedDatabaseJobApplication[]` object or an error message.
+ */
+export type PopulatedJobApplicationListResponse =
+  | PopulatedDatabaseJobApplication[]
+  | { error: string };
