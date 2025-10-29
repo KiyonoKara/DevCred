@@ -1363,6 +1363,156 @@ paths:
         '500':
           $ref: '#/components/responses/ErrorResponse'
 
+  # --------------------
+  # RESUME CONTROLLER
+  # --------------------
+  /resume/upload:
+    post:
+      tags:
+        - Resumes
+      summary: Upload a resume file for a user.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  description: The username of the user uploading the resume.
+                isActive:
+                  type: boolean
+                  default: true
+                  description: Whether to set this resume as active.
+                resume:
+                  type: string
+                  format: binary
+                  description: The resume file (PDF only, max 8MB).
+      responses:
+        '200':
+          description: Resume uploaded successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SafeDatabaseResume'
+        '400':
+          description: Invalid file or no file uploaded.
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /resume/user/{userId}:
+    get:
+      tags:
+        - Resumes
+      summary: Retrieve all resumes for a specific user.
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+          required: true
+          description: The username whose resumes to retrieve.
+      responses:
+        '200':
+          description: Successfully retrieved user's resumes.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SafeDatabaseResume'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /resume/download/{resumeId}:
+    get:
+      tags:
+        - Resumes
+      summary: Download a resume file by its ID.
+      parameters:
+        - in: path
+          name: resumeId
+          schema:
+            type: string
+            format: object-id
+          required: true
+          description: The ID of the resume to download.
+      responses:
+        '200':
+          description: Resume file downloaded successfully.
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Resume not found.
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /resume/{resumeId}:
+    delete:
+      tags:
+        - Resumes
+      summary: Delete a resume by its ID.
+      parameters:
+        - in: path
+          name: resumeId
+          schema:
+            type: string
+            format: object-id
+          required: true
+          description: The ID of the resume to delete.
+      responses:
+        '200':
+          description: Resume deleted successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Resume not found.
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /resume/setActive:
+    put:
+      tags:
+        - Resumes
+      summary: Set a specific resume as the active resume for a user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+                - resumeId
+              properties:
+                userId:
+                  type: string
+                  description: The username of the user.
+                resumeId:
+                  type: string
+                  format: object-id
+                  description: The ID of the resume to set as active.
+      responses:
+        '200':
+          description: Active resume set successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SafeDatabaseResume'
+        '404':
+          description: Resume not found.
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
 components:
   schemas:
     # --------------------
@@ -1829,6 +1979,62 @@ components:
         dmEnabled:
           type: boolean
           description: Whether the user accepts direct messages
+
+    # --------------------
+    # RESUME SCHEMAS
+    # --------------------
+    Resume:
+      type: object
+      required:
+        - userId
+        - fileName
+        - fileData
+        - contentType
+        - fileSize
+        - uploadDate
+        - isActive
+      properties:
+        userId:
+          type: string
+          description: The username of the user who owns the resume
+        fileName:
+          type: string
+          description: The original name of the uploaded file
+        fileData:
+          type: string
+          format: binary
+          description: The binary data of the resume file
+        contentType:
+          type: string
+          description: The MIME type of the file (e.g., 'application/pdf')
+        fileSize:
+          type: integer
+          description: The size of the file in bytes
+        uploadDate:
+          type: string
+          format: date-time
+          description: The date when the resume was uploaded
+        isActive:
+          type: boolean
+          description: Whether this is the user's active resume
+
+    DatabaseResume:
+      allOf:
+        - $ref: '#/components/schemas/Resume'
+        - type: object
+          properties:
+            _id:
+              type: string
+              format: object-id
+              description: The unique identifier for the resume, generated by MongoDB
+
+    SafeDatabaseResume:
+      allOf:
+        - $ref: '#/components/schemas/DatabaseResume'
+        - type: object
+          properties:
+            fileData:
+              not: {}
 
     # --------------------
     # JOB FAIR SCHEMAS

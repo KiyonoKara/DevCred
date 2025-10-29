@@ -30,6 +30,15 @@ const resumeController = (socket: FakeSOSocket) => {
     },
   });
 
+  /**
+   * Handles uploading a resume file for a user.
+   * Validates file type (PDF only) and size (8MB limit) before saving to database.
+   *
+   * @param req The UploadResumeRequest object containing userId and resume file.
+   * @param res The HTTP response object used to send back the upload result.
+   *
+   * @returns A Promise that resolves to void.
+   */
   const uploadResumeRoute = async (req: UploadResumeRequest, res: Response): Promise<void> => {
     const { userId, isActive = true } = req.body;
     const file = req.file;
@@ -60,6 +69,15 @@ const resumeController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Retrieves all resumes for a specific user.
+   * Returns a list of resume metadata without the actual file data.
+   *
+   * @param req The UserResumesRequest object containing the userId parameter.
+   * @param res The HTTP response object used to send back the list of resumes.
+   *
+   * @returns A Promise that resolves to void.
+   */
   const getUserResumesRoute = async (req: UserResumesRequest, res: Response): Promise<void> => {
     const { userId } = req.params;
     try {
@@ -71,6 +89,15 @@ const resumeController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Downloads a resume file by its ID.
+   * Sets appropriate headers for file download and streams the file data.
+   *
+   * @param req The ResumeByIdRequest object containing the resumeId parameter.
+   * @param res The HTTP response object used to send back the file data.
+   *
+   * @returns A Promise that resolves to void.
+   */
   const downloadResumeRoute = async (req: ResumeByIdRequest, res: Response): Promise<void> => {
     const { resumeId } = req.params;
     try {
@@ -85,6 +112,15 @@ const resumeController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Deletes a resume by its ID.
+   * Permanently removes the resume from the database.
+   *
+   * @param req The ResumeByIdRequest object containing the resumeId parameter.
+   * @param res The HTTP response object used to send back the deletion result.
+   *
+   * @returns A Promise that resolves to void.
+   */
   const deleteResumeRoute = async (req: ResumeByIdRequest, res: Response): Promise<void> => {
     const { resumeId } = req.params;
     try {
@@ -96,6 +132,15 @@ const resumeController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Sets a specific resume as the active resume for a user.
+   * Deactivates all other resumes for the user and activates the specified one.
+   *
+   * @param req The SetActiveResumeRequest object containing userId and resumeId.
+   * @param res The HTTP response object used to send back the result.
+   *
+   * @returns A Promise that resolves to void.
+   */
   const setActiveResumeRoute = async (req: SetActiveResumeRequest, res: Response): Promise<void> => {
     const { userId, resumeId } = req.body;
     try {

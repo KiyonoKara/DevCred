@@ -8,6 +8,12 @@ import {
   ResumeDownloadResponse,
 } from '../types/types';
 
+/**
+ * Creates a new resume in the database.
+ *
+ * @param {Resume} resume - The resume object to be saved, containing file data and metadata.
+ * @returns {Promise<ResumeResponse>} - Resolves with the saved resume object (without file data) or an error message.
+ */
 export const createResume = async (resume: Resume): Promise<ResumeResponse> => {
   try {
     const result: DatabaseResume = await ResumeModel.create(resume);
@@ -26,6 +32,12 @@ export const createResume = async (resume: Resume): Promise<ResumeResponse> => {
   }
 };
 
+/**
+ * Retrieves all resumes for a specific user.
+ *
+ * @param {string} userId - The username of the user whose resumes to retrieve.
+ * @returns {Promise<ResumesResponse>} - Resolves with the list of resume objects (without file data) or an error message.
+ */
 export const getUserResumes = async (userId: string): Promise<ResumesResponse> => {
   try {
     const resumes: SafeDatabaseResume[] = await ResumeModel.find({ userId }).select('-fileData');
@@ -35,6 +47,12 @@ export const getUserResumes = async (userId: string): Promise<ResumesResponse> =
   }
 };
 
+/**
+ * Downloads a resume file by its ID.
+ *
+ * @param {string} resumeId - The ID of the resume to download.
+ * @returns {Promise<ResumeDownloadResponse>} - Resolves with the resume file data or an error message.
+ */
 export const downloadResume = async (resumeId: string): Promise<ResumeDownloadResponse> => {
   try {
     const resume = await ResumeModel.findById(resumeId).select('fileData fileName contentType');
@@ -50,6 +68,12 @@ export const downloadResume = async (resumeId: string): Promise<ResumeDownloadRe
   }
 };
 
+/**
+ * Deletes a resume from the database by its ID.
+ *
+ * @param {string} resumeId - The ID of the resume to delete.
+ * @returns {Promise<ResumeResponse>} - Resolves with the deleted resume object (without file data) or an error message.
+ */
 export const deleteResume = async (resumeId: string): Promise<ResumeResponse> => {
   try {
     const deletedResume: SafeDatabaseResume | null = await ResumeModel.findByIdAndDelete(resumeId).select('-fileData');
@@ -60,6 +84,14 @@ export const deleteResume = async (resumeId: string): Promise<ResumeResponse> =>
   }
 };
 
+/**
+ * Sets a specific resume as the active resume for a user.
+ * Deactivates all other resumes for the user and activates the specified one.
+ *
+ * @param {string} userId - The username of the user.
+ * @param {string} resumeId - The ID of the resume to set as active.
+ * @returns {Promise<ResumeResponse>} - Resolves with the updated resume object (without file data) or an error message.
+ */
 export const setActiveResume = async (userId: string, resumeId: string): Promise<ResumeResponse> => {
   try {
     await ResumeModel.updateMany({ userId }, { isActive: false });
