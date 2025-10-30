@@ -19,13 +19,18 @@ export interface UserCredentials {
  * - `biography`: A short description or bio of the user (optional).
  * - `profileVisibility`: Controls what parts of the user's profile are visible to others.
  * - `dmEnabled`: Whether the user accepts direct messages.
+ * - `showActivityHistory`: Whether the user's activity history is shown to other users.
+ * - `activityHistory`: An array of strings representing the user's activity history.
+ * - `activeResumeId`: The ID of the user's currently active resume.
  */
 export interface User extends UserCredentials {
   dateJoined: Date;
   biography?: string;
   profileVisibility?: 'private' | 'public-metrics-only' | 'public-full';
   dmEnabled?: boolean;
-  userType: 'recruiter' | 'talent';
+  showActivityHistory?: boolean;
+  activityHistory?: string[];
+  activeResumeId?: string;
 }
 
 /**
