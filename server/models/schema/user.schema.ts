@@ -26,6 +26,14 @@ const userSchema: Schema = new Schema(
     dateJoined: {
       type: Date,
     },
+    activityHistory: {
+      type: [String],
+      default: [],
+    },
+    activeResumeId: {
+      type: String,
+      ref: 'Resume',
+    },
     biography: {
       type: String,
       default: '',
