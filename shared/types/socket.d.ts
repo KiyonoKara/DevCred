@@ -7,6 +7,7 @@ import { BaseMove, GameInstance, GameInstanceID, GameMove, GameState } from './g
 import { DatabaseCommunity } from './community';
 import { PopulatedDatabaseCollection } from './collection';
 import { DatabaseJobFair } from './jobFair';
+import { DatabaseJobPosting } from './jobPosting';
 
 /**
  * Payload for an answer update event.
@@ -147,6 +148,24 @@ export interface JobFairChatMessagePayload {
 }
 
 /**
+ * Interface representing the payload for a job application update event.
+ * - `jobId`: The ID of the job posting.
+ * - `type`: The type of update (`'applicationCreated'` or `'applicationDeleted'`).
+ */
+export interface JobApplicationUpdatePayload {
+  jobId: string;
+  type: 'applicationCreated' | 'applicationDeleted';
+}
+
+/**
+ * Interface representing the payload for a job posting update event.
+ * Can be either a full job posting object or a deletion notification.
+ */
+export type JobPostingUpdatePayload =
+  | DatabaseJobPosting
+  | { type: 'deleted'; jobId: string };
+
+/**
  * Interface representing the events the client can emit to the server.
  * - `makeMove`: Client can emit a move in the game.
  * - `joinGame`: Client can join a game.
@@ -180,6 +199,8 @@ export interface ClientToServerEvents {
  * - `collectionUpdate`: Server sends updated collection.
  * - `jobFairUpdate`: Server sends updated job fair.
  * - `jobFairChatMessage`: Server sends new message in job fair chat.
+ * - `jobPostingUpdate`: Server sends updated job posting.
+ * - `jobApplicationUpdate`: Server sends job application update.
  */
 export interface ServerToClientEvents {
   questionUpdate: (question: PopulatedDatabaseQuestion) => void;
@@ -196,4 +217,6 @@ export interface ServerToClientEvents {
   collectionUpdate: (community: CollectionUpdatePayload) => void;
   jobFairUpdate: (jobFair: JobFairUpdatePayload) => void;
   jobFairChatMessage: (message: JobFairChatMessagePayload) => void;
+  jobPostingUpdate: (jobPosting: JobPostingUpdatePayload) => void;
+  jobApplicationUpdate: (update: JobApplicationUpdatePayload) => void;
 }
