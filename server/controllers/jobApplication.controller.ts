@@ -100,7 +100,8 @@ const jobApplicationController = (socket: FakeSOSocket) => {
 
       // Emit socket event for real-time updates (application count)
       socket.emit('jobApplicationUpdate', {
-        jobId: result.jobPosting.toString(),
+        // TODO: check if this actually fixes anything
+        jobId: result._id.toString(),
         type: 'applicationDeleted',
       });
 
@@ -260,4 +261,3 @@ const jobApplicationController = (socket: FakeSOSocket) => {
 };
 
 export default jobApplicationController;
-
