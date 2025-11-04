@@ -3,9 +3,10 @@ import { ObjectId } from 'mongodb';
 import {
   FindJobPostingsRequest,
   FakeSOSocket,
-  JobPostingResponse,
-  JobPostingListResponse,
+  // JobPostingResponse,
+  // JobPostingListResponse,
   JobPosting,
+  DatabaseTag,
 } from '../types/types';
 import {
   getJobPostings,
@@ -17,7 +18,6 @@ import {
 import { processTags } from '../services/tag.service';
 import JobPostingModel from '../models/jobPosting.model';
 import TagModel from '../models/tags.model';
-import { DatabaseTag } from '../types/types';
 
 /**
  * Express controller for handling job posting-related requests.
@@ -257,4 +257,3 @@ const jobPostingController = (socket: FakeSOSocket) => {
 };
 
 export default jobPostingController;
-
