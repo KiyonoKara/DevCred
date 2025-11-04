@@ -7,8 +7,9 @@ import { Tag } from './tag';
  * - `internship`: An internship position.
  * - `co-op`: A co-op position.
  * - `full-time`: A full-time position.
+ * - `part-time`: A part-time position.
  */
-export type JobType = 'internship' | 'co-op' | 'full-time';
+export type JobType = 'internship' | 'co-op' | 'full-time' | 'part-time';
 
 /**
  * Represents a Job Posting
@@ -18,7 +19,7 @@ export type JobType = 'internship' | 'co-op' | 'full-time';
  * - `payRange`: A pay range description of the position.
  * - `description`: The description for the job being posted.
  * - `location`: The location of the job.
- * - `jobType`: The type of job (internship/co-op/full-time).
+ * - `jobType`: The type of job (internship/co-op/full-time/part-time).
  * - `tags`: An array of references to `Tag` documents associated with the job posting.
  * - `active`: A boolean representing if the job posting is active or not
  * - `deadline`: A date on which a job will automatically be set to inactive.

@@ -11,7 +11,7 @@ import { Schema } from 'mongoose';
  * - `payRange`: A pay range description of the position.
  * - `description`: The description for the job being posted.
  * - `location`: The location of the job.
- * - `jobType`: The type of job (internship/co-op/full-time).
+ * - `jobType`: The type of job (internship/co-op/full-time/part-time).
  * - `tags`: An array of references to `Tag` documents associated with the job posting.
  * - `active`: A boolean representing if the job posting is active or not
  * - `deadline`: A date on which a job will automatically be set to inactive.
@@ -45,7 +45,7 @@ const jobPostingSchema: Schema = new Schema(
     },
     jobType: {
       type: String,
-      enum: ['internship', 'co-op', 'full-time'],
+      enum: ['internship', 'co-op', 'full-time', 'part-time'],
       required: false,
       default: null,
     },
