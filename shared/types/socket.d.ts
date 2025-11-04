@@ -161,9 +161,7 @@ export interface JobApplicationUpdatePayload {
  * Interface representing the payload for a job posting update event.
  * Can be either a full job posting object or a deletion notification.
  */
-export type JobPostingUpdatePayload =
-  | DatabaseJobPosting
-  | { type: 'deleted'; jobId: string };
+export type JobPostingUpdatePayload = DatabaseJobPosting | { type: 'deleted'; jobId: string };
 
 /**
  * Interface representing the events the client can emit to the server.

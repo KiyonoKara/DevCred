@@ -116,10 +116,12 @@ const checkKeywordInJobPosting = (
   job: DatabaseJobPosting & { tags: DatabaseTag[] },
   keywordlist: string[],
 ): boolean => {
-  for (const w of keywordlist) {
-    if (job.title.toLowerCase().includes(w.toLowerCase()) || 
-        job.description.toLowerCase().includes(w.toLowerCase()) ||
-        job.company.toLowerCase().includes(w.toLowerCase())) {
+  for (const word of keywordlist) {
+    if (
+      job.title.toLowerCase().includes(word.toLowerCase()) ||
+      job.description.toLowerCase().includes(word.toLowerCase()) ||
+      job.company.toLowerCase().includes(word.toLowerCase())
+    ) {
       return true;
     }
   }
@@ -172,9 +174,7 @@ const filterJobPostingsBySearch = (
       return checkKeywordInJobPosting(job, searchKeyword);
     }
 
-    return (
-      checkKeywordInJobPosting(job, searchKeyword) || checkTagInJobPosting(job, searchTags)
-    );
+    return checkKeywordInJobPosting(job, searchKeyword) || checkTagInJobPosting(job, searchTags);
   });
 };
 
@@ -202,8 +202,8 @@ export const getJobPostings = async (
       };
     }
 
-    let query: any = {};
-    
+    // TODO: does this type work?
+    const query: Record<string, unknown> = {};
     if (user.userType === 'recruiter') {
       query.recruiter = username;
     } else {
@@ -222,7 +222,7 @@ export const getJobPostings = async (
       query.jobType = jobType;
     }
 
-    let jobs: any = await JobPostingModel.find(query)
+    let jobs: (DatabaseJobPosting & { tags: DatabaseTag[] })[] = await JobPostingModel.find(query)
       .populate<{ tags: DatabaseTag[] }>({
         path: 'tags',
         model: TagModel,
@@ -231,7 +231,10 @@ export const getJobPostings = async (
 
     // Apply search filter (tags/keywords) if provided
     if (search) {
-      jobs = filterJobPostingsBySearch(jobs as unknown as (DatabaseJobPosting & { tags: DatabaseTag[] })[], search);
+      jobs = filterJobPostingsBySearch(
+        jobs as unknown as (DatabaseJobPosting & { tags: DatabaseTag[] })[],
+        search,
+      );
     }
 
     return jobs as unknown as DatabaseJobPosting[];
