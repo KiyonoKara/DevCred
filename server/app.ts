@@ -25,6 +25,8 @@ import gameController from './controllers/game.controller';
 import collectionController from './controllers/collection.controller';
 import communityController from './controllers/community.controller';
 import jobFairController from './controllers/jobFair.controller';
+import jobPostingController from './controllers/jobPosting.controller';
+import jobApplicationController from './controllers/jobApplication.controller';
 import resumeController from './controllers/resume.controller';
 
 const MONGO_URL = `${process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017'}/fake_so`;
@@ -113,6 +115,8 @@ app.use('/api/games', gameController(socket));
 app.use('/api/collection', collectionController(socket));
 app.use('/api/community', communityController(socket));
 app.use('/api/jobfair', jobFairController(socket));
+app.use('/api/jobposting', jobPostingController(socket));
+app.use('/api/jobapplication', jobApplicationController(socket));
 app.use('/api/resume', resumeController(socket));
 
 const openApiDocument = yaml.parse(fs.readFileSync('./openapi.yaml', 'utf8'));

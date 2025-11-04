@@ -1,10 +1,42 @@
 import {
   JobApplicationResponse,
   PopulatedJobApplicationListResponse,
-} from '@fake-stack-overflow/shared';
+} from '../types/types';
 import JobApplicationModel from '../models/jobApplication.model';
 import JobPostingModel from '../models/jobPosting.model';
 import UserModel from '../models/users.model';
+
+/**
+ * Gets the count of applications for a specific job posting.
+ * @param {string} jobId - The ID of the job posting.
+ * @returns {Promise<number>} - The count of applications or 0 if error.
+ */
+export const getApplicationCount = async (jobId: string): Promise<number> => {
+  try {
+    const count = await JobApplicationModel.countDocuments({ jobPosting: jobId });
+    return count;
+  } catch (err) {
+    return 0;
+  }
+};
+
+/**
+ * Checks if a user has applied to a job posting.
+ * @param {string} jobId - The ID of the job posting.
+ * @param {string} username - The username of the user.
+ * @returns {Promise<boolean>} - True if the user has applied, false otherwise.
+ */
+export const hasUserApplied = async (jobId: string, username: string): Promise<boolean> => {
+  try {
+    const application = await JobApplicationModel.findOne({
+      jobPosting: jobId,
+      user: username,
+    });
+    return application !== null;
+  } catch (err) {
+    return false;
+  }
+};
 
 /**
  * Creates a new job application
