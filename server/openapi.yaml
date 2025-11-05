@@ -1321,6 +1321,7 @@ paths:
       summary: Deletes the application by the given application ID.
       parameters:
         - in: path
+          required: true
           name: applicationId
           schema:
             type: string
@@ -1356,6 +1357,7 @@ paths:
       parameters:
         - in: path
           name: user
+          required: true
           schema:
             type: string
           description: Username of the user to get applications for.
@@ -1383,6 +1385,7 @@ paths:
       parameters:
         - in: path
           name: jobId
+          required: true
           schema:
             type: string
           description: Job Id of job to fetch applications for.
@@ -1419,6 +1422,7 @@ paths:
       parameters:
         - in: path
           name: jobId
+          required: true
           schema:
             type: string
           description: job ID to fetch application count for
@@ -1445,6 +1449,7 @@ paths:
           description: Username of user checking if they have applied to a job
         - in: path
           name: jobId
+          required: true
           schema:
             type: string
           description: ID of job user is checking application status for.
@@ -1511,6 +1516,7 @@ paths:
       summary: Fetches job posting by specified job id
       parameters:
         - in: path
+          required: true
           name: jobId
           schema:
             type: string
@@ -1521,14 +1527,45 @@ paths:
           content:
             application/json:
               schema:
-                  ref: '#/components/schemas/JobPosting'
+                $ref: '#/components/schemas/JobPosting'
         '400':
           $ref: '#/components/responses/ValidationError'
         '404':
           $ref: '#/components/responses/ContentNotFoundError'
         '500':
           $ref: '#/components/responses/ErrorResponse'
-          
+    delete:
+      tags:
+        - Job Postings
+      summary: Deletes the job posting by the given job posting ID.
+      parameters:
+        - in: path
+          required: true
+          name: jobId
+          schema:
+            type: string
+          description: Id of the job posting being deleted.
+        - in: query
+          name: username
+          schema:
+            type: string
+          description: username of user requesting delete.
+      responses:
+        '200':
+          description: Successfully deleted job posting.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobPosting'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/ContentNotFoundError'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
   /jobposting/create:
     post:
       tags:
@@ -1556,38 +1593,6 @@ paths:
         '500':
           $ref: '#/components/responses/ErrorResponse'
 
-  /jobposting/{jobId}:
-    delete:
-      tags:
-        - Job Postings
-      summary: Deletes the job posting by the given job posting ID.
-      parameters:
-        - in: path
-          name: jobId
-          schema:
-            type: string
-          description: Id of the job posting being deleted.
-        - in: query
-          name: username
-          schema:
-            type: string
-          description: username of user requesting delete.
-      responses:
-        '200':
-          description: Successfully deleted job posting.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/JobPosting'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-        '401':
-          $ref: '#/components/responses/ValidationError'
-        '404':
-          $ref: '#/components/responses/ContentNotFoundError'
-        '500':
-          $ref: '#/components/responses/ErrorResponse'
-
   /jobposting/{jobId}/toggle:
     patch:
       tags:
@@ -1595,6 +1600,7 @@ paths:
       summary: Toggles the active status of the given posting on and off
       parameters:
         - in: path
+          required: true
           name: jobId
           schema:
             type: string
@@ -1699,10 +1705,10 @@ paths:
       summary: Retrieve a user by username.
       parameters:
         - in: path
+          required: true
           name: username
           schema:
             type: string
-          required: true
           description: The username of the user to retrieve.
       responses:
         '200':
@@ -2620,60 +2626,60 @@ components:
     # JOB POSTINGS SCHEMAS
     # --------------------
     CreateJobPostingBody:
-    type: object
-    required:
-      - company
-      - recruiter
-      - title
-      - payRange
-      - description
-      - location
-      - jobType
-      - tags
-      - active
-      - deadline
-    properties:
-      company:
-        type: string
-        minLength: 1
-        description: Company for which the job postings being made.
-      recruiter:
-        type: string
-        minLength: 1
-        description: Username of recruiter who is creating the job posting
-      title:
-        type: string
-        minLength: 1
-        description: Job Title
-      payRange:
-        type: string
-        description: Pay Range of Job
-      description:
-        type: string
-        minLength: 1
-        description: Description of the job.
-      location:
-        type: string
-        minLength: 1
-        description: Location of job
-      jobType:
-        type: string
-        enum: ['internship', 'co-op', 'full-time', 'part-time']
-        description: Descriptor of job type
-      tags:
-        type: array
-        description: Tags associated to a job posting
-        items:
+      type: object
+      required:
+        - company
+        - recruiter
+        - title
+        - payRange
+        - description
+        - location
+        - jobType
+        - tags
+        - active
+        - deadline
+      properties:
+        company:
           type: string
-          format: object-id
-      active:
-        type: boolean
-        minLength: 1
-        description: Boolean indicating if a job posting is active or not.
-      deadline: 
-        type: string
-        format: date-time
-        description: Deadline to submit applications to a given posting.
+          minLength: 1
+          description: Company for which the job postings being made.
+        recruiter:
+          type: string
+          minLength: 1
+          description: Username of recruiter who is creating the job posting
+        title:
+          type: string
+          minLength: 1
+          description: Job Title
+        payRange:
+          type: string
+          description: Pay Range of Job
+        description:
+          type: string
+          minLength: 1
+          description: Description of the job.
+        location:
+          type: string
+          minLength: 1
+          description: Location of job
+        jobType:
+          type: string
+          enum: ['internship', 'co-op', 'full-time', 'part-time']
+          description: Descriptor of job type
+        tags:
+          type: array
+          description: Tags associated to a job posting
+          items:
+            type: string
+            format: object-id
+        active:
+          type: boolean
+          minLength: 1
+          description: Boolean indicating if a job posting is active or not.
+        deadline:
+          type: string
+          format: date-time
+          description: Deadline to submit applications to a given posting.
 
     JobPosting:
       type: object
@@ -2726,7 +2732,7 @@ components:
           type: boolean
           minLength: 1
           description: Boolean indicating if a job posting is active or not.
-        deadline: 
+        deadline:
           type: string
           format: date-time
           description: Deadline to submit applications to a given posting.
