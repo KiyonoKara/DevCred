@@ -1,24 +1,24 @@
 import express, { Request, Response } from 'express';
 import { ObjectId } from 'mongodb';
+import JobPostingModel from '../models/jobPosting.model';
+import TagModel from '../models/tags.model';
 import {
-  FindJobPostingsRequest,
+  createJobPosting,
+  deleteJobPosting,
+  getJobPostingById,
+  getJobPostings,
+  toggleJobPostingActive,
+} from '../services/jobPosting.service';
+import { processTags } from '../services/tag.service';
+import {
+  DatabaseTag,
   FakeSOSocket,
+  FindJobPostingsRequest,
   // do something about these?
   // JobPostingResponse,
   // JobPostingListResponse,
   JobPosting,
-  DatabaseTag,
 } from '../types/types';
-import {
-  getJobPostings,
-  getJobPostingById,
-  createJobPosting,
-  deleteJobPosting,
-  toggleJobPostingActive,
-} from '../services/jobPosting.service';
-import { processTags } from '../services/tag.service';
-import JobPostingModel from '../models/jobPosting.model';
-import TagModel from '../models/tags.model';
 
 /**
  * Express controller for handling job posting-related requests.

@@ -628,7 +628,8 @@ paths:
               $ref: '#/components/schemas/ToggleSaveQuestionBody'
       responses:
         '200':
-          description: Collection successfully updated. Returns the updated populated collection object.
+          description:
+            Collection successfully updated. Returns the updated populated collection object.
           content:
             application/json:
               schema:
@@ -1281,6 +1282,183 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleErrorBody'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+  # --------------------
+  # JOB APPLICATION CONTROLLER
+  # --------------------
+  /jobapplication/create:
+    post:
+      tags:
+        - Job Applications
+      summary: Create a new job application
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateJobApplicationBody'
+      responses:
+        '201':
+          description: Job application successfully created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobApplication'
+        '401':
+          $ref: '#/components/responses/ValidationError'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/ContentNotFoundError'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /jobapplication/{applicationId}:
+    delete:
+      tags:
+        - Job Applications
+      summary: Deletes the application by the given application ID.
+      parameters:
+        - in: path
+          name: applicationId
+          schema:
+            type: string
+          description: Id of the job application being deleted.
+        - in: query
+          name: username
+          schema:
+            type: string
+          description: username of user requesting delete.
+      responses:
+        '200':
+          description: Successfully deleted job application.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobApplication'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/ContentNotFoundError'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /jobapplication/{user}:
+    get:
+      tags:
+        - Job Applications
+      summary: Retrieve all applications for the given user.
+      parameters:
+        - in: path
+          name: user
+          schema:
+            type: string
+          description: Username of the user to get applications for.
+      responses:
+        '200':
+          description: Successfully retrieved job applications.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JobApplication'
+        '401':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /jobapplication/{jobId}/job:
+    get:
+      tags:
+        - Job Applications
+      summary: Retrieve all job applications by given jobId.
+      parameters:
+        - in: path
+          name: jobId
+          schema:
+            type: string
+          description: Job Id of job to fetch applications for.
+        - in: query
+          name: username
+          schema:
+            type: string
+          description: User requesting all job applications by job id.
+      responses:
+        '200':
+          description: Successfully retrieved job applications.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JobApplication'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/ContentNotFoundError'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /jobapplication/{jobId}/count:
+    get:
+      tags:
+        - Job Applications
+      summary: Retrieve the count of applications for a given job.
+      parameters:
+        - in: path
+          name: jobId
+          schema:
+            type: string
+          description: job ID to fetch application count for
+      responses:
+        '200':
+          description: Successfully retrieved job application count.
+          content:
+            application/json:
+              schema:
+                type: integer
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /jobapplication/{jobId}/status:
+    get:
+      tags:
+        - Job Applications
+      summary: Retrieves if a user has applied to a job or not.
+      parameters:
+        - in: query
+          name: username
+          schema:
+            type: string
+          description: Username of user checking if they have applied to a job
+        - in: path
+          name: jobId
+          schema:
+            type: string
+          description: ID of job user is checking application status for.
+      responses:
+        '200':
+          description: Successfully retrieved job application status
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/ValidationError'
         '500':
           $ref: '#/components/responses/ErrorResponse'
 
@@ -2240,7 +2418,46 @@ components:
     User:
       type: object
       description: A user profile object.
-
+    # --------------------
+    # JOB APPLICATION SCHEMAS
+    # --------------------
+    CreateJobApplicationBody:
+      type: object
+      required:
+        - applicantUsername
+        - jobId
+      properties:
+        applicantUsername:
+          type: string
+          minLength: 1
+          description: Username of the applicant making a job application
+        jobId:
+          type: string
+          minLength: 1
+          description: Id of the job the application is being created for
+    JobApplication:
+      type: object
+      required:
+        - jobPosting
+        - user
+        - jobStatus
+        - applicationDate
+      properties:
+        jobPosting:
+          type: string
+          format: object-id
+          description: Object reference to the job posting associated to the application
+        user:
+          type: string
+          description: Username of the job applicant
+        jobStatus:
+          type: string
+          enum: ['Submitted', 'Archived', 'In Review', 'Accepted', 'Rejected']
+          description: Status of the job application.
+        applicationDate:
+          type: string
+          format: date-time
+          description: Date of application submission.
     # --------------------
     # USER METRICS SCHEMAS
     # --------------------
@@ -2339,7 +2556,6 @@ components:
         error:
           type: string
           description: A detailed error message.
-
   responses:
     # --------------------
     # RESPONSE SCHEMAS
@@ -2367,3 +2583,16 @@ components:
               errors:
                 type: array
                 description: Detailed list of validation errors.
+    ContentNotFoundError:
+      description: Fetched information not found error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Error message describing item which cannot be found
+              errors:
+                type: array
+                description: Detailed list of item not found errors.
