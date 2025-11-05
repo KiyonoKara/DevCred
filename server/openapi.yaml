@@ -1461,6 +1461,164 @@ paths:
           $ref: '#/components/responses/ValidationError'
         '500':
           $ref: '#/components/responses/ErrorResponse'
+  # --------------------
+  # JOB POSTINGS CONTROLLER
+  # --------------------
+  /jobposting/list:
+    get:
+      tags:
+        - Job Postings
+      summary: Retrieves filtered job postings
+      parameters:
+        - in: query
+          name: username
+          schema:
+            type: string
+          description: Username of user fetching jobs
+        - in: query
+          name: location
+          schema:
+            type: string
+          description: Wanted location of jobs
+        - in: query
+          name: jobType
+          schema:
+            type: string
+          description: Type of job being searched
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Search keywords being used to search jobs
+      responses:
+        '200':
+          description: Successfully retrieved job postings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JobPosting'
+        '401':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /jobposting/{jobId}:
+    get:
+      tags:
+        - Job Postings
+      summary: Fetches job posting by specified job id
+      parameters:
+        - in: path
+          name: jobId
+          schema:
+            type: string
+          description: Id of job posting being fetched.
+      responses:
+        '200':
+          description: Successfully retrieved job posting
+          content:
+            application/json:
+              schema:
+                  ref: '#/components/schemas/JobPosting'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/ContentNotFoundError'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+          
+  /jobposting/create:
+    post:
+      tags:
+        - Job Postings
+      summary: Create a new job posting
+      parameters:
+        - in: query
+          name: username
+          schema:
+            type: string
+          description: Username of user creating the posting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateJobPostingBody'
+      responses:
+        '201':
+          description: Job posting successfully created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobPosting'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /jobposting/{jobId}:
+    delete:
+      tags:
+        - Job Postings
+      summary: Deletes the job posting by the given job posting ID.
+      parameters:
+        - in: path
+          name: jobId
+          schema:
+            type: string
+          description: Id of the job posting being deleted.
+        - in: query
+          name: username
+          schema:
+            type: string
+          description: username of user requesting delete.
+      responses:
+        '200':
+          description: Successfully deleted job posting.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobPosting'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/ContentNotFoundError'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /jobposting/{jobId}/toggle:
+    patch:
+      tags:
+        - Job Postings
+      summary: Toggles the active status of the given posting on and off
+      parameters:
+        - in: path
+          name: jobId
+          schema:
+            type: string
+          description: Id of the job posting being toggle on and off.
+        - in: query
+          name: username
+          schema:
+            type: string
+          description: username of user requesting toggle of active status.
+      responses:
+        '200':
+          description: Successfully changed active status of job posting.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobPosting'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/ContentNotFoundError'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
 
   # --------------------
   # USER CONTROLLER
@@ -2458,6 +2616,120 @@ components:
           type: string
           format: date-time
           description: Date of application submission.
+    # --------------------
+    # JOB POSTINGS SCHEMAS
+    # --------------------
+    CreateJobPostingBody:
+    type: object
+    required:
+      - company
+      - recruiter
+      - title
+      - payRange
+      - description
+      - location
+      - jobType
+      - tags
+      - active
+      - deadline
+    properties:
+      company:
+        type: string
+        minLength: 1
+        description: Company for which the job postings being made.
+      recruiter:
+        type: string
+        minLength: 1
+        description: Username of recruiter who is creating the job posting
+      title:
+        type: string
+        minLength: 1
+        description: Job Title
+      payRange:
+        type: string
+        description: Pay Range of Job
+      description:
+        type: string
+        minLength: 1
+        description: Description of the job.
+      location:
+        type: string
+        minLength: 1
+        description: Location of job
+      jobType:
+        type: string
+        enum: ['internship', 'co-op', 'full-time', 'part-time']
+        description: Descriptor of job type
+      tags:
+        type: array
+        description: Tags associated to a job posting
+        items:
+          type: string
+          format: object-id
+      active:
+        type: boolean
+        minLength: 1
+        description: Boolean indicating if a job posting is active or not.
+      deadline: 
+        type: string
+        format: date-time
+        description: Deadline to submit applications to a given posting.
+
+    JobPosting:
+      type: object
+      required:
+        - company
+        - recruiter
+        - title
+        - payRange
+        - description
+        - location
+        - jobType
+        - tags
+        - active
+        - deadline
+      properties:
+        company:
+          type: string
+          minLength: 1
+          description: Company for which the job postings being made.
+        recruiter:
+          type: string
+          minLength: 1
+          description: Username of recruiter who created the job posting
+        title:
+          type: string
+          minLength: 1
+          description: Job Title
+        payRange:
+          type: string
+          description: Pay Range of Job
+        description:
+          type: string
+          minLength: 1
+          description: Description of the job.
+        location:
+          type: string
+          minLength: 1
+          description: Location of job
+        jobType:
+          type: string
+          enum: ['internship', 'co-op', 'full-time', 'part-time']
+          description: Descriptor of job type
+        tags:
+          type: array
+          description: Tags associated to a job posting
+          items:
+            type: string
+            format: object-id
+        active:
+          type: boolean
+          minLength: 1
+          description: Boolean indicating if a job posting is active or not.
+        deadline: 
+          type: string
+          format: date-time
+          description: Deadline to submit applications to a given posting.
     # --------------------
     # USER METRICS SCHEMAS
     # --------------------

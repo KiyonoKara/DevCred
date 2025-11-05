@@ -1,5 +1,5 @@
-import { ObjectId } from 'mongodb';
 import { Request } from 'express';
+import { ObjectId } from 'mongodb';
 import { Tag } from './tag';
 
 /**
@@ -73,5 +73,6 @@ export interface FindJobPostingsRequest extends Request {
     location?: string;
     jobType?: JobType;
     search?: string;
+    username: string;
   };
 }
