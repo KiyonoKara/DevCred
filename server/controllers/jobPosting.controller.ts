@@ -1,24 +1,24 @@
 import express, { Request, Response } from 'express';
 import { ObjectId } from 'mongodb';
+import JobPostingModel from '../models/jobPosting.model';
+import TagModel from '../models/tags.model';
 import {
-  FindJobPostingsRequest,
+  createJobPosting,
+  deleteJobPosting,
+  getJobPostingById,
+  getJobPostings,
+  toggleJobPostingActive,
+} from '../services/jobPosting.service';
+import { processTags } from '../services/tag.service';
+import {
+  DatabaseTag,
   FakeSOSocket,
+  FindJobPostingsRequest,
   // do something about these?
   // JobPostingResponse,
   // JobPostingListResponse,
   JobPosting,
-  DatabaseTag,
 } from '../types/types';
-import {
-  getJobPostings,
-  getJobPostingById,
-  createJobPosting,
-  deleteJobPosting,
-  toggleJobPostingActive,
-} from '../services/jobPosting.service';
-import { processTags } from '../services/tag.service';
-import JobPostingModel from '../models/jobPosting.model';
-import TagModel from '../models/tags.model';
 
 /**
  * Express controller for handling job posting-related requests.
@@ -38,8 +38,7 @@ const jobPostingController = (socket: FakeSOSocket) => {
    * @returns A Promise that resolves to void.
    */
   const getJobPostingsRoute = async (req: FindJobPostingsRequest, res: Response): Promise<void> => {
-    const { location, jobType, search } = req.query;
-    const username = req.headers.username as string;
+    const { location, jobType, search, username } = req.query;
 
     if (!username) {
       res.status(401).send('Authentication required');
@@ -112,7 +111,7 @@ const jobPostingController = (socket: FakeSOSocket) => {
    */
   const createJobPostingRoute = async (req: Request, res: Response): Promise<void> => {
     const job = req.body as JobPosting;
-    const username = (req.headers as { username?: string }).username as string;
+    const { username } = req.query;
 
     if (!username) {
       res.status(401).send('Authentication required');
@@ -213,7 +212,7 @@ const jobPostingController = (socket: FakeSOSocket) => {
    */
   const toggleJobPostingActiveRoute = async (req: Request, res: Response): Promise<void> => {
     const { jobId } = req.params as { jobId: string };
-    const username = (req.headers as { username?: string }).username as string;
+    const { username } = req.query as { username?: string };
 
     if (!username) {
       res.status(401).send('Authentication required');

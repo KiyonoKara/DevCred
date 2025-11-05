@@ -1,6 +1,5 @@
 import express, { Request, Response } from 'express';
 import { ObjectId } from 'mongodb';
-import { FakeSOSocket } from '../types/types';
 import {
   createApplication,
   deleteApplication,
@@ -9,6 +8,7 @@ import {
   getApplicationCount,
   hasUserApplied,
 } from '../services/jobApplication.service';
+import { FakeSOSocket } from '../types/types';
 
 /**
  * Express controller for handling job application-related requests.
@@ -24,8 +24,7 @@ const jobApplicationController = (socket: FakeSOSocket) => {
    * @param res The response object to send the result.
    */
   const createApplicationRoute = async (req: Request, res: Response): Promise<void> => {
-    const { jobId } = req.body as { jobId: string };
-    const username = (req.headers as { username?: string }).username as string;
+    const { jobId, username } = req.body;
 
     if (!username) {
       res.status(401).send('Authentication required');
@@ -71,7 +70,7 @@ const jobApplicationController = (socket: FakeSOSocket) => {
    */
   const deleteApplicationRoute = async (req: Request, res: Response): Promise<void> => {
     const { applicationId } = req.params as { applicationId: string };
-    const username = (req.headers as { username?: string }).username as string;
+    const { username } = req.query;
 
     if (!username) {
       res.status(401).send('Authentication required');
@@ -84,7 +83,7 @@ const jobApplicationController = (socket: FakeSOSocket) => {
     }
 
     try {
-      const result = await deleteApplication(applicationId, username);
+      const result = await deleteApplication(applicationId, username as string);
 
       if ('error' in result) {
         if (result.error.includes('not found')) {
@@ -121,7 +120,7 @@ const jobApplicationController = (socket: FakeSOSocket) => {
    * @param res The response object to send the result.
    */
   const getAllApplicationsRoute = async (req: Request, res: Response): Promise<void> => {
-    const username = (req.headers as { username?: string }).username as string;
+    const username = req.params.user;
 
     if (!username) {
       res.status(401).send('Authentication required');
@@ -156,7 +155,7 @@ const jobApplicationController = (socket: FakeSOSocket) => {
    */
   const getApplicationByJobIdRoute = async (req: Request, res: Response): Promise<void> => {
     const { jobId } = req.params as { jobId: string };
-    const username = (req.headers as { username?: string }).username as string;
+    const { username } = req.query;
 
     if (!username) {
       res.status(401).send('Authentication required');
@@ -169,7 +168,7 @@ const jobApplicationController = (socket: FakeSOSocket) => {
     }
 
     try {
-      const applications = await getApplicationByJobId(username, jobId);
+      const applications = await getApplicationByJobId(username as string, jobId);
 
       if ('error' in applications) {
         if (applications.error.includes('not found')) {
@@ -225,7 +224,7 @@ const jobApplicationController = (socket: FakeSOSocket) => {
    */
   const hasUserAppliedRoute = async (req: Request, res: Response): Promise<void> => {
     const { jobId } = req.params as { jobId: string };
-    const username = (req.headers as { username?: string }).username as string;
+    const { username } = req.query;
 
     if (!username) {
       res.status(401).send('Authentication required');
@@ -238,7 +237,7 @@ const jobApplicationController = (socket: FakeSOSocket) => {
     }
 
     try {
-      const hasApplied = await hasUserApplied(jobId, username);
+      const hasApplied = await hasUserApplied(jobId, username as string);
       res.status(200).json({ hasApplied });
     } catch (err: unknown) {
       if (err instanceof Error) {
