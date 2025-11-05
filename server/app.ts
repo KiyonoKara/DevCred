@@ -24,6 +24,7 @@ import chatController from './controllers/chat.controller';
 import gameController from './controllers/game.controller';
 import collectionController from './controllers/collection.controller';
 import communityController from './controllers/community.controller';
+import userMetricsController from './controllers/userMetrics.controller';
 import jobFairController from './controllers/jobFair.controller';
 import jobPostingController from './controllers/jobPosting.controller';
 import jobApplicationController from './controllers/jobApplication.controller';
@@ -118,6 +119,7 @@ app.use('/api/jobfair', jobFairController(socket));
 app.use('/api/jobposting', jobPostingController(socket));
 app.use('/api/jobapplication', jobApplicationController(socket));
 app.use('/api/resume', resumeController(socket));
+app.use('/api/metrics', userMetricsController(socket));
 
 const openApiDocument = yaml.parse(fs.readFileSync('./openapi.yaml', 'utf8'));
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiDocument));
