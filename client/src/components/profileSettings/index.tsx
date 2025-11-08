@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 import * as React from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -28,7 +29,44 @@ const ProfileSettings: React.FC = () => {
     handleUpdateBiography,
     handleDeleteUser,
     handleViewCollectionsPage,
+    privacySettings,
+    privacySaving,
+    handlePrivacySettingChange,
+    handleSavePrivacySettings,
+    resumes,
+    resumesLoading,
+    resumeActionLoading,
+    handleResumeUpload,
+    handleResumeDownload,
+    handleResumeDelete,
+    handleSetActiveResume,
+    maxResumeSizeBytes,
   } = useProfileSettings();
+
+  const [selectedResumeFile, setSelectedResumeFile] = React.useState<File | null>(null);
+  const [makeActiveOnUpload, setMakeActiveOnUpload] = React.useState(true);
+
+  const maxResumeSizeMB = React.useMemo(
+    () => (maxResumeSizeBytes ? (maxResumeSizeBytes / (1024 * 1024)).toFixed(0) : '8'),
+    [maxResumeSizeBytes],
+  );
+
+  const onResumeFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    setSelectedResumeFile(file);
+  };
+
+  const onResumeUploadClick = async () => {
+    if (!selectedResumeFile) {
+      return;
+    }
+
+    const didUpload = await handleResumeUpload(selectedResumeFile, makeActiveOnUpload);
+    if (didUpload) {
+      setSelectedResumeFile(null);
+      setMakeActiveOnUpload(true);
+    }
+  };
 
   if (loading) {
     return (
@@ -104,6 +142,180 @@ const ProfileSettings: React.FC = () => {
             <button className='button button-primary' onClick={handleViewCollectionsPage}>
               View Collections
             </button>
+
+            {canEditProfile && (
+              <>
+                <h4>Privacy Settings</h4>
+                <div className='privacy-section'>
+                  <div className='privacy-options'>
+                    <label className='privacy-option'>
+                      <input
+                        type='radio'
+                        name='profileVisibility'
+                        value='private'
+                        checked={privacySettings.profileVisibility === 'private'}
+                        onChange={() => handlePrivacySettingChange('profileVisibility', 'private')}
+                      />
+                      <div>
+                        <span className='option-title'>Private</span>
+                        <span className='option-description'>
+                          Only you can view your profile details and activity.
+                        </span>
+                      </div>
+                    </label>
+                    <label className='privacy-option'>
+                      <input
+                        type='radio'
+                        name='profileVisibility'
+                        value='public-metrics-only'
+                        checked={privacySettings.profileVisibility === 'public-metrics-only'}
+                        onChange={() =>
+                          handlePrivacySettingChange('profileVisibility', 'public-metrics-only')
+                        }
+                      />
+                      <div>
+                        <span className='option-title'>Public (Metrics Only)</span>
+                        <span className='option-description'>
+                          Others can view your overall stats and resume status, but not post history.
+                        </span>
+                      </div>
+                    </label>
+                    <label className='privacy-option'>
+                      <input
+                        type='radio'
+                        name='profileVisibility'
+                        value='public-full'
+                        checked={privacySettings.profileVisibility === 'public-full'}
+                        onChange={() =>
+                          handlePrivacySettingChange('profileVisibility', 'public-full')
+                        }
+                      />
+                      <div>
+                        <span className='option-title'>Public (Full)</span>
+                        <span className='option-description'>
+                          Share both your metrics and activity history with the community.
+                        </span>
+                      </div>
+                    </label>
+                  </div>
+                  <label className='dm-toggle'>
+                    <input
+                      type='checkbox'
+                      checked={privacySettings.dmEnabled}
+                      onChange={event => handlePrivacySettingChange('dmEnabled', event.target.checked)}
+                    />
+                    <span>Allow direct messages from other users</span>
+                  </label>
+                  <button
+                    className='button button-primary'
+                    onClick={handleSavePrivacySettings}
+                    disabled={privacySaving}>
+                    {privacySaving ? 'Saving...' : 'Save Privacy Preferences'}
+                  </button>
+                </div>
+              </>
+            )}
+
+            {canEditProfile && (
+              <>
+                <h4>Resume Management</h4>
+                <div className='resume-upload'>
+                  <div className='file-input-wrapper'>
+                    <input
+                      type='file'
+                      accept='application/pdf'
+                      onChange={onResumeFileChange}
+                    />
+                    <span className='file-input-label'>
+                      {selectedResumeFile
+                        ? selectedResumeFile.name
+                        : `Choose a PDF (max ${maxResumeSizeMB} MB)`}
+                    </span>
+                  </div>
+                  <label className='resume-active-toggle'>
+                    <input
+                      type='checkbox'
+                      checked={makeActiveOnUpload}
+                      onChange={event => setMakeActiveOnUpload(event.target.checked)}
+                    />
+                    <span>Mark this upload as my active resume</span>
+                  </label>
+                  <button
+                    className='button button-primary'
+                    onClick={onResumeUploadClick}
+                    disabled={!selectedResumeFile || resumeActionLoading}>
+                    {resumeActionLoading ? 'Uploading...' : 'Upload Resume'}
+                  </button>
+                </div>
+
+                <div className='resume-list'>
+                  <h5>Your Resumes</h5>
+                  {resumesLoading ? (
+                    <p>Loading resumes...</p>
+                  ) : resumes.length === 0 ? (
+                    <p className='resume-empty'>You have not uploaded any resumes yet.</p>
+                  ) : (
+                    <table className='resume-table'>
+                      <thead>
+                        <tr>
+                          <th>File Name</th>
+                          <th>Uploaded</th>
+                          <th>Size</th>
+                          <th>Status</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {resumes.map(resume => {
+                          const resumeId = String(resume._id);
+                          const uploadDate = resume.uploadDate
+                            ? new Date(resume.uploadDate).toLocaleString()
+                            : 'N/A';
+                          const sizeInMB =
+                            typeof resume.fileSize === 'number'
+                              ? `${(resume.fileSize / (1024 * 1024)).toFixed(2)} MB`
+                              : 'N/A';
+                          return (
+                            <tr key={resumeId}>
+                              <td>{resume.fileName}</td>
+                              <td>{uploadDate}</td>
+                              <td>{sizeInMB}</td>
+                              <td>
+                                {resume.isActive ? (
+                                  <span className='resume-status active'>Active</span>
+                                ) : (
+                                  <span className='resume-status inactive'>Inactive</span>
+                                )}
+                              </td>
+                              <td className='resume-actions'>
+                                <button
+                                  className='button button-secondary'
+                                  onClick={() => handleResumeDownload(resumeId, resume.fileName)}
+                                  disabled={resumeActionLoading}>
+                                  Download
+                                </button>
+                                <button
+                                  className='button button-secondary'
+                                  onClick={() => handleSetActiveResume(resumeId)}
+                                  disabled={resume.isActive || resumeActionLoading}>
+                                  {resume.isActive ? 'Currently Active' : 'Set Active'}
+                                </button>
+                                <button
+                                  className='button button-danger'
+                                  onClick={() => handleResumeDelete(resumeId)}
+                                  disabled={resumeActionLoading}>
+                                  Delete
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </>
+            )}
 
             {/* ---- Reset Password Section ---- */}
             {canEditProfile && (

@@ -5,9 +5,11 @@ import {
   deleteUser,
   resetPassword,
   updateBiography,
+  updatePrivacySettings,
 } from '../services/userService';
 import { SafeDatabaseUser } from '../types/types';
 import useUserContext from './useUserContext';
+import useResumeManager from './useResumeManager';
 
 /**
  * A custom hook to encapsulate all logic/state for the ProfileSettings component.
@@ -27,6 +29,15 @@ const useProfileSettings = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const [privacySettings, setPrivacySettings] = useState<{
+    profileVisibility: 'private' | 'public-metrics-only' | 'public-full';
+    dmEnabled: boolean;
+  }>({
+    profileVisibility: 'public-full',
+    dmEnabled: true,
+  });
+  const [privacySaving, setPrivacySaving] = useState(false);
+
   // For delete-user confirmation modal
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
@@ -36,6 +47,17 @@ const useProfileSettings = () => {
   const canEditProfile =
     currentUser.username && userData?.username ? currentUser.username === userData.username : false;
 
+  const {
+    resumes,
+    resumesLoading,
+    resumeActionLoading,
+    uploadResume,
+    downloadResume,
+    deleteResume,
+    setActiveResume,
+    maxResumeSizeBytes,
+  } = useResumeManager(userData?.username);
+
   useEffect(() => {
     if (!username) return;
 
@@ -44,6 +66,10 @@ const useProfileSettings = () => {
         setLoading(true);
         const data = await getUserByUsername(username);
         setUserData(data);
+        setPrivacySettings({
+          profileVisibility: data.profileVisibility || 'public-full',
+          dmEnabled: data.dmEnabled ?? true,
+        });
       } catch (error) {
         setErrorMessage('Error fetching user profile');
         setUserData(null);
@@ -54,6 +80,101 @@ const useProfileSettings = () => {
 
     fetchUserData();
   }, [username]);
+
+  /**
+   * Updates the privacy settings state when inputs change.
+   */
+  const handlePrivacySettingChange = <K extends 'profileVisibility' | 'dmEnabled'>(
+    key: K,
+    value: typeof privacySettings[K],
+  ) => {
+    setPrivacySettings(prev => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
+  /**
+   * Persists the privacy settings for the user.
+   */
+  const handleSavePrivacySettings = async () => {
+    if (!username) return;
+    try {
+      setPrivacySaving(true);
+      const updatedUser = await updatePrivacySettings(username, {
+        profileVisibility: privacySettings.profileVisibility,
+        dmEnabled: privacySettings.dmEnabled,
+      });
+
+      setUserData(updatedUser);
+      setSuccessMessage('Privacy settings updated.');
+      setErrorMessage(null);
+    } catch (error) {
+      setErrorMessage('Failed to update privacy settings.');
+      setSuccessMessage(null);
+    } finally {
+      setPrivacySaving(false);
+    }
+  };
+
+  /**
+   * Uploads a resume for the current user.
+   * @param file The resume file to upload.
+   * @param makeActive Whether to mark the uploaded resume as active.
+   */
+  const handleResumeUpload = async (file: File, makeActive: boolean): Promise<boolean> => {
+    if (!userData?.username) return false;
+
+    const result = await uploadResume(file, { makeActive });
+    if (result.success) {
+      setSuccessMessage('Resume uploaded successfully.');
+      setErrorMessage(null);
+    } else {
+      setErrorMessage(result.error ?? 'Failed to upload resume.');
+      setSuccessMessage(null);
+    }
+
+    return result.success;
+  };
+
+  /**
+   * Downloads a resume by id.
+   */
+  const handleResumeDownload = async (resumeId: string, fileName: string) => {
+    const result = await downloadResume(resumeId, fileName);
+    if (!result.success) {
+      setErrorMessage(result.error ?? 'Failed to download resume.');
+      setSuccessMessage(null);
+    }
+  };
+
+  /**
+   * Deletes a resume.
+   */
+  const handleResumeDelete = async (resumeId: string) => {
+    const result = await deleteResume(resumeId);
+    if (result.success) {
+      setSuccessMessage('Resume deleted.');
+      setErrorMessage(null);
+    } else {
+      setErrorMessage(result.error ?? 'Failed to delete resume.');
+      setSuccessMessage(null);
+    }
+  };
+
+  /**
+   * Sets an existing resume as active.
+   */
+  const handleSetActiveResume = async (resumeId: string) => {
+    const result = await setActiveResume(resumeId);
+    if (result.success) {
+      setSuccessMessage('Active resume updated.');
+      setErrorMessage(null);
+    } else {
+      setErrorMessage(result.error ?? 'Failed to update active resume.');
+      setSuccessMessage(null);
+    }
+  };
 
   /**
    * Toggles the visibility of the password fields.
@@ -168,6 +289,18 @@ const useProfileSettings = () => {
     handleUpdateBiography,
     handleDeleteUser,
     handleViewCollectionsPage,
+    privacySettings,
+    privacySaving,
+    handlePrivacySettingChange,
+    handleSavePrivacySettings,
+    resumes,
+    resumesLoading,
+    resumeActionLoading,
+    handleResumeUpload,
+    handleResumeDownload,
+    handleResumeDelete,
+    handleSetActiveResume,
+    maxResumeSizeBytes,
   };
 };
 
