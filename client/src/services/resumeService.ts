@@ -86,10 +86,7 @@ const deleteResume = async (resumeId: string): Promise<void> => {
  * @param resumeId - The id of the resume to activate.
  * @returns The updated resume metadata.
  */
-const setActiveResume = async (
-  userId: string,
-  resumeId: string,
-): Promise<SafeDatabaseResume> => {
+const setActiveResume = async (userId: string, resumeId: string): Promise<SafeDatabaseResume> => {
   const res = await api.put(`${RESUME_API_URL}/setActive`, { userId, resumeId });
 
   if (res.status !== 200) {
@@ -100,4 +97,3 @@ const setActiveResume = async (
 };
 
 export { uploadResume, getUserResumes, downloadResume, deleteResume, setActiveResume };
-

@@ -86,7 +86,7 @@ const useProfileSettings = () => {
    */
   const handlePrivacySettingChange = <K extends 'profileVisibility' | 'dmEnabled'>(
     key: K,
-    value: typeof privacySettings[K],
+    value: (typeof privacySettings)[K],
   ) => {
     setPrivacySettings(prev => ({
       ...prev,

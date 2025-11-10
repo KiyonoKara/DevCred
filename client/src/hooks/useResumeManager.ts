@@ -55,10 +55,7 @@ const useResumeManager = (username?: string) => {
   }, [username, refreshResumes]);
 
   const uploadResume = useCallback(
-    async (
-      file: File,
-      options: { makeActive?: boolean } = {},
-    ): Promise<ResumeActionResult> => {
+    async (file: File, options: { makeActive?: boolean } = {}): Promise<ResumeActionResult> => {
       if (!username) {
         return { success: false, error: 'You must be logged in to upload a resume.' };
       }
@@ -88,22 +85,25 @@ const useResumeManager = (username?: string) => {
     [username, refreshResumes],
   );
 
-  const downloadResume = useCallback(async (resumeId: string, fileName: string): Promise<ResumeActionResult> => {
-    try {
-      const blob = await downloadResumeRequest(resumeId);
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = fileName.toLowerCase().endsWith('.pdf') ? fileName : `${fileName}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: 'Failed to download resume.' };
-    }
-  }, []);
+  const downloadResume = useCallback(
+    async (resumeId: string, fileName: string): Promise<ResumeActionResult> => {
+      try {
+        const blob = await downloadResumeRequest(resumeId);
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName.toLowerCase().endsWith('.pdf') ? fileName : `${fileName}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+        return { success: true };
+      } catch (error) {
+        return { success: false, error: 'Failed to download resume.' };
+      }
+    },
+    [],
+  );
 
   const deleteResume = useCallback(
     async (resumeId: string): Promise<ResumeActionResult> => {
@@ -160,4 +160,3 @@ const useResumeManager = (username?: string) => {
 
 export type { ResumeActionResult };
 export default useResumeManager;
-

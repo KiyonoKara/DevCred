@@ -176,7 +176,8 @@ const ProfileSettings: React.FC = () => {
                       <div>
                         <span className='option-title'>Public (Metrics Only)</span>
                         <span className='option-description'>
-                          Others can view your overall stats and resume status, but not post history.
+                          Others can view your overall stats and resume status, but not post
+                          history.
                         </span>
                       </div>
                     </label>
@@ -202,7 +203,9 @@ const ProfileSettings: React.FC = () => {
                     <input
                       type='checkbox'
                       checked={privacySettings.dmEnabled}
-                      onChange={event => handlePrivacySettingChange('dmEnabled', event.target.checked)}
+                      onChange={event =>
+                        handlePrivacySettingChange('dmEnabled', event.target.checked)
+                      }
                     />
                     <span>Allow direct messages from other users</span>
                   </label>
@@ -221,11 +224,7 @@ const ProfileSettings: React.FC = () => {
                 <h4>Resume Management</h4>
                 <div className='resume-upload'>
                   <div className='file-input-wrapper'>
-                    <input
-                      type='file'
-                      accept='application/pdf'
-                      onChange={onResumeFileChange}
-                    />
+                    <input type='file' accept='application/pdf' onChange={onResumeFileChange} />
                     <span className='file-input-label'>
                       {selectedResumeFile
                         ? selectedResumeFile.name

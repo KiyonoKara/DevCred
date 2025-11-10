@@ -1,12 +1,6 @@
 import express, { Request, Response } from 'express';
 import { ObjectId } from 'mongodb';
-import {
-  FindJobPostingsRequest,
-  FakeSOSocket,
-  JobPostingResponse,
-  JobPostingListResponse,
-  JobPosting,
-} from '../types/types';
+import { FindJobPostingsRequest, FakeSOSocket, JobPosting, DatabaseTag } from '../types/types';
 import {
   getJobPostings,
   getJobPostingById,
@@ -17,8 +11,6 @@ import {
 import { processTags } from '../services/tag.service';
 import JobPostingModel from '../models/jobPosting.model';
 import TagModel from '../models/tags.model';
-import { DatabaseTag } from '../types/types';
-
 /**
  * Express controller for handling job posting-related requests.
  * @param socket The socket instance used for emitting job posting updates.
@@ -257,4 +249,3 @@ const jobPostingController = (socket: FakeSOSocket) => {
 };
 
 export default jobPostingController;
-
