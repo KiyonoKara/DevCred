@@ -4,13 +4,28 @@ import { FindJobPostingsRequest, FakeSOSocket, JobPosting, DatabaseTag } from '.
 import {
   getJobPostings,
   getJobPostingById,
+import JobPostingModel from '../models/jobPosting.model';
+import TagModel from '../models/tags.model';
+import {
   createJobPosting,
   deleteJobPosting,
+  getJobPostingById,
+  getJobPostings,
   toggleJobPostingActive,
 } from '../services/jobPosting.service';
 import { processTags } from '../services/tag.service';
 import JobPostingModel from '../models/jobPosting.model';
 import TagModel from '../models/tags.model';
+import {
+  DatabaseTag,
+  FakeSOSocket,
+  FindJobPostingsRequest,
+  // do something about these?
+  // JobPostingResponse,
+  // JobPostingListResponse,
+  JobPosting,
+} from '../types/types';
+
 /**
  * Express controller for handling job posting-related requests.
  * @param socket The socket instance used for emitting job posting updates.
@@ -29,8 +44,7 @@ const jobPostingController = (socket: FakeSOSocket) => {
    * @returns A Promise that resolves to void.
    */
   const getJobPostingsRoute = async (req: FindJobPostingsRequest, res: Response): Promise<void> => {
-    const { location, jobType, search } = req.query;
-    const username = req.headers.username as string;
+    const { location, jobType, search, username } = req.query;
 
     if (!username) {
       res.status(401).send('Authentication required');
@@ -103,7 +117,7 @@ const jobPostingController = (socket: FakeSOSocket) => {
    */
   const createJobPostingRoute = async (req: Request, res: Response): Promise<void> => {
     const job = req.body as JobPosting;
-    const username = (req.headers as { username?: string }).username as string;
+    const { username } = req.query;
 
     if (!username) {
       res.status(401).send('Authentication required');
@@ -204,7 +218,7 @@ const jobPostingController = (socket: FakeSOSocket) => {
    */
   const toggleJobPostingActiveRoute = async (req: Request, res: Response): Promise<void> => {
     const { jobId } = req.params as { jobId: string };
-    const username = (req.headers as { username?: string }).username as string;
+    const { username } = req.query as { username?: string };
 
     if (!username) {
       res.status(401).send('Authentication required');

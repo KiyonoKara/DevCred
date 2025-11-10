@@ -217,4 +217,5 @@ export interface ServerToClientEvents {
   jobFairChatMessage: (message: JobFairChatMessagePayload) => void;
   jobPostingUpdate: (jobPosting: JobPostingUpdatePayload) => void;
   jobApplicationUpdate: (update: JobApplicationUpdatePayload) => void;
+  metricsUpdate: (update: UserMetricsUpdatePayload) => void;
 }
