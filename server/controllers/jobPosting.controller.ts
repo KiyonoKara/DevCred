@@ -1,9 +1,6 @@
 import express, { Request, Response } from 'express';
 import { ObjectId } from 'mongodb';
 import { FindJobPostingsRequest, FakeSOSocket, JobPosting, DatabaseTag } from '../types/types';
-import {
-  getJobPostings,
-  getJobPostingById,
 import JobPostingModel from '../models/jobPosting.model';
 import TagModel from '../models/tags.model';
 import {
@@ -14,17 +11,6 @@ import {
   toggleJobPostingActive,
 } from '../services/jobPosting.service';
 import { processTags } from '../services/tag.service';
-import JobPostingModel from '../models/jobPosting.model';
-import TagModel from '../models/tags.model';
-import {
-  DatabaseTag,
-  FakeSOSocket,
-  FindJobPostingsRequest,
-  // do something about these?
-  // JobPostingResponse,
-  // JobPostingListResponse,
-  JobPosting,
-} from '../types/types';
 
 /**
  * Express controller for handling job posting-related requests.
