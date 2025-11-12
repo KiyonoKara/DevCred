@@ -63,12 +63,18 @@ const populateAnswer = async (answerID: string): Promise<PopulatedDatabaseAnswer
 
 /**
  * Fetches and populates a chat document with its related messages and user details.
+ * If a username is provided, filters messages to exclude those created before the user deleted the chat.
+ * This ensures re-engaged users see only new messages (fresh chat).
  *
  * @param {string} chatID - The ID of the chat to fetch.
+ * @param {string} [username] - Optional username to filter old messages based on deletion timestamp.
  * @returns {Promise<Chat | null>} - The populated chat document, or an error if not found.
  * @throws {Error} - Throws an error if the chat document is not found.
  */
-const populateChat = async (chatID: string): Promise<PopulatedDatabaseChat | null> => {
+const populateChat = async (
+  chatID: string,
+  username?: string,
+): Promise<PopulatedDatabaseChat | null> => {
   const chatDoc = await ChatModel.findOne({ _id: chatID }).populate<{
     messages: DatabaseMessage[];
   }>([{ path: 'messages', model: MessageModel }]);
@@ -77,9 +83,21 @@ const populateChat = async (chatID: string): Promise<PopulatedDatabaseChat | nul
     throw new Error('Chat not found');
   }
 
+  // Find the deletion record for this user (if any)
+  const userDeletion = username
+    ? chatDoc.deletedBy.find((d: { username: string; deletedAt: Date }) => d.username === username)
+    : null;
+
   const messagesWithUser: Array<MessageInChat | null> = await Promise.all(
     chatDoc.messages.map(async (messageDoc: DatabaseMessage) => {
       if (!messageDoc) return null;
+
+      // If user has a deletion record, filter out messages created before they deleted
+      if (userDeletion && userDeletion.deletedAt) {
+        if (messageDoc.msgDateTime < userDeletion.deletedAt) {
+          return null; // Hide this message from the user
+        }
+      }
 
       let userDoc: DatabaseUser | null = null;
 
@@ -103,7 +121,7 @@ const populateChat = async (chatID: string): Promise<PopulatedDatabaseChat | nul
     }),
   );
 
-  // Filters out null values
+  // Filters out null values (filtered out messages and null from failed lookups)
   const enrichedMessages = messagesWithUser.filter(Boolean);
   const transformedChat: PopulatedDatabaseChat = {
     ...chatDoc.toObject(),
