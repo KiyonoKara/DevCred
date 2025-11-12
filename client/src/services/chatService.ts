@@ -75,3 +75,46 @@ export const createChat = async (participants: string[]): Promise<PopulatedDatab
 
   return res.data;
 };
+
+/**
+ * Deletes a DM for a specific user (marks as deleted by them for story 2.7).
+ * If both participants have deleted, removes the chat completely.
+ *
+ * @param chatID - The ID of the chat to delete for the user.
+ * @param username - The username of the user deleting the chat.
+ * @returns Success status and updated deletedBy array.
+ * @throws Throws an error if the deletion fails.
+ */
+export const deleteDMForUser = async (
+  chatID: ObjectId,
+  username: string,
+): Promise<{ success: boolean; deletedBy: string[] }> => {
+  const res = await api.delete(`${CHAT_API_URL}/${chatID}`, {
+    data: { username },
+  });
+
+  if (res.status !== 200) {
+    throw new Error('Error when deleting DM');
+  }
+
+  return res.data;
+};
+
+/**
+ * Checks if a DM can be completely deleted (both users have deleted).
+ *
+ * @param chatID - The ID of the chat to check.
+ * @returns Object with canDelete flag and deletion status.
+ * @throws Throws an error if the check fails.
+ */
+export const canDeleteDMCompletely = async (
+  chatID: ObjectId,
+): Promise<{ canDelete: boolean; deletedBy: string[]; participants: string[] }> => {
+  const res = await api.get(`${CHAT_API_URL}/${chatID}/canDelete`);
+
+  if (res.status !== 200) {
+    throw new Error('Error checking DM deletion status');
+  }
+
+  return res.data;
+};

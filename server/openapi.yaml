@@ -399,6 +399,46 @@ paths:
                 $ref: '#/components/schemas/PopulatedChat'
         '500':
           $ref: '#/components/responses/ErrorResponse'
+    delete:
+      tags:
+        - Chats
+      summary: Delete a DM for a specific user (story 2.7 - local deletion). If both users delete, removes completely.
+      parameters:
+        - in: path
+          name: chatId
+          schema:
+            type: string
+            format: object-id
+          required: true
+          description: The ID of the chat to delete for the user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: The username of the user deleting the chat.
+              required:
+                - username
+      responses:
+        '200':
+          description: DM successfully deleted for the user or completely removed if both users deleted.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Whether the deletion was successful.
+                  deletedBy:
+                    type: array
+                    items:
+                      type: string
+                    description: Array of usernames who have deleted this chat.
 
   /chat/{chatId}/addParticipant:
     post:
@@ -452,6 +492,47 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/PopulatedChat'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /chat/{chatId}/canDelete:
+    get:
+      tags:
+        - Chats
+      summary: Check if a DM can be completely deleted (both users have deleted).
+      parameters:
+        - in: path
+          name: chatId
+          schema:
+            type: string
+            format: object-id
+          required: true
+          description: The ID of the chat to check.
+      responses:
+        '200':
+          description: Successfully retrieved deletion status.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  canDelete:
+                    type: boolean
+                    description: Whether the DM can be completely deleted (both users deleted).
+                  deletedBy:
+                    type: array
+                    items:
+                      type: string
+                    description: Array of usernames who have deleted the chat.
+                  participants:
+                    type: array
+                    items:
+                      type: string
+                    description: Array of chat participants.
+        '400':
+          $ref: '#/components/responses/ValidationError'
         '500':
           $ref: '#/components/responses/ErrorResponse'
 

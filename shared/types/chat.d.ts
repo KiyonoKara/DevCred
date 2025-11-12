@@ -13,26 +13,41 @@ export interface MessageInChat extends DatabaseMessage {
 }
 
 /**
+ * Deletion record for a user who deleted a chat.
+ * Tracks when the user deleted to filter old messages.
+ */
+export interface DeletionRecord {
+  username: string;
+  deletedAt: Date;
+}
+
+/**
  * Represents a Chat with participants and messages (unpopulated).
  * - `participants`: Array of usernames representing the chat participants.
  * - `messages`: Array of `Message` objects.
+ * - `deletedBy`: Array of deletion records tracking who deleted and when.
+ *   When a user re-engages, messages before their deletedAt are hidden from them.
  */
 export interface Chat {
   participants: string[];
   messages: Message[];
+  deletedBy?: DeletionRecord[];
 }
 
 /**
  * Represents a Chat stored in the database.
  * - `_id`: Unique identifier for the chat.
- * - `participants`: Array of user ObjectIds representing the chat participants.
+ * - `participants`: Array of usernames representing the chat participants.
  * - `messages`: Array of ObjectIds referencing messages in the chat.
+ * - `deletedBy`: Array of deletion records with username and deletedAt timestamp.
+ *   When a user re-engages, messages created before their deletedAt are hidden.
  * - `createdAt`: Timestamp for when the chat was created (set by Mongoose).
  * - `updatedAt`: Timestamp for when the chat was last updated (set by Mongoose).
  */
 export interface DatabaseChat extends Omit<Chat, 'messages'> {
   _id: ObjectId;
   messages: ObjectId[];
+  deletedBy: DeletionRecord[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -93,6 +108,30 @@ export interface AddParticipantRequest extends ChatIdRequest {
 export interface GetChatByParticipantsRequest extends Request {
   params: {
     username: string;
+  };
+}
+
+/**
+ * Express request for deleting a DM (story 2.7).
+ * - `params`: Contains the `chatId` of the chat to delete for the current user.
+ * - `body`: Contains the `username` of the user deleting the chat.
+ */
+export interface DeleteDMRequest extends Request {
+  params: {
+    chatId: string;
+  };
+  body: {
+    username: string;
+  };
+}
+
+/**
+ * Express request for checking if a DM can be completely deleted (both users deleted).
+ * - `params`: Contains the `chatId` to check.
+ */
+export interface CanDeleteDMRequest extends Request {
+  params: {
+    chatId: string;
   };
 }
 
