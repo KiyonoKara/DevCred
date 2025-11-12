@@ -155,9 +155,9 @@ const jobApplicationController = (socket: FakeSOSocket) => {
    */
   const getApplicationByJobIdRoute = async (req: Request, res: Response): Promise<void> => {
     const { jobId } = req.params as { jobId: string };
-    const { username } = req.query;
+    const { requestor } = req.query;
 
-    if (!username) {
+    if (!requestor) {
       res.status(401).send('Authentication required');
       return;
     }
@@ -168,7 +168,7 @@ const jobApplicationController = (socket: FakeSOSocket) => {
     }
 
     try {
-      const applications = await getApplicationByJobId(username as string, jobId);
+      const applications = await getApplicationByJobId(requestor as string, jobId);
 
       if ('error' in applications) {
         if (applications.error.includes('not found')) {

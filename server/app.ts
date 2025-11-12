@@ -4,31 +4,31 @@
 // This is where you should start writing server-side code for this application.
 // startServer() is a function that starts the server
 import 'dotenv/config';
-import express, { Request, Response, NextFunction } from 'express';
+import express, { NextFunction, Request, Response } from 'express';
+import * as OpenApiValidator from 'express-openapi-validator';
+import * as fs from 'fs';
+import * as http from 'http';
 import mongoose from 'mongoose';
 import { Server } from 'socket.io';
-import * as http from 'http';
-import * as OpenApiValidator from 'express-openapi-validator';
 import swaggerUi from 'swagger-ui-express';
 import yaml from 'yaml';
-import * as fs from 'fs';
 
 import answerController from './controllers/answer.controller';
-import questionController from './controllers/question.controller';
-import tagController from './controllers/tag.controller';
-import commentController from './controllers/comment.controller';
-import { FakeSOSocket } from './types/types';
-import userController from './controllers/user.controller';
-import messageController from './controllers/message.controller';
 import chatController from './controllers/chat.controller';
-import gameController from './controllers/game.controller';
 import collectionController from './controllers/collection.controller';
+import commentController from './controllers/comment.controller';
 import communityController from './controllers/community.controller';
-import userMetricsController from './controllers/userMetrics.controller';
+import gameController from './controllers/game.controller';
+import jobApplicationController from './controllers/jobApplication.controller';
 import jobFairController from './controllers/jobFair.controller';
 import jobPostingController from './controllers/jobPosting.controller';
-import jobApplicationController from './controllers/jobApplication.controller';
+import messageController from './controllers/message.controller';
+import questionController from './controllers/question.controller';
 import resumeController from './controllers/resume.controller';
+import tagController from './controllers/tag.controller';
+import userController from './controllers/user.controller';
+import userMetricsController from './controllers/userMetrics.controller';
+import { FakeSOSocket } from './types/types';
 
 const MONGO_URL = `${process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017'}/fake_so`;
 const PORT = parseInt(process.env.PORT || '8000');
@@ -87,6 +87,18 @@ try {
       },
     }),
   );
+
+  app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    if (err.status && err.errors) {
+      console.error('OpenAPI validation error for', req.method, req.originalUrl);
+      console.error(JSON.stringify(err.errors, null, 2)); // 👈 see the field & message
+      return res.status(err.status).json({
+        message: 'Request Validation Failed',
+        errors: err.errors,
+      });
+    }
+    next(err);
+  });
 
   // Custom Error Handler for express-openapi-validator errors
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

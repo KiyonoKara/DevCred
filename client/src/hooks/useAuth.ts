@@ -1,7 +1,7 @@
-import { useNavigate } from 'react-router-dom';
 import { ChangeEvent, useState } from 'react';
-import useLoginContext from './useLoginContext';
+import { useNavigate } from 'react-router-dom';
 import { createUser, loginUser } from '../services/userService';
+import useLoginContext from './useLoginContext';
 
 /**
  * Custom hook to manage authentication logic, including handling input changes,
@@ -23,6 +23,7 @@ const useAuth = (authType: 'login' | 'signup') => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [passwordConfirmation, setPasswordConfirmation] = useState<string>('');
+  const [userType, setUserType] = useState<'talent' | 'recruiter'>('talent');
   const [showPassword, setShowPassword] = useState(false);
   const [err, setErr] = useState<string>('');
   const { setUser } = useLoginContext();
@@ -43,7 +44,7 @@ const useAuth = (authType: 'login' | 'signup') => {
    */
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement>,
-    field: 'username' | 'password' | 'confirmPassword',
+    field: 'username' | 'password' | 'confirmPassword' | 'userType',
   ) => {
     const fieldText = e.target.value.trim();
 
@@ -53,6 +54,8 @@ const useAuth = (authType: 'login' | 'signup') => {
       setPassword(fieldText);
     } else if (field === 'confirmPassword') {
       setPasswordConfirmation(fieldText);
+    } else if (field === 'userType') {
+      setUserType(fieldText as 'talent' | 'recruiter');
     }
   };
 
@@ -93,7 +96,7 @@ const useAuth = (authType: 'login' | 'signup') => {
 
     try {
       if (authType === 'signup') {
-        user = await createUser({ username, password });
+        user = await createUser({ username, password, type: userType });
       } else if (authType === 'login') {
         user = await loginUser({ username, password });
       } else {
@@ -112,6 +115,7 @@ const useAuth = (authType: 'login' | 'signup') => {
     password,
     passwordConfirmation,
     showPassword,
+    userType,
     err,
     handleInputChange,
     handleSubmit,

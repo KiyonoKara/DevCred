@@ -34,7 +34,7 @@ const userController = (socket: FakeSOSocket) => {
       ...requestUser,
       dateJoined: new Date(),
       biography: requestUser.biography ?? '',
-      userType: 'talent',
+      userType: requestUser.type || 'talent',
     };
 
     try {

@@ -6,6 +6,7 @@ import {
   createJobPosting,
   deleteJobPosting,
   getJobPostingById,
+  getJobPostingByRecruiter,
   getJobPostings,
   toggleJobPostingActive,
 } from '../services/jobPosting.service';
@@ -38,21 +39,21 @@ const jobPostingController = (socket: FakeSOSocket) => {
    * @returns A Promise that resolves to void.
    */
   const getJobPostingsRoute = async (req: FindJobPostingsRequest, res: Response): Promise<void> => {
-    const { location, jobType, search, username } = req.query;
+    const { location, jobType, search, requestor } = req.query;
 
-    if (!username) {
+    if (!requestor) {
       res.status(401).send('Authentication required');
       return;
     }
 
     try {
-      const jobs = await getJobPostings(username, location, jobType, search);
+      const jobs = await getJobPostings(requestor, location, jobType, search);
 
       if ('error' in jobs) {
         throw new Error(jobs.error);
       }
 
-      res.json(jobs);
+      res.status(200).json(jobs);
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).send(`Error when fetching job postings: ${err.message}`);
@@ -73,14 +74,20 @@ const jobPostingController = (socket: FakeSOSocket) => {
    */
   const getJobPostingByIdRoute = async (req: Request, res: Response): Promise<void> => {
     const { jobId } = req.params as { jobId: string };
+    const requestor = req.query.requestor as string;
 
     if (!ObjectId.isValid(jobId)) {
       res.status(400).send('Invalid ID format');
       return;
     }
 
+    if (!ObjectId.isValid(jobId)) {
+      res.status(401).send('Unauthorized job fetch.');
+      return;
+    }
+
     try {
-      const job = await getJobPostingById(jobId);
+      const job = await getJobPostingById(jobId, requestor);
 
       if ('error' in job) {
         if (job.error.includes('not found')) {
@@ -90,7 +97,7 @@ const jobPostingController = (socket: FakeSOSocket) => {
         throw new Error(job.error);
       }
 
-      res.json(job);
+      res.status(200).json(job);
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).send(`Error when fetching job posting by id: ${err.message}`);
@@ -111,12 +118,6 @@ const jobPostingController = (socket: FakeSOSocket) => {
    */
   const createJobPostingRoute = async (req: Request, res: Response): Promise<void> => {
     const job = req.body as JobPosting;
-    const { username } = req.query;
-
-    if (!username) {
-      res.status(401).send('Authentication required');
-      return;
-    }
 
     try {
       // Process tags similar to questions
@@ -148,7 +149,7 @@ const jobPostingController = (socket: FakeSOSocket) => {
       }
 
       socket.emit('jobPostingUpdate', populatedJob);
-      res.json(populatedJob);
+      res.status(201).json(populatedJob);
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).send(`Error when saving job posting: ${err.message}`);
@@ -168,7 +169,7 @@ const jobPostingController = (socket: FakeSOSocket) => {
    */
   const deleteJobPostingRoute = async (req: Request, res: Response): Promise<void> => {
     const { jobId } = req.params as { jobId: string };
-    const username = (req.headers as { username?: string }).username as string;
+    const username = (req.query as { requestor: string }).requestor;
 
     if (!username) {
       res.status(401).send('Authentication required');
@@ -192,7 +193,7 @@ const jobPostingController = (socket: FakeSOSocket) => {
       }
 
       socket.emit('jobPostingUpdate', { type: 'deleted', jobId });
-      res.json(result);
+      res.status(200).json(result);
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).send(`Error when deleting job posting: ${err.message}`);
@@ -212,9 +213,9 @@ const jobPostingController = (socket: FakeSOSocket) => {
    */
   const toggleJobPostingActiveRoute = async (req: Request, res: Response): Promise<void> => {
     const { jobId } = req.params as { jobId: string };
-    const { username } = req.query as { username?: string };
+    const { requestor } = req.query as { requestor?: string };
 
-    if (!username) {
+    if (!requestor) {
       res.status(401).send('Authentication required');
       return;
     }
@@ -225,7 +226,7 @@ const jobPostingController = (socket: FakeSOSocket) => {
     }
 
     try {
-      const result = await toggleJobPostingActive(jobId, username);
+      const result = await toggleJobPostingActive(jobId, requestor);
 
       if ('error' in result) {
         if (result.error.includes('not found')) {
@@ -236,7 +237,7 @@ const jobPostingController = (socket: FakeSOSocket) => {
       }
 
       socket.emit('jobPostingUpdate', result);
-      res.json(result);
+      res.status(200).json(result);
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).send(`Error when toggling job posting status: ${err.message}`);
@@ -246,9 +247,35 @@ const jobPostingController = (socket: FakeSOSocket) => {
     }
   };
 
+  const getJobPostingByUserId = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const recruiterUsername = req.params.username;
+      const requestorUsername = req.query.requestorUsername as string;
+
+      if (!recruiterUsername || !requestorUsername) {
+        throw new Error('Invalid Request');
+      }
+
+      if (recruiterUsername !== requestorUsername) {
+        res.status(401).send('Unauthorized request for job postings');
+      }
+
+      const result = await getJobPostingByRecruiter(recruiterUsername, requestorUsername);
+
+      res.status(200).json(result);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when fetching job postings: ${err.message}`);
+      } else {
+        res.status(500).send('Error when fetching job postings.');
+      }
+    }
+  };
+
   // Register routes
   router.get('/list', getJobPostingsRoute);
   router.get('/:jobId', getJobPostingByIdRoute);
+  router.get('/recruiter/:username', getJobPostingByUserId);
   router.post('/create', createJobPostingRoute);
   router.delete('/:jobId', deleteJobPostingRoute);
   router.patch('/:jobId/toggle', toggleJobPostingActiveRoute);

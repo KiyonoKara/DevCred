@@ -1,28 +1,33 @@
 import { JSX, useState } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import Layout from './layout';
-import Login from './auth/login';
-import { FakeSOSocket, SafeDatabaseUser } from '../types/types';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import LoginContext from '../contexts/LoginContext';
 import UserContext from '../contexts/UserContext';
-import QuestionPage from './main/questionPage';
-import TagPage from './main/tagPage';
-import NewQuestionPage from './main/newQuestion';
-import NewAnswerPage from './main/newAnswer';
-import AnswerPage from './main/answerPage';
-import MessagingPage from './main/messagingPage';
-import DirectMessage from './main/directMessage';
+import { FakeSOSocket, SafeDatabaseUser } from '../types/types';
+import Login from './auth/login';
 import Signup from './auth/signup';
-import UsersListPage from './main/usersListPage';
-import ProfileSettings from './profileSettings';
-import AllGamesPage from './main/games/allGamesPage';
-import GamePage from './main/games/gamePage';
-import AllCommunitiesPage from './main/communities/allCommunitiesPage';
-import NewCommunityPage from './main/communities/newCommunityPage';
-import CommunityPage from './main/communities/communityPage';
+import Layout from './layout';
+import AnswerPage from './main/answerPage';
 import AllCollectionsPage from './main/collections/allCollectionsPage';
 import CollectionPage from './main/collections/collectionPage';
 import NewCollectionPage from './main/collections/newCollectionPage';
+import AllCommunitiesPage from './main/communities/allCommunitiesPage';
+import CommunityPage from './main/communities/communityPage';
+import NewCommunityPage from './main/communities/newCommunityPage';
+import DirectMessage from './main/directMessage';
+import AllGamesPage from './main/games/allGamesPage';
+import GamePage from './main/games/gamePage';
+import JobBoard from './main/jobs/jobBoardPage';
+import RecruiterJobPostings from './main/jobs/jobPostingsPage';
+import NewJobPostingPage from './main/jobs/newJobPostingPage';
+import RecruiterJobPostingsViewer from './main/jobs/recruiterJobPostingViewerPage';
+import ApplicantJobPostingsViewer from './main/jobs/talentJobPostingViewerPage';
+import MessagingPage from './main/messagingPage';
+import NewAnswerPage from './main/newAnswer';
+import NewQuestionPage from './main/newQuestion';
+import QuestionPage from './main/questionPage';
+import TagPage from './main/tagPage';
+import UsersListPage from './main/usersListPage';
+import ProfileSettings from './profileSettings';
 
 const ProtectedRoute = ({
   user,
@@ -78,6 +83,15 @@ const FakeStackOverflow = ({ socket }: { socket: FakeSOSocket | null }) => {
             <Route path='/communities' element={<AllCommunitiesPage />} />
             <Route path='/new/community' element={<NewCommunityPage />} />
             <Route path='/communities/:communityID' element={<CommunityPage />} />
+            <Route path='/recruiters/jobposting/:username' element={<RecruiterJobPostings />} />
+            <Route path='/recruiters/jobposting/new' element={<NewJobPostingPage />} />
+            <Route
+              path='/recruiters/jobposting/:jobId/applications'
+              element={<RecruiterJobPostingsViewer />}
+            />
+            <Route path='/talent/jobposting/:jobId' element={<ApplicantJobPostingsViewer />} />
+            <Route path='/jobBoard' element={<JobBoard />} />
+            <Route path='/jobapplication/:username' element={<CommunityPage />} />
           </Route>
         }
       </Routes>

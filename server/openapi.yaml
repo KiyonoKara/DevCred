@@ -1476,7 +1476,7 @@ paths:
       summary: Retrieves filtered job postings
       parameters:
         - in: query
-          name: username
+          name: requestor
           schema:
             type: string
           description: Username of user fetching jobs
@@ -1521,6 +1521,12 @@ paths:
           schema:
             type: string
           description: Id of job posting being fetched.
+        - in: query
+          required: true
+          name: requestor
+          schema:
+            type: string
+          description: username of person fetching job.
       responses:
         '200':
           description: Successfully retrieved job posting
@@ -1546,7 +1552,7 @@ paths:
             type: string
           description: Id of the job posting being deleted.
         - in: query
-          name: username
+          name: requestor
           schema:
             type: string
           description: username of user requesting delete.
@@ -1571,12 +1577,6 @@ paths:
       tags:
         - Job Postings
       summary: Create a new job posting
-      parameters:
-        - in: query
-          name: username
-          schema:
-            type: string
-          description: Username of user creating the posting
       requestBody:
         required: true
         content:
@@ -1606,7 +1606,7 @@ paths:
             type: string
           description: Id of the job posting being toggle on and off.
         - in: query
-          name: username
+          name: requestor
           schema:
             type: string
           description: username of user requesting toggle of active status.
@@ -2631,13 +2631,10 @@ components:
         - company
         - recruiter
         - title
-        - payRange
         - description
         - location
-        - jobType
         - tags
         - active
-        - deadline
       properties:
         company:
           type: string
@@ -2670,11 +2667,9 @@ components:
           type: array
           description: Tags associated to a job posting
           items:
-            type: string
-            format: object-id
+            type: object
         active:
           type: boolean
-          minLength: 1
           description: Boolean indicating if a job posting is active or not.
         deadline:
           type: string
@@ -2687,13 +2682,10 @@ components:
         - company
         - recruiter
         - title
-        - payRange
         - description
         - location
-        - jobType
         - tags
         - active
-        - deadline
       properties:
         company:
           type: string
@@ -2708,7 +2700,7 @@ components:
           minLength: 1
           description: Job Title
         payRange:
-          type: string
+          type: [string, 'null']
           description: Pay Range of Job
         description:
           type: string
@@ -2719,22 +2711,24 @@ components:
           minLength: 1
           description: Location of job
         jobType:
-          type: string
+          type: [string, 'null']
           enum: ['internship', 'co-op', 'full-time', 'part-time']
           description: Descriptor of job type
         tags:
           type: array
           description: Tags associated to a job posting
           items:
-            type: string
-            format: object-id
+            type: object
         active:
           type: boolean
           minLength: 1
           description: Boolean indicating if a job posting is active or not.
         deadline:
-          type: string
-          format: date-time
+          oneOf:
+            - type: string
+              format: date-time
+            - type: 'null'
+            - type: object
           description: Deadline to submit applications to a given posting.
     # --------------------
     # USER METRICS SCHEMAS

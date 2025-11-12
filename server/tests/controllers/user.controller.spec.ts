@@ -15,6 +15,7 @@ const mockSafeUser: SafeDatabaseUser = {
   _id: new mongoose.Types.ObjectId(),
   username: 'user1',
   dateJoined: new Date('2024-12-03'),
+  userType: 'talent',
 };
 
 const mockUserJSONResponse = {

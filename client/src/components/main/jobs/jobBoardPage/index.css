@@ -1,0 +1,92 @@
+.job_postings-page {
+  padding: 2rem;
+  background-color: #f9f9f9;
+  font-family: Arial, sans-serif;
+  min-height: 100vh;
+}
+
+.job_postings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.job_postings-title {
+  font-size: 2rem;
+  color: #333;
+}
+
+.job_postings-create-btn {
+  background-color: #2563eb;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease;
+}
+
+.job_postings-create-btn:hover {
+  background-color: #1e40af;
+}
+
+.job_postings-create-btn:active {
+  background-color: #163493;
+}
+
+.job_postings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.job_posting-card {
+  background-color: #fff;
+  padding: 1rem 1.25rem; /* Reduced vertical + horizontal padding */
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: box-shadow 0.2s ease;
+}
+
+.job_posting-card:hover {
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+.job_posting-name {
+  font-size: 1.15rem; /* Slightly smaller */
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.job_posting-description {
+  margin-bottom: 0.3rem;
+  color: #555;
+  font-size: 0.95rem;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+
+  line-clamp: 2;
+  box-orient: vertical;
+
+  overflow: hidden;
+}
+
+.job_posting-privacy,
+.job_posting-questions {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 0.1rem 0;
+}
+
+.job_postings-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}

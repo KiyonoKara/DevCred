@@ -1,14 +1,14 @@
+import JobPostingModel from '../models/jobPosting.model';
+import TagModel from '../models/tags.model';
+import UserModel from '../models/users.model';
 import {
+  DatabaseJobPosting,
+  DatabaseTag,
   JobPosting,
   JobPostingListResponse,
   JobPostingResponse,
-  DatabaseJobPosting,
   JobType,
-  DatabaseTag,
 } from '../types/types';
-import JobPostingModel from '../models/jobPosting.model';
-import UserModel from '../models/users.model';
-import TagModel from '../models/tags.model';
 import { parseKeyword, parseTags } from '../utils/parse.util';
 
 /**
@@ -204,13 +204,9 @@ export const getJobPostings = async (
 
     // TODO: does this type work?
     const query: Record<string, unknown> = {};
-    if (user.userType === 'recruiter') {
-      query.recruiter = username;
-    } else {
-      // For talent users, only show active jobs that haven't expired
-      query.active = true;
-      query.$or = [{ deadline: null }, { deadline: { $gt: new Date() } }];
-    }
+    // For talent users, only show active jobs that haven't expired
+    query.active = true;
+    query.$or = [{ deadline: null }, { deadline: { $gt: new Date() } }];
 
     // Apply location filter
     if (location) {
@@ -250,7 +246,10 @@ export const getJobPostings = async (
  * @param {string} jobId - The ID of the job posting.
  * @returns {Promise<JobPostingResponse>} - The job posting or an error message.
  */
-export const getJobPostingById = async (jobId: string): Promise<JobPostingResponse> => {
+export const getJobPostingById = async (
+  jobId: string,
+  requestor: string,
+): Promise<JobPostingResponse> => {
   try {
     const job = await JobPostingModel.findById(jobId).populate<{ tags: DatabaseTag[] }>({
       path: 'tags',
@@ -263,10 +262,40 @@ export const getJobPostingById = async (jobId: string): Promise<JobPostingRespon
       };
     }
 
+    if (!job.active && job.recruiter !== requestor) {
+      return {
+        error: 'Error in fetching job posting',
+      };
+    }
+
     return job;
   } catch (err) {
     return {
       error: 'Error fetching job posting',
+    };
+  }
+};
+
+export const getJobPostingByRecruiter = async (
+  recruiterUsername: string,
+  requestingUsername: string,
+): Promise<JobPostingListResponse> => {
+  try {
+    if (recruiterUsername !== requestingUsername) {
+      throw new Error('Cannot request postings from a recruiter.');
+    }
+    const jobs = await JobPostingModel.find({ recruiter: recruiterUsername });
+
+    if (!jobs) {
+      return {
+        error: 'Job postings not found',
+      };
+    }
+
+    return jobs;
+  } catch (err) {
+    return {
+      error: 'Error fetching recruiter job posting',
     };
   }
 };
