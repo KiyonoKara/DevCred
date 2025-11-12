@@ -88,18 +88,6 @@ try {
     }),
   );
 
-  app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-    if (err.status && err.errors) {
-      console.error('OpenAPI validation error for', req.method, req.originalUrl);
-      console.error(JSON.stringify(err.errors, null, 2)); // 👈 see the field & message
-      return res.status(err.status).json({
-        message: 'Request Validation Failed',
-        errors: err.errors,
-      });
-    }
-    next(err);
-  });
-
   // Custom Error Handler for express-openapi-validator errors
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   app.use((err: any, req: Request, res: Response, next: NextFunction) => {

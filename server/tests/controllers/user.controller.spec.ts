@@ -21,6 +21,7 @@ const mockSafeUser: SafeDatabaseUser = {
 const mockUserJSONResponse = {
   _id: mockSafeUser._id.toString(),
   username: 'user1',
+  userType: 'talent',
   dateJoined: new Date('2024-12-03').toISOString(),
 };
 

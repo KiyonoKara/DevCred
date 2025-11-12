@@ -1,7 +1,8 @@
 import { DatabaseJobPosting } from '@fake-stack-overflow/shared';
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { getJobPostingByJobId, toggleJobPostingActiveStatus } from '../services/jobPostingService';
+import { useParams } from 'react-router-dom';
+import { applyToJobPosting, getApplicationStatus } from '../services/jobApplicationService';
+import { getJobPostingByJobId } from '../services/jobPostingService';
 import useUserContext from './useUserContext';
 
 /**
@@ -17,13 +18,13 @@ import useUserContext from './useUserContext';
 const useTalentJobPostingViewerPage = () => {
   const { user: currentUser } = useUserContext();
   const { jobId } = useParams();
-  const navigate = useNavigate();
   const [jobPosting, setJobPosting] = useState<DatabaseJobPosting | null>(null);
   const [applicationStatus, setApplicationStatus] = useState<boolean>(false);
 
   const handleApplyToPosition = async () => {
     if (jobId) {
-      setJobPosting(await toggleJobPostingActiveStatus(jobId, currentUser.username));
+      await applyToJobPosting(jobId, currentUser.username);
+      setApplicationStatus(await getApplicationStatus(jobId, currentUser.username));
     }
   };
 
@@ -36,10 +37,11 @@ const useTalentJobPostingViewerPage = () => {
 
     const fetchJobApplicationStatus = async () => {
       if (jobId) {
-        setJobPosting(await getJobPostingByJobId(jobId, currentUser.username));
+        setApplicationStatus(await getApplicationStatus(jobId, currentUser.username));
       }
     };
 
+    fetchJobApplicationStatus();
     fetchJobPosting();
   }, [currentUser.username, jobId]);
 

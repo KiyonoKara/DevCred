@@ -120,7 +120,7 @@ const jobApplicationController = (socket: FakeSOSocket) => {
    * @param res The response object to send the result.
    */
   const getAllApplicationsRoute = async (req: Request, res: Response): Promise<void> => {
-    const username = req.params.user;
+    const username = req.params.username;
 
     if (!username) {
       res.status(401).send('Authentication required');
@@ -251,7 +251,7 @@ const jobApplicationController = (socket: FakeSOSocket) => {
   // Register routes
   router.post('/create', createApplicationRoute);
   router.delete('/:applicationId', deleteApplicationRoute);
-  router.get('/user', getAllApplicationsRoute);
+  router.get('/user/:username', getAllApplicationsRoute);
   router.get('/job/:jobId', getApplicationByJobIdRoute);
   router.get('/:jobId/count', getApplicationCountRoute);
   router.get('/:jobId/status', hasUserAppliedRoute);

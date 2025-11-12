@@ -1459,7 +1459,7 @@ paths:
           content:
             application/json:
               schema:
-                type: boolean
+                type: object
         '400':
           $ref: '#/components/responses/ValidationError'
         '401':
@@ -2588,10 +2588,10 @@ components:
     CreateJobApplicationBody:
       type: object
       required:
-        - applicantUsername
+        - username
         - jobId
       properties:
-        applicantUsername:
+        username:
           type: string
           minLength: 1
           description: Username of the applicant making a job application
@@ -2608,9 +2608,10 @@ components:
         - applicationDate
       properties:
         jobPosting:
-          type: string
-          format: object-id
-          description: Object reference to the job posting associated to the application
+          oneOf:
+            - $ref: '#/components/schemas/JobPosting'
+            - type: string
+              description: Object reference to the job posting associated to the application
         user:
           type: string
           description: Username of the job applicant
@@ -2619,8 +2620,7 @@ components:
           enum: ['Submitted', 'Archived', 'In Review', 'Accepted', 'Rejected']
           description: Status of the job application.
         applicationDate:
-          type: string
-          format: date-time
+          type: object
           description: Date of application submission.
     # --------------------
     # JOB POSTINGS SCHEMAS

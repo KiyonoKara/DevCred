@@ -16,6 +16,7 @@ import NewCommunityPage from './main/communities/newCommunityPage';
 import DirectMessage from './main/directMessage';
 import AllGamesPage from './main/games/allGamesPage';
 import GamePage from './main/games/gamePage';
+import TalentApplicationView from './main/jobs/jobApplicationsPage';
 import JobBoard from './main/jobs/jobBoardPage';
 import RecruiterJobPostings from './main/jobs/jobPostingsPage';
 import NewJobPostingPage from './main/jobs/newJobPostingPage';
@@ -91,7 +92,7 @@ const FakeStackOverflow = ({ socket }: { socket: FakeSOSocket | null }) => {
             />
             <Route path='/talent/jobposting/:jobId' element={<ApplicantJobPostingsViewer />} />
             <Route path='/jobBoard' element={<JobBoard />} />
-            <Route path='/jobapplication/:username' element={<CommunityPage />} />
+            <Route path='/jobapplication/:username' element={<TalentApplicationView />} />
           </Route>
         }
       </Routes>

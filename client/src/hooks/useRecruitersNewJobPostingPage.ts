@@ -27,7 +27,7 @@ const useRecruitersNewJobPostingPage = () => {
         throw new Error('Missing required fields, please finish form before submission!');
       }
 
-      if (!!deadline) {
+      if (deadline) {
         const dateSplit = deadline.split('/');
         if (dateSplit.length !== 3) {
           throw new Error(
@@ -37,7 +37,7 @@ const useRecruitersNewJobPostingPage = () => {
         dateObject = new Date(Number(dateSplit[2]), Number(dateSplit[0]) - 1, Number(dateSplit[1]));
       }
 
-      if (!!tags) {
+      if (tags) {
         const tagnames = tags.split(' ').filter(tagName => tagName.trim() !== '');
         tagObjs = tagnames.map(tagName => ({
           name: tagName,
@@ -49,13 +49,13 @@ const useRecruitersNewJobPostingPage = () => {
         company: company,
         recruiter: user.username,
         title: title,
-        ...(!!payRange ? { payRange: payRange } : {}),
+        ...(payRange ? { payRange: payRange } : {}),
         description: description,
         location: location,
-        ...(!!jobType ? { jobType: jobType } : {}),
-        tags: !!tagObjs ? tagObjs : [],
+        ...(jobType ? { jobType: jobType } : {}),
+        tags: tagObjs ? tagObjs : [],
         active: active,
-        ...(!!dateObject ? { deadline: dateObject } : {}),
+        ...(dateObject ? { deadline: dateObject } : {}),
       });
 
       if (jobPosting) {

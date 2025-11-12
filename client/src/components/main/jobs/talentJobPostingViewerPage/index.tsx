@@ -25,7 +25,7 @@ const ApplicantJobPostingsViewer = () => {
         {userType == 'recruiter' ? (
           <p> Recruiters Cannot Apply to Postings </p>
         ) : applicationStatus ? (
-          <h3>Already Applied to Position</h3>
+          <h3>Applied to Position</h3>
         ) : (
           <button type='button' onClick={handleApplyToPosition}>
             Apply to Posting

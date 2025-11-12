@@ -71,13 +71,13 @@ const getJobBoardListings = async (
   search?: string,
 ): Promise<DatabaseJobPosting[]> => {
   let queryString = '';
-  if (!!location) {
+  if (location) {
     queryString += `location=${location}`;
   }
-  if (!!jobType) {
+  if (jobType) {
     queryString += `jobType=${jobType}`;
   }
-  if (!!search) {
+  if (search) {
     queryString += `search=${search}`;
   }
   const res = await api.get(`${JOB_POSTING_API_URL}/list?requestor=${requestor}&${queryString}`);

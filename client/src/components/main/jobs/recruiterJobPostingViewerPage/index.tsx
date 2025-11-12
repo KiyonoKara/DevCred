@@ -33,7 +33,7 @@ const RecruiterJobPostingsViewer = () => {
             <div key={job_application._id.toString()} className='job_posting-card'>
               <h2 className='job_application-name'>Applicant: {job_application.user}</h2>
               <p className='job_application-description'>
-                {job_application.applicationDate.toDateString()}
+                Application Submission Date: {job_application.applicationDate.toString()}
               </p>
             </div>
           ))}

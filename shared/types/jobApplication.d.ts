@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { JobPosting } from './jobPosting';
+import { DatabaseJobPosting } from './jobPosting';
 
 /**
  * Type representing the possible statuses of a job application.
@@ -19,7 +19,7 @@ export type JobStatus = 'Submitted' | 'Archived' | 'In Review' | 'Accepted' | 'R
  * - `applicationDate`: Date that the user applied to the job.
  */
 export interface JobApplication {
-  jobPosting: JobPosting;
+  jobPosting: DatabaseJobPosting;
   user: string;
   jobStatus: JobStatus;
   applicationDate: Date;
