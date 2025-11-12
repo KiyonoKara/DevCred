@@ -20,7 +20,7 @@ const addMessageSpy = jest.spyOn(chatService, 'addMessageToChat');
 const getChatSpy = jest.spyOn(chatService, 'getChat');
 const addParticipantSpy = jest.spyOn(chatService, 'addParticipantToChat');
 const populateDocumentSpy = jest.spyOn(databaseUtil, 'populateDocument');
-const getChatsByParticipantsSpy = jest.spyOn(chatService, 'getChatsByParticipants');
+const getDMsByUserWithoutDeletedSpy = jest.spyOn(chatService, 'getDMsByUserWithoutDeleted');
 
 /**
  * Sample test suite for the /chat endpoints
@@ -46,6 +46,7 @@ describe('Chat Controller', () => {
         _id: new mongoose.Types.ObjectId(),
         participants: ['user1', 'user2'],
         messages: [new mongoose.Types.ObjectId()],
+        deletedBy: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -66,6 +67,7 @@ describe('Chat Controller', () => {
             type: 'direct',
           },
         ],
+        deletedBy: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -135,6 +137,7 @@ describe('Chat Controller', () => {
         _id: new mongoose.Types.ObjectId(),
         participants: ['user1', 'user2'],
         messages: [new mongoose.Types.ObjectId()],
+        deletedBy: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -178,6 +181,7 @@ describe('Chat Controller', () => {
         _id: chatId,
         participants: ['user1', 'user2'],
         messages: [messageResponse._id],
+        deletedBy: [],
         createdAt: new Date('2025-01-01'),
         updatedAt: new Date('2025-01-01'),
       };
@@ -186,10 +190,12 @@ describe('Chat Controller', () => {
         _id: chatId,
         participants: ['user1', 'user2'],
         messages: [messageResponse],
+        deletedBy: [],
         createdAt: new Date('2025-01-01'),
         updatedAt: new Date('2025-01-01'),
       };
 
+      getChatSpy.mockResolvedValue(chatResponse);
       saveMessageSpy.mockResolvedValue(messageResponse);
       addMessageSpy.mockResolvedValue(chatResponse);
       populateDocumentSpy.mockResolvedValue(populatedChatResponse);
@@ -248,9 +254,19 @@ describe('Chat Controller', () => {
     });
 
     it('should return 500 if addMessageToChat returns an error', async () => {
-      const chatId = new mongoose.Types.ObjectId().toString();
+      const chatId = new mongoose.Types.ObjectId();
 
-      // 1) Mock `createMessage` to succeed
+      // 1) Mock `getChat` to succeed
+      getChatSpy.mockResolvedValue({
+        _id: chatId,
+        participants: ['user1', 'user2'],
+        messages: [],
+        deletedBy: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      // 2) Mock `createMessage` to succeed
       saveMessageSpy.mockResolvedValue({
         _id: new mongoose.Types.ObjectId(),
         msg: 'Hello',
@@ -259,23 +275,23 @@ describe('Chat Controller', () => {
         type: 'direct',
       });
 
-      // 2) Mock `addMessageToChat` to return an error object
+      // 3) Mock `addMessageToChat` to return an error object
       addMessageSpy.mockResolvedValue({ error: 'Error updating chat' });
 
-      // 3) Invoke the endpoint with valid body
-      const response = await supertest(app).post(`/api/chat/${chatId}/addMessage`).send({
+      // 4) Invoke the endpoint with valid body
+      const response = await supertest(app).post(`/api/chat/${chatId.toString()}/addMessage`).send({
         msg: 'Hello',
         msgFrom: 'UserX',
         msgDateTime: new Date().toISOString(),
       });
 
-      // 4) Expect a 500 with the error message
+      // 5) Expect a 500 with the error message
       expect(response.status).toBe(500);
       expect(response.text).toContain('Error updating chat');
     });
 
     it('should throw an error if message creation fails and does not return an _id', async () => {
-      const chatId = new mongoose.Types.ObjectId().toString();
+      const chatId = new mongoose.Types.ObjectId();
       const messagePayload: Message = {
         msg: 'Hello',
         msgFrom: 'User1',
@@ -283,11 +299,21 @@ describe('Chat Controller', () => {
         type: 'direct',
       };
 
+      // Mock getChat to succeed
+      getChatSpy.mockResolvedValue({
+        _id: chatId,
+        participants: ['User1', 'User2'],
+        messages: [],
+        deletedBy: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
       // Mock createMessageSpy to return an object with _id as undefined
       saveMessageSpy.mockResolvedValue({ error: 'Error saving message' });
 
       const response = await supertest(app)
-        .post(`/api/chat/${chatId}/addMessage`)
+        .post(`/api/chat/${chatId.toString()}/addMessage`)
         .send(messagePayload);
 
       expect(response.status).toBe(500);
@@ -295,13 +321,23 @@ describe('Chat Controller', () => {
     });
 
     it('should throw an error if updatedChat returns an error', async () => {
-      const chatId = new mongoose.Types.ObjectId().toString();
+      const chatId = new mongoose.Types.ObjectId();
       const messagePayload = { msg: 'Hello', msgFrom: 'User1', msgDateTime: new Date() };
       const mockMessage = {
         _id: new mongoose.Types.ObjectId(),
         type: 'direct' as 'direct' | 'global',
         ...messagePayload,
       };
+
+      // Mock getChat to succeed
+      getChatSpy.mockResolvedValue({
+        _id: chatId,
+        participants: ['User1', 'User2'],
+        messages: [],
+        deletedBy: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
 
       // Mock the successful creation of the message
       saveMessageSpy.mockResolvedValueOnce(mockMessage);
@@ -311,7 +347,7 @@ describe('Chat Controller', () => {
 
       // Call the endpoint
       const response = await supertest(app)
-        .post(`/api/chat/${chatId}/addMessage`)
+        .post(`/api/chat/${chatId.toString()}/addMessage`)
         .send(messagePayload);
 
       // Validate the response
@@ -325,6 +361,7 @@ describe('Chat Controller', () => {
         _id: new mongoose.Types.ObjectId(),
         participants: ['testUser'], // Array of ObjectIds
         messages: [], // Array of ObjectIds
+        deletedBy: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -344,13 +381,24 @@ describe('Chat Controller', () => {
     });
 
     it('should return 500 if createMessage returns an error', async () => {
-      saveMessageSpy.mockResolvedValue({ error: 'Service error' });
-
-      const chatId = new mongoose.Types.ObjectId().toString();
+      const chatId = new mongoose.Types.ObjectId();
       const messagePayload = { msg: 'Hello!', msgFrom: 'user1', msgDateTime: new Date() };
 
+      // Mock getChat to succeed
+      getChatSpy.mockResolvedValue({
+        _id: chatId,
+        participants: ['user1', 'user2'],
+        messages: [],
+        deletedBy: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      // Mock saveMessage to return an error
+      saveMessageSpy.mockResolvedValue({ error: 'Service error' });
+
       const response = await supertest(app)
-        .post(`/api/chat/${chatId}/addMessage`)
+        .post(`/api/chat/${chatId.toString()}/addMessage`)
         .send(messagePayload);
 
       expect(response.status).toBe(500);
@@ -368,6 +416,7 @@ describe('Chat Controller', () => {
         _id: new mongoose.Types.ObjectId(),
         participants: ['user1'],
         messages: [new mongoose.Types.ObjectId()],
+        deletedBy: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -388,6 +437,7 @@ describe('Chat Controller', () => {
             type: 'direct',
           },
         ],
+        deletedBy: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -443,6 +493,7 @@ describe('Chat Controller', () => {
         _id: new mongoose.Types.ObjectId(),
         participants: ['user1', 'user2'],
         messages: [],
+        deletedBy: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -451,6 +502,7 @@ describe('Chat Controller', () => {
         _id: updatedChat._id,
         participants: ['user1', 'user2'],
         messages: [],
+        deletedBy: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -492,6 +544,7 @@ describe('Chat Controller', () => {
         _id: new mongoose.Types.ObjectId(),
         participants: ['user1', 'user2'],
         messages: [],
+        deletedBy: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -525,12 +578,12 @@ describe('Chat Controller', () => {
   describe('POST /chat/getChatsByUser/:username', () => {
     it('should return 200 with an array of chats', async () => {
       const username = 'user1';
-
       const chats: DatabaseChat[] = [
         {
           _id: new mongoose.Types.ObjectId(),
           participants: ['user1', 'user2'],
           messages: [],
+          deletedBy: [],
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -541,17 +594,18 @@ describe('Chat Controller', () => {
           _id: chats[0]._id,
           participants: ['user1', 'user2'],
           messages: [],
+          deletedBy: [],
           createdAt: new Date(),
           updatedAt: new Date(),
         },
       ];
 
-      getChatsByParticipantsSpy.mockResolvedValueOnce(chats);
+      getDMsByUserWithoutDeletedSpy.mockResolvedValueOnce(chats);
       populateDocumentSpy.mockResolvedValueOnce(populatedChats[0]);
 
       const response = await supertest(app).get(`/api/chat/getChatsByUser/${username}`);
 
-      expect(getChatsByParticipantsSpy).toHaveBeenCalledWith([username]);
+      expect(getDMsByUserWithoutDeletedSpy).toHaveBeenCalledWith(username);
       expect(populateDocumentSpy).toHaveBeenCalledWith(populatedChats[0]._id.toString(), 'chat');
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject([
@@ -572,17 +626,18 @@ describe('Chat Controller', () => {
           _id: new mongoose.Types.ObjectId(),
           participants: ['user1', 'user2'],
           messages: [],
+          deletedBy: [],
           createdAt: new Date(),
           updatedAt: new Date(),
         },
       ];
 
-      getChatsByParticipantsSpy.mockResolvedValueOnce(chats);
+      getDMsByUserWithoutDeletedSpy.mockResolvedValueOnce(chats);
       populateDocumentSpy.mockResolvedValueOnce({ error: 'Service error' });
 
       const response = await supertest(app).get(`/api/chat/getChatsByUser/${username}`);
 
-      expect(getChatsByParticipantsSpy).toHaveBeenCalledWith([username]);
+      expect(getDMsByUserWithoutDeletedSpy).toHaveBeenCalledWith(username);
       expect(populateDocumentSpy).toHaveBeenCalledWith(chats[0]._id.toString(), 'chat');
       expect(response.status).toBe(500);
       expect(response.text).toBe('Error retrieving chat: Failed populating all retrieved chats');
