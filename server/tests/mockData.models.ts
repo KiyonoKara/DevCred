@@ -210,5 +210,6 @@ export const user: User = {
 export const safeUser: SafeDatabaseUser = {
   _id: new ObjectId(),
   username: 'user1',
+  userType: 'talent',
   dateJoined: new Date('2024-12-03'),
 };
