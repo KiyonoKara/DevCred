@@ -120,7 +120,7 @@ const jobApplicationController = (socket: FakeSOSocket) => {
    * @param res The response object to send the result.
    */
   const getAllApplicationsRoute = async (req: Request, res: Response): Promise<void> => {
-    const username = req.params.user;
+    const username = req.params.username;
 
     if (!username) {
       res.status(401).send('Authentication required');
@@ -155,9 +155,9 @@ const jobApplicationController = (socket: FakeSOSocket) => {
    */
   const getApplicationByJobIdRoute = async (req: Request, res: Response): Promise<void> => {
     const { jobId } = req.params as { jobId: string };
-    const { username } = req.query;
+    const { requestor } = req.query;
 
-    if (!username) {
+    if (!requestor) {
       res.status(401).send('Authentication required');
       return;
     }
@@ -168,7 +168,7 @@ const jobApplicationController = (socket: FakeSOSocket) => {
     }
 
     try {
-      const applications = await getApplicationByJobId(username as string, jobId);
+      const applications = await getApplicationByJobId(requestor as string, jobId);
 
       if ('error' in applications) {
         if (applications.error.includes('not found')) {
@@ -251,7 +251,7 @@ const jobApplicationController = (socket: FakeSOSocket) => {
   // Register routes
   router.post('/create', createApplicationRoute);
   router.delete('/:applicationId', deleteApplicationRoute);
-  router.get('/user', getAllApplicationsRoute);
+  router.get('/user/:username', getAllApplicationsRoute);
   router.get('/job/:jobId', getApplicationByJobIdRoute);
   router.get('/:jobId/count', getApplicationCountRoute);
   router.get('/:jobId/status', hasUserAppliedRoute);

@@ -73,6 +73,6 @@ export interface FindJobPostingsRequest extends Request {
     location?: string;
     jobType?: JobType;
     search?: string;
-    username: string;
+    requestor: string;
   };
 }

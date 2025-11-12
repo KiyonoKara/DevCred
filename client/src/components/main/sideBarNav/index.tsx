@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import './index.css';
 import { NavLink, useLocation } from 'react-router-dom';
 import useUserContext from '../../../hooks/useUserContext';
+import './index.css';
 
 /**
  * The SideBarNav component has a sidebar navigation menu for all the main pages.
@@ -79,6 +79,28 @@ const SideBarNav = () => {
         className={({ isActive }) => `menu_button ${isActive ? 'menu_selected' : ''}`}>
         My Collections
       </NavLink>
+      {user.userType === 'recruiter' && (
+        <NavLink
+          to={`/recruiters/jobposting/${user.username}`}
+          id='job_postings'
+          className={({ isActive }) => `menu_button ${isActive ? 'menu_selected' : ''}`}>
+          My Job Postings
+        </NavLink>
+      )}
+      <NavLink
+        to='/jobboard'
+        id='job_board'
+        className={({ isActive }) => `menu_button ${isActive ? 'menu_selected' : ''}`}>
+        Job Board
+      </NavLink>
+      {user.userType === 'talent' && (
+        <NavLink
+          to={`/jobapplication/${user.username}`}
+          id='job_application'
+          className={({ isActive }) => `menu_button ${isActive ? 'menu_selected' : ''}`}>
+          My Job Applications
+        </NavLink>
+      )}
     </div>
   );
 };

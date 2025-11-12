@@ -1,7 +1,7 @@
-import { JobApplicationResponse, PopulatedJobApplicationListResponse } from '../types/types';
 import JobApplicationModel from '../models/jobApplication.model';
 import JobPostingModel from '../models/jobPosting.model';
 import UserModel from '../models/users.model';
+import { JobApplicationResponse, PopulatedJobApplicationListResponse } from '../types/types';
 
 /**
  * Gets the count of applications for a specific job posting.

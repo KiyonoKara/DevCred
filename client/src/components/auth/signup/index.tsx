@@ -1,6 +1,7 @@
-import './index.css';
+import { ChangeEvent } from 'react';
 import { Link } from 'react-router-dom';
 import useAuth from '../../../hooks/useAuth';
+import './index.css';
 
 /**
  * Renders a signup form with username, password, and password confirmation inputs,
@@ -12,6 +13,7 @@ const Signup = () => {
     password,
     passwordConfirmation,
     showPassword,
+    userType,
     err,
     handleSubmit,
     handleInputChange,
@@ -22,7 +24,7 @@ const Signup = () => {
     <div className='container'>
       <h2>Sign up for FakeStackOverflow!</h2>
       <form onSubmit={handleSubmit}>
-        <h4>Please enter your username.</h4>
+        <h4>Please select a username.</h4>
         <input
           type='text'
           value={username}
@@ -31,6 +33,45 @@ const Signup = () => {
           required
           className='input-text'
           id='username-input'
+        />
+        <h4>I am a:</h4>
+        <button
+          type='button'
+          className='recruiter-button'
+          onClick={event => {
+            event.stopPropagation();
+            handleInputChange(
+              {
+                target: {
+                  value: 'recruiter',
+                },
+              } as ChangeEvent<HTMLInputElement>,
+              'userType',
+            );
+          }}>
+          Recruiter
+        </button>
+        <button
+          type='button'
+          className='talent-button'
+          onClick={event => {
+            event.stopPropagation();
+            handleInputChange(
+              {
+                target: {
+                  value: 'talent',
+                },
+              } as ChangeEvent<HTMLInputElement>,
+              'userType',
+            );
+          }}>
+          Applicant
+        </button>
+        <input
+          type='hidden'
+          name='role'
+          value={userType}
+          onChange={event => event.stopPropagation()}
         />
         <h4>Please enter your password.</h4>
         <input

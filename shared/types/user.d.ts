@@ -9,6 +9,7 @@ import { ObjectId } from 'mongodb';
 export interface UserCredentials {
   username: string;
   password: string;
+  type?: 'recruiter' | 'talent';
 }
 
 /**
@@ -59,7 +60,7 @@ export interface UserRequest extends Request {
     username: string;
     password: string;
     biography?: string;
-    type?: string;
+    type?: 'recruiter' | 'talent';
   };
 }
 
@@ -76,7 +77,7 @@ export interface UserByUsernameRequest extends Request {
 /**
  * Represents a "safe" user object that excludes sensitive information like the password.
  */
-export type SafeDatabaseUser = Omit<DatabaseUser, 'password' | 'userType'>;
+export type SafeDatabaseUser = Omit<DatabaseUser, 'password'>;
 
 /**
  * Represents the response for user-related operations.

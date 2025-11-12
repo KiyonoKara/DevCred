@@ -260,6 +260,7 @@ describe('updateUser', () => {
   const safeUpdatedUser: SafeDatabaseUser = {
     _id: new mongoose.Types.ObjectId(),
     username: user.username,
+    userType: 'talent',
     dateJoined: user.dateJoined,
   };
 
