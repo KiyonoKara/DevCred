@@ -164,6 +164,18 @@ export interface JobApplicationUpdatePayload {
 export type JobPostingUpdatePayload = DatabaseJobPosting | { type: 'deleted'; jobId: string };
 
 /**
+ * Interface representing the payload for a DM deletion events.
+ * - `chatId`: The ID of the deleted DM.
+ * - `deletedCompletely`: Whether the DM was completely removed (both users deleted) or just for one user.
+ * - `deletedBy`: Array of usernames who have deleted the chat (optional, for partial deletion).
+ */
+export interface DMDeletedPayload {
+  chatId: string;
+  deletedCompletely: boolean;
+  deletedBy?: string[];
+}
+
+/**
  * Interface representing the events the client can emit to the server.
  * - `makeMove`: Client can emit a move in the game.
  * - `joinGame`: Client can join a game.
@@ -193,6 +205,7 @@ export interface ClientToServerEvents {
  * - `gameUpdate`: Server sends updated game state.
  * - `gameError`: Server sends error message related to game operation.
  * - `chatUpdate`: Server sends updated chat.
+ * - `dmDeleted`: Server sends DM deletion notification (story 2.7).
  * - `communityUpdate`: Server sends updated community.
  * - `collectionUpdate`: Server sends updated collection.
  * - `jobFairUpdate`: Server sends updated job fair.
@@ -211,6 +224,7 @@ export interface ServerToClientEvents {
   gameUpdate: (game: GameUpdatePayload) => void;
   gameError: (error: GameErrorPayload) => void;
   chatUpdate: (chat: ChatUpdatePayload) => void;
+  dmDeleted: (payload: DMDeletedPayload) => void;
   communityUpdate: (community: CommunityUpdatePayload) => void;
   collectionUpdate: (community: CollectionUpdatePayload) => void;
   jobFairUpdate: (jobFair: JobFairUpdatePayload) => void;
