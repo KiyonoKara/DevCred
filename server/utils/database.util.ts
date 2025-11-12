@@ -95,7 +95,8 @@ const populateChat = async (
       // If user has a deletion record, filter out messages created before they deleted
       if (userDeletion && userDeletion.deletedAt) {
         if (messageDoc.msgDateTime < userDeletion.deletedAt) {
-          return null; // Hide this message from the user
+          // No data if message comes before deletion
+          return null;
         }
       }
 
