@@ -45,6 +45,8 @@ const ProfileSettings: React.FC = () => {
 
   const [selectedResumeFile, setSelectedResumeFile] = React.useState<File | null>(null);
   const [makeActiveOnUpload, setMakeActiveOnUpload] = React.useState(true);
+  const [resumeErrorMessage, setResumeErrorMessage] = React.useState<string | null>(null);
+  const [resumeSuccessMessage, setResumeSuccessMessage] = React.useState<string | null>(null);
 
   const maxResumeSizeMB = React.useMemo(
     () => (maxResumeSizeBytes ? (maxResumeSizeBytes / (1024 * 1024)).toFixed(0) : '8'),
@@ -61,10 +63,23 @@ const ProfileSettings: React.FC = () => {
       return;
     }
 
+    // Clear previous messages
+    setResumeErrorMessage(null);
+    setResumeSuccessMessage(null);
+
     const didUpload = await handleResumeUpload(selectedResumeFile, makeActiveOnUpload);
     if (didUpload) {
+      // Clear file preview and reset state on successful upload
       setSelectedResumeFile(null);
       setMakeActiveOnUpload(true);
+      setResumeSuccessMessage('Resume uploaded successfully!');
+    } else {
+      // Extract error from global errorMessage
+      if (errorMessage) {
+        setResumeErrorMessage(errorMessage);
+      } else {
+        setResumeErrorMessage('Failed to upload resume. Please try again.');
+      }
     }
   };
 
@@ -223,6 +238,12 @@ const ProfileSettings: React.FC = () => {
               <>
                 <h4>Resume Management</h4>
                 <div className='resume-upload'>
+                  {resumeSuccessMessage && (
+                    <div className='resume-message resume-success-box'>{resumeSuccessMessage}</div>
+                  )}
+                  {resumeErrorMessage && (
+                    <div className='resume-message resume-error-box'>{resumeErrorMessage}</div>
+                  )}
                   <div className='file-input-wrapper'>
                     <input type='file' accept='application/pdf' onChange={onResumeFileChange} />
                     <span className='file-input-label'>
