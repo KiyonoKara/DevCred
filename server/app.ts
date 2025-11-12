@@ -74,6 +74,8 @@ process.on('SIGINT', async () => {
 });
 
 app.use(express.json());
+// needs to be registered before the middleware
+app.use('/api/resume', resumeController(socket));
 
 try {
   app.use(
@@ -118,7 +120,6 @@ app.use('/api/community', communityController(socket));
 app.use('/api/jobfair', jobFairController(socket));
 app.use('/api/jobposting', jobPostingController(socket));
 app.use('/api/jobapplication', jobApplicationController(socket));
-app.use('/api/resume', resumeController(socket));
 app.use('/api/metrics', userMetricsController(socket));
 
 const openApiDocument = yaml.parse(fs.readFileSync('./openapi.yaml', 'utf8'));

@@ -1824,9 +1824,10 @@ paths:
                   type: string
                   description: The username of the user uploading the resume.
                 isActive:
-                  type: boolean
-                  default: true
-                  description: Whether to set this resume as active.
+                  type: string
+                  enum: ['true', 'false', '1', '0']
+                  default: 'true'
+                  description: Whether to set this resume as active (sent as string from FormData).
                 resume:
                   type: string
                   format: binary

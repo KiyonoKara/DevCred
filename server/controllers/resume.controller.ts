@@ -40,8 +40,14 @@ const resumeController = (socket: FakeSOSocket) => {
    * @returns A Promise that resolves to void.
    */
   const uploadResumeRoute = async (req: UploadResumeRequest, res: Response): Promise<void> => {
-    const { userId, isActive = true } = req.body;
+    const { userId } = req.body;
+    let { isActive = true } = req.body;
     const file = req.file;
+
+    // Get isActive from string to boolean if it came as a string from FormData
+    if (typeof isActive === 'string') {
+      isActive = isActive === 'true' || isActive === '1';
+    }
 
     if (!file) {
       res.status(400).send('No file uploaded');

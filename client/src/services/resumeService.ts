@@ -21,9 +21,7 @@ const uploadResume = async (
   formData.append('resume', file);
   formData.append('isActive', String(options.isActive ?? true));
 
-  const res = await api.post(`${RESUME_API_URL}/upload`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
+  const res = await api.post(`${RESUME_API_URL}/upload`, formData);
 
   if (res.status !== 200) {
     throw new Error('Error uploading resume');
