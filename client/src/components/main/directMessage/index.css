@@ -113,3 +113,130 @@
   font-weight: bold;
   margin-top: 15px;
 }
+
+/* DM Management Styles */
+
+/* Loading indicator */
+.loading-indicator {
+  color: #666;
+  font-size: 14px;
+  margin: 8px 0;
+  font-style: italic;
+}
+
+/* DM Enabled/Disabled status */
+.dm-disabled-warning {
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 6px;
+  padding: 10px;
+  margin: 8px 0;
+  color: #856404;
+  font-weight: 500;
+}
+
+.dm-enabled-status {
+  background-color: #d4edda;
+  border: 1px solid #28a745;
+  border-radius: 6px;
+  padding: 10px;
+  margin: 8px 0;
+  color: #155724;
+  font-weight: 500;
+}
+
+/* Chat header with delete button */
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #ddd;
+}
+
+.chat-header h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #555;
+  flex: 1;
+}
+
+.delete-chat-button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.delete-chat-button:hover {
+  background-color: #c82333;
+}
+
+.delete-chat-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Chat list improvements */
+.chats-list h3 {
+  font-size: 16px;
+  margin-bottom: 12px;
+  color: #555;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 8px;
+}
+
+.no-chats {
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  padding: 20px;
+}
+
+.no-messages {
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  padding: 20px;
+}
+
+.no-chat-selected {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #999;
+  text-align: center;
+}
+
+.no-chat-selected h2 {
+  margin-bottom: 10px;
+  color: #555;
+}
+
+/* Enhanced message input */
+.message-input {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #ddd;
+}
+
+.custom-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.custom-input:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+  color: #999;
+}

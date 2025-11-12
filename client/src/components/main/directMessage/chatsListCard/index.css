@@ -1,8 +1,54 @@
 .chats-list-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 12px;
   margin-bottom: 10px;
   background-color: #f5f5f5;
   border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.3s;
+  border: 2px solid transparent;
+}
+
+.chats-list-card:hover {
+  background-color: #eaeaea;
+}
+
+.chats-list-card.selected {
+  background-color: #e3f2fd;
+  border: 2px solid #007bff;
+}
+
+.chat-info {
+  flex: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.chat-info p {
+  margin: 0;
+  color: #333;
+  font-size: 14px;
+}
+
+.delete-btn {
+  background-color: #dc3545;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: white;
+  transition: background-color 0.3s;
+  margin-left: 8px;
+}
+
+.delete-btn:hover {
+  background-color: #c82333;
+}
+
+.delete-btn:active {
+  background-color: #bd2130;
 }

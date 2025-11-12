@@ -5,20 +5,37 @@ import { PopulatedDatabaseChat } from '../../../../types/types';
 /**
  * ChatsListCard component displays information about a chat and allows the user to select it.
  *
- * @param chat: The chat object containing details like participants and chat ID.
- * @param handleChatSelect: A function to handle the selection of a chat, receiving the chat's ID as an argument.
+ * @param chat - The chat object containing details like participants and chat ID.
+ * @param handleChatSelect - A function to handle the selection of a chat.
+ * @param handleDeleteDM - A function to handle deletion of the DM.
+ * @param isSelected - Whether this chat is currently selected.
  */
 const ChatsListCard = ({
   chat,
   handleChatSelect,
+  handleDeleteDM,
+  isSelected,
 }: {
   chat: PopulatedDatabaseChat;
   handleChatSelect: (chatID: ObjectId | undefined) => void;
+  handleDeleteDM: (chatID: ObjectId) => void;
+  isSelected: boolean;
 }) => (
-  <div onClick={() => handleChatSelect(chat._id)} className='chats-list-card'>
-    <p>
-      <strong>Chat with:</strong> {chat.participants.join(', ')}
-    </p>
+  <div className={`chats-list-card ${isSelected ? 'selected' : ''}`}>
+    <div onClick={() => handleChatSelect(chat._id)} className='chat-info'>
+      <p>
+        <strong>Chat with:</strong> {chat.participants.join(', ')}
+      </p>
+    </div>
+    <button
+      className='delete-btn'
+      onClick={e => {
+        e.stopPropagation();
+        handleDeleteDM(chat._id);
+      }}
+      title='Delete this conversation'>
+      Delete
+    </button>
   </div>
 );
 
