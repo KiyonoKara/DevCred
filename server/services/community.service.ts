@@ -1,5 +1,7 @@
+import { Types } from 'mongoose';
 import CommunityModel from '../models/community.model';
-import { Community, CommunityResponse, DatabaseCommunity } from '../types/types';
+import QuestionModel from '../models/questions.model';
+import { Community, CommunityResponse, DatabaseCommunity, CommunityEngagementSummary } from '../types/types';
 
 /**
  * Retrieves a community by its ID.
@@ -30,6 +32,132 @@ export const getAllCommunities = async (): Promise<DatabaseCommunity[] | { error
     return communities;
   } catch (err) {
     return { error: (err as Error).message };
+  }
+};
+
+/**
+ * Retrieves the top communities a user engages with based on questions and answers.
+ *
+ * @param username - Username of the user to evaluate engagement for.
+ * @param limit - Maximum number of communities to return.
+ * @returns A list of communities with engagement metrics or an error object.
+ */
+export const getUserCommunityEngagement = async (
+  username: string,
+  limit = 10,
+): Promise<CommunityEngagementSummary[] | { error: string }> => {
+  try {
+    const questionCounts = await QuestionModel.aggregate<
+      { _id: Types.ObjectId; questionCount: number }
+    >([
+      {
+        $match: {
+          askedBy: username,
+          community: { $ne: null },
+        },
+      },
+      {
+        $group: {
+          _id: '$community',
+          questionCount: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const answerCounts = await QuestionModel.aggregate<
+      { _id: Types.ObjectId; answerCount: number }
+    >([
+      {
+        $match: {
+          community: { $ne: null },
+          answers: { $exists: true, $ne: [] },
+        },
+      },
+      {
+        $lookup: {
+          from: 'Answer',
+          localField: 'answers',
+          foreignField: '_id',
+          as: 'answerDocs',
+        },
+      },
+      { $unwind: '$answerDocs' },
+      {
+        $match: {
+          'answerDocs.ansBy': username,
+        },
+      },
+      {
+        $group: {
+          _id: '$community',
+          answerCount: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const engagementMap = new Map<
+      string,
+      {
+        questionCount: number;
+        answerCount: number;
+      }
+    >();
+
+    questionCounts.forEach(entry => {
+      if (!entry._id) {
+        return;
+      }
+      engagementMap.set(entry._id.toString(), {
+        questionCount: entry.questionCount,
+        answerCount: 0,
+      });
+    });
+
+    answerCounts.forEach(entry => {
+      if (!entry._id) {
+        return;
+      }
+      const key = entry._id.toString();
+      const existing = engagementMap.get(key);
+      if (existing) {
+        existing.answerCount = entry.answerCount;
+      } else {
+        engagementMap.set(key, {
+          questionCount: 0,
+          answerCount: entry.answerCount,
+        });
+      }
+    });
+
+    if (engagementMap.size === 0) {
+      return [];
+    }
+
+    const communityIds = Array.from(engagementMap.keys()).map(id => new Types.ObjectId(id));
+    const communities = await CommunityModel.find({ _id: { $in: communityIds } });
+
+    const summaries: CommunityEngagementSummary[] = communities.map(community => {
+      const metrics = engagementMap.get(community._id.toString()) ?? {
+        questionCount: 0,
+        answerCount: 0,
+      };
+
+      const score = metrics.questionCount + metrics.answerCount;
+
+      return {
+        community,
+        questionCount: metrics.questionCount,
+        answerCount: metrics.answerCount,
+        score,
+      };
+    });
+
+    return summaries
+      .filter(summary => summary.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit);
+  } catch (err) {
+    return { error: `Error calculating community engagement: ${(err as Error).message}` };
   }
 };
 

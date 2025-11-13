@@ -5,6 +5,7 @@ import {
   CreateCommunityRequest,
   ToggleMembershipRequest,
   DeleteCommunityRequest,
+  CommunityEngagementRequest,
 } from '../types/types';
 import {
   getCommunity,
@@ -12,6 +13,7 @@ import {
   toggleCommunityMembership,
   createCommunity,
   deleteCommunity,
+  getUserCommunityEngagement,
 } from '../services/community.service';
 
 /**
@@ -64,6 +66,27 @@ const communityController = (socket: FakeSOSocket) => {
       res.json(communities);
     } catch (err: unknown) {
       res.status(500).send(`Error retrieving communities: ${(err as Error).message}`);
+    }
+  };
+
+  const getUserEngagementRoute = async (
+    req: CommunityEngagementRequest,
+    res: Response,
+  ): Promise<void> => {
+    const { username } = req.params;
+    const { limit } = req.query;
+    const parsedLimit = limit ? Number.parseInt(limit, 10) : undefined;
+
+    try {
+      const engagement = await getUserCommunityEngagement(username, parsedLimit);
+
+      if ('error' in engagement) {
+        throw new Error(engagement.error);
+      }
+
+      res.json(engagement);
+    } catch (err) {
+      res.status(500).send(`Error retrieving community engagement: ${(err as Error).message}`);
     }
   };
 
@@ -190,6 +213,7 @@ const communityController = (socket: FakeSOSocket) => {
   // Registering routes
   router.get('/getCommunity/:communityId', getCommunityRoute);
   router.get('/getAllCommunities', getAllCommunitiesRoute);
+  router.get('/userEngagement/:username', getUserEngagementRoute);
   router.post('/toggleMembership', toggleMembershipRoute);
   router.post('/create', createCommunityRoute);
   router.delete('/delete/:communityId', deleteCommunityRoute);

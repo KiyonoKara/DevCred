@@ -29,8 +29,10 @@ const getAllCollectionsByUsername = async (
   usernameToView: string,
   currentUsername: string,
 ): Promise<PopulatedDatabaseCollection[]> => {
+  const encodedUsernameToView = encodeURIComponent(usernameToView);
+  const encodedCurrentUsername = encodeURIComponent(currentUsername);
   const res = await axios.get(
-    `${COLLECTION_API_URL}/getCollectionsByUsername/${usernameToView}?currentUsername=${currentUsername}`,
+    `${COLLECTION_API_URL}/getCollectionsByUsername/${encodedUsernameToView}?currentUsername=${encodedCurrentUsername}`,
   );
 
   if (res.status !== 200) {
@@ -51,7 +53,9 @@ const getCollectionById = async (
   collectionId: string,
 ): Promise<PopulatedDatabaseCollection> => {
   const res = await axios.get(
-    `${COLLECTION_API_URL}/getCollectionById/${collectionId}?username=${username}`,
+    `${COLLECTION_API_URL}/getCollectionById/${encodeURIComponent(
+      collectionId,
+    )}?username=${encodeURIComponent(username)}`,
   );
 
   if (res.status !== 200) {
@@ -94,7 +98,9 @@ const toggleSaveQuestion = async (collectionId: string, questionId: string, user
  */
 const deleteCollection = async (collectionId: string, username: string) => {
   const res = await axios.delete(
-    `${COLLECTION_API_URL}/delete/${collectionId}?username=${username}`,
+    `${COLLECTION_API_URL}/delete/${encodeURIComponent(collectionId)}?username=${encodeURIComponent(
+      username,
+    )}`,
   );
 
   if (res.status !== 200) {
