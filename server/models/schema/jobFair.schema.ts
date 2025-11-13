@@ -10,7 +10,8 @@ import { Schema } from 'mongoose';
  * - `hostUsername`: The username of the recruiter hosting the fair.
  * - `visibility`: Whether the job fair is 'public' or 'invite-only'.
  * - `status`: Current status of the job fair ('upcoming', 'live', 'ended').
- * - `scheduledDate`: When the job fair is scheduled to start.
+ * - `startTime`: When the job fair is scheduled to start.
+ * - `endTime`: When the job fair is scheduled to end.
  * - `participants`: List of users' usernames who have joined the fair.
  * - `invitedUsers`: List of users' usernames who are invited (for invite-only fairs).
  * - `chatMessages`: Array of message IDs for the job fair chat.
@@ -43,7 +44,11 @@ const jobFairSchema = new Schema(
       default: 'upcoming',
       required: true,
     },
-    scheduledDate: {
+    startTime: {
+      type: Date,
+      required: true,
+    },
+    endTime: {
       type: Date,
       required: true,
     },

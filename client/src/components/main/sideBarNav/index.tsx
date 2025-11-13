@@ -99,6 +99,12 @@ const SideBarNav = () => {
         className={({ isActive }) => `menu_button ${isActive ? 'menu_selected' : ''}`}>
         Job Board
       </NavLink>
+      <NavLink
+        to='/jobfairs'
+        id='job_fairs'
+        className={({ isActive }) => `menu_button ${isActive ? 'menu_selected' : ''}`}>
+        Job Fairs
+      </NavLink>
       {user.userType === 'talent' && (
         <NavLink
           to={`/jobapplication/${user.username}`}

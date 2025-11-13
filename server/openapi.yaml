@@ -2958,7 +2958,7 @@ components:
       required:
         - title
         - description
-        - hostedBy
+        - hostUsername
         - startTime
         - endTime
         - visibility
@@ -2971,7 +2971,7 @@ components:
           type: string
           minLength: 1
           description: A description of the job fair
-        hostedBy:
+        hostUsername:
           type: string
           minLength: 1
           description: The username of the job fair host
@@ -3007,7 +3007,7 @@ components:
         description:
           type: string
           description: A description of the job fair
-        hostedBy:
+        hostUsername:
           type: string
           description: The username of the job fair host
         startTime:

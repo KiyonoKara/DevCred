@@ -1,0 +1,478 @@
+/**
+ * Styles for the JobFairDetailPage component
+ */
+
+.job-fair-detail-page {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+}
+
+.loading-spinner {
+  padding: 60px 20px;
+  text-align: center;
+  font-size: 16px;
+  color: #666;
+}
+
+.job-fair-error {
+  padding: 20px;
+  background-color: #ffebee;
+  border-left: 4px solid #cc0000;
+  border-radius: 4px;
+  color: #c62828;
+  font-weight: 500;
+}
+
+/* ===== CARD STYLING ===== */
+.detail-card {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease;
+}
+
+.detail-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* ===== HEADER CARD ===== */
+.header-card {
+  background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+  color: white;
+  padding: 0;
+}
+
+.card-header {
+  padding: 40px;
+}
+
+.title-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.job-fair-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0;
+  color: white;
+}
+
+.status-badge,
+.visibility-badge {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-block;
+  text-transform: capitalize;
+}
+
+.status-badge {
+  background-color: rgba(255, 255, 255, 0.25);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.status-upcoming {
+  background-color: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+  border: 1px solid #4caf50;
+}
+
+.status-live {
+  background-color: rgba(255, 152, 0, 0.2);
+  color: #ff9800;
+  border: 1px solid #ff9800;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.status-ended {
+  background-color: rgba(244, 67, 54, 0.2);
+  color: #f44336;
+  border: 1px solid #f44336;
+}
+
+.visibility-public {
+  background-color: rgba(33, 150, 243, 0.1);
+  color: #2196f3;
+}
+
+.visibility-invite-only {
+  background-color: rgba(255, 152, 0, 0.1);
+  color: #ff9800;
+}
+
+.description {
+  padding: 0 40px 40px;
+  color: white;
+}
+
+.description p {
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0;
+  opacity: 0.95;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background-color: white;
+  color: #0066cc;
+  border: 2px solid white;
+}
+
+.btn-primary:hover {
+  background-color: transparent;
+  color: white;
+  border-color: white;
+}
+
+.btn-secondary {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid white;
+}
+
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.btn-danger {
+  background-color: #cc0000;
+  color: white;
+  border: 2px solid #cc0000;
+}
+
+.btn-danger:hover {
+  background-color: #990000;
+  border-color: #990000;
+}
+
+/* ===== INFO CARD ===== */
+.info-card {
+  padding: 30px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.info-item {
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  border-left: 4px solid #0066cc;
+  transition: all 0.3s ease;
+}
+
+.info-item:hover {
+  background-color: #f0f7ff;
+  border-left-color: #0052a3;
+}
+
+.info-label {
+  display: block;
+  font-weight: 600;
+  color: #666;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.info-value {
+  margin: 0;
+  font-size: 16px;
+  color: #1a1a1a;
+  font-weight: 500;
+}
+
+.badge-count {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0066cc;
+}
+
+/* ===== INVITES CARD ===== */
+.invites-card {
+  padding: 30px;
+}
+
+.invites-card h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 20px;
+}
+
+.user-badges-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.user-badge {
+  padding: 10px 16px;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid #c8e6c9;
+}
+
+/* ===== PARTICIPANTS CARD ===== */
+.participants-card {
+  padding: 30px;
+}
+
+.participants-card h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 20px;
+}
+
+.participants-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+.participant-badge {
+  padding: 16px;
+  background-color: #f0f7ff;
+  color: #1976d2;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  border: 1px solid #bbdefb;
+  transition: all 0.3s ease;
+}
+
+.participant-badge:hover {
+  background-color: #e3f2fd;
+  border-color: #2196f3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(33, 150, 243, 0.2);
+}
+
+.empty-state {
+  padding: 40px 20px;
+  text-align: center;
+  color: #999;
+  font-style: italic;
+}
+
+/* ===== TABS CARD ===== */
+.tabs-card {
+  padding: 0;
+}
+
+.tabs-header {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid #e0e0e0;
+  background-color: #f9f9f9;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 18px 24px;
+  background-color: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-size: 15px;
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.tab-btn:hover {
+  background-color: #f0f7ff;
+  color: #0066cc;
+}
+
+.tab-btn.active {
+  color: #0066cc;
+  border-bottom-color: #0066cc;
+  background-color: white;
+}
+
+.tabs-content {
+  padding: 30px;
+  min-height: 300px;
+}
+
+.overview-content {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+
+.overview-content p {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.overview-tab {
+  padding: 20px;
+}
+
+.overview-tab h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 20px;
+}
+
+.overview-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.overview-item {
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  border-left: 4px solid #0066cc;
+}
+
+.overview-item strong {
+  display: block;
+  font-weight: 600;
+  color: #666;
+  font-size: 12px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.overview-item p {
+  margin: 0;
+  font-size: 16px;
+  color: #1a1a1a;
+  font-weight: 500;
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.status-pill.status-upcoming {
+  background-color: rgba(76, 175, 80, 0.1);
+  color: #4caf50;
+}
+
+.status-pill.status-live {
+  background-color: rgba(255, 152, 0, 0.1);
+  color: #ff9800;
+}
+
+.status-pill.status-ended {
+  background-color: rgba(244, 67, 54, 0.1);
+  color: #f44336;
+}
+
+.tab-locked {
+  padding: 60px 20px;
+  text-align: center;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.tab-locked p {
+  font-size: 16px;
+  color: #999;
+  margin: 0;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+  .job-fair-detail-page {
+    padding: 12px;
+  }
+
+  .card-header {
+    padding: 24px;
+  }
+
+  .job-fair-title {
+    font-size: 28px;
+  }
+
+  .title-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .participants-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+
+  .tab-btn {
+    padding: 14px 12px;
+    font-size: 13px;
+  }
+
+  .tabs-content {
+    padding: 20px;
+    min-height: 200px;
+  }
+
+  .action-buttons {
+    width: 100%;
+  }
+
+  .btn {
+    flex: 1;
+    text-align: center;
+  }
+}

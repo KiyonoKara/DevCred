@@ -32,7 +32,7 @@ const jobFairController = (socket: FakeSOSocket) => {
    */
   const createJobFairRoute = async (req: CreateJobFairRequest, res: Response) => {
     try {
-      const { title, description, visibility, scheduledDate, invitedUsers } = req.body;
+      const { title, description, visibility, startTime, endTime, invitedUsers } = req.body;
       // Get host username from user context
       const hostUsername = req.body.hostUsername || (req.headers.username as string);
       if (!hostUsername) {
@@ -45,7 +45,8 @@ const jobFairController = (socket: FakeSOSocket) => {
         hostUsername,
         visibility,
         status: 'upcoming' as const,
-        scheduledDate: new Date(scheduledDate),
+        startTime: startTime,
+        endTime: endTime,
         participants: [],
         invitedUsers: invitedUsers || [],
         chatMessages: [],
@@ -59,13 +60,17 @@ const jobFairController = (socket: FakeSOSocket) => {
         throw new Error(result.error);
       }
 
+      // Convert ObjectId to string for response
+      const responseData = JSON.parse(JSON.stringify(result));
+      responseData._id = result._id.toString();
+
       // Emit socket event
       socket.emit('jobFairUpdate', {
-        jobFair: result,
+        jobFair: responseData,
         type: 'created',
       });
 
-      res.status(201).json(result);
+      res.status(201).json(responseData);
     } catch (error) {
       res.status(500).send(`Error creating job fair: ${(error as Error).message}`);
     }
@@ -91,7 +96,13 @@ const jobFairController = (socket: FakeSOSocket) => {
         throw new Error(jobFairs.error);
       }
 
-      res.status(200).json(jobFairs);
+      // Convert ObjectIds to strings for response
+      const responseData = jobFairs.map(jobFair => ({
+        ...JSON.parse(JSON.stringify(jobFair)),
+        _id: jobFair._id.toString(),
+      }));
+
+      res.status(200).json(responseData);
     } catch (error) {
       res.status(500).send(`Error retrieving job fairs: ${(error as Error).message}`);
     }
@@ -119,7 +130,13 @@ const jobFairController = (socket: FakeSOSocket) => {
         throw new Error(jobFair.error);
       }
 
-      res.status(200).json(jobFair);
+      // Convert ObjectId to string for response
+      const responseData = {
+        ...JSON.parse(JSON.stringify(jobFair)),
+        _id: jobFair._id.toString(),
+      };
+
+      res.status(200).json(responseData);
     } catch (error) {
       res.status(500).send(`Error retrieving job fair: ${(error as Error).message}`);
     }
@@ -131,13 +148,14 @@ const jobFairController = (socket: FakeSOSocket) => {
    * @param res The response object to send the result.
    */
   const updateJobFairStatusRoute = async (
-    req: JobFairIdRequest & { body: { status: 'upcoming' | 'live' | 'ended' } },
+    req: JobFairIdRequest & {
+      body: { status: 'upcoming' | 'live' | 'ended'; hostUsername?: string };
+    },
     res: Response,
   ) => {
     try {
       const { jobFairId } = req.params;
-      const { status } = req.body;
-      const hostUsername = req.headers.username as string;
+      const { status, hostUsername } = req.body;
 
       if (!hostUsername) {
         return res.status(401).json({ error: 'Authentication required' });
@@ -155,13 +173,19 @@ const jobFairController = (socket: FakeSOSocket) => {
         throw new Error(result.error);
       }
 
+      // Convert ObjectId to string for response
+      const responseData = {
+        ...JSON.parse(JSON.stringify(result)),
+        _id: result._id.toString(),
+      };
+
       // Emit socket event
       socket.emit('jobFairUpdate', {
-        jobFair: result,
+        jobFair: responseData,
         type: 'statusChanged',
       });
 
-      res.status(200).json(result);
+      res.status(200).json(responseData);
     } catch (error) {
       res.status(500).send(`Error updating job fair status: ${(error as Error).message}`);
     }
@@ -192,13 +216,19 @@ const jobFairController = (socket: FakeSOSocket) => {
         throw new Error(result.error);
       }
 
+      // Convert ObjectId to string for response
+      const responseData = {
+        ...JSON.parse(JSON.stringify(result)),
+        _id: result._id.toString(),
+      };
+
       // Emit socket event for real-time updates
       socket.to(`jobFair_${jobFairId}`).emit('jobFairUpdate', {
-        jobFair: result,
+        jobFair: responseData,
         type: 'participantJoined',
       });
 
-      res.status(200).json(result);
+      res.status(200).json(responseData);
     } catch (error) {
       res.status(500).send(`Error joining job fair: ${(error as Error).message}`);
     }
@@ -209,10 +239,13 @@ const jobFairController = (socket: FakeSOSocket) => {
    * @param req The request object containing the job fair ID.
    * @param res The response object to send the result.
    */
-  const leaveJobFairRoute = async (req: JobFairIdRequest, res: Response) => {
+  const leaveJobFairRoute = async (
+    req: JobFairIdRequest & { body: { username: string } },
+    res: Response,
+  ) => {
     try {
       const { jobFairId } = req.params;
-      const username = req.headers.username as string;
+      const { username } = req.body;
 
       if (!username) {
         return res.status(401).json({ error: 'Authentication required' });
@@ -230,13 +263,19 @@ const jobFairController = (socket: FakeSOSocket) => {
         throw new Error(result.error);
       }
 
+      // Convert ObjectId to string for response
+      const responseData = {
+        ...JSON.parse(JSON.stringify(result)),
+        _id: result._id.toString(),
+      };
+
       // Emit socket event for real-time updates
       socket.to(`jobFair_${jobFairId}`).emit('jobFairUpdate', {
-        jobFair: result,
+        jobFair: responseData,
         type: 'participantLeft',
       });
 
-      res.status(200).json(result);
+      res.status(200).json(responseData);
     } catch (error) {
       res.status(500).send(`Error leaving job fair: ${(error as Error).message}`);
     }
@@ -268,8 +307,15 @@ const jobFairController = (socket: FakeSOSocket) => {
         throw new Error(result.error);
       }
 
-      // Emit socket event for real-time chat updates
-      socket.to(`jobFair_${jobFairId}`).emit('jobFairChatMessage', {
+      // Convert ObjectId to string for response
+      const responseData = {
+        ...JSON.parse(JSON.stringify(result)),
+        _id: result._id.toString(),
+      };
+
+      // Emit socket event for real-time chat updates to all users in the room
+      // (clients will filter out their own messages to prevent duplicates)
+      socket.emit('jobFairChatMessage', {
         jobFairId,
         message: {
           msg,
@@ -278,7 +324,7 @@ const jobFairController = (socket: FakeSOSocket) => {
         },
       });
 
-      res.status(200).json(result);
+      res.status(200).json(responseData);
     } catch (error) {
       res.status(500).send(`Error adding job fair message: ${(error as Error).message}`);
     }
@@ -311,12 +357,17 @@ const jobFairController = (socket: FakeSOSocket) => {
       }
 
       // Emit socket event
+      const responseData = {
+        ...JSON.parse(JSON.stringify(result)),
+        _id: result._id.toString(),
+      };
+
       socket.emit('jobFairUpdate', {
-        jobFair: result,
+        jobFair: responseData,
         type: 'deleted',
       });
 
-      res.status(200).json(result);
+      res.status(200).json(responseData);
     } catch (error) {
       res.status(500).send(`Error deleting job fair: ${(error as Error).message}`);
     }
@@ -335,6 +386,64 @@ const jobFairController = (socket: FakeSOSocket) => {
     });
   });
 
+  /**
+   * Submits a coding challenge solution to a job fair tournament.
+   * @param req The request object containing the coding submission.
+   * @param res The response object to send the result.
+   */
+  const submitCodingChallengeRoute = async (
+    req: JobFairIdRequest & {
+      body: { code: string; language: string; submittedAt: string; submittedBy: string };
+    },
+    res: Response,
+  ) => {
+    try {
+      const { jobFairId } = req.params;
+      const { code, language, submittedAt, submittedBy } = req.body;
+
+      if (!submittedBy) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+
+      const result = await addJobFairMessage(jobFairId, {
+        msg: code,
+        msgFrom: submittedBy,
+        msgDateTime: new Date(submittedAt),
+      });
+
+      if ('error' in result) {
+        if (result.error.includes('not found')) {
+          return res.status(404).json({ error: result.error });
+        }
+        if (result.error.includes('Only participants')) {
+          return res.status(403).json({ error: result.error });
+        }
+        throw new Error(result.error);
+      }
+
+      // Convert ObjectId to string for response
+      const responseData = {
+        ...JSON.parse(JSON.stringify(result)),
+        _id: result._id.toString(),
+      };
+
+      // Emit socket event for real-time updates
+      socket.emit('codingSubmission', {
+        jobFairId,
+        submission: {
+          code,
+          language,
+          submittedAt: new Date(submittedAt),
+          submittedBy,
+        },
+      });
+
+      res.status(200).json(responseData);
+    } catch (error) {
+      res.status(500).send(`Error submitting coding challenge: ${(error as Error).message}`);
+    }
+  };
+
   // Register the routes
   router.post('/create', createJobFairRoute);
   router.get('/list', getJobFairsRoute);
@@ -343,6 +452,7 @@ const jobFairController = (socket: FakeSOSocket) => {
   router.post('/:jobFairId/join', joinJobFairRoute);
   router.post('/:jobFairId/leave', leaveJobFairRoute);
   router.post('/:jobFairId/message', addJobFairMessageRoute);
+  router.post('/:jobFairId/submission', submitCodingChallengeRoute);
   router.delete('/:jobFairId', deleteJobFairRoute);
 
   return router;
