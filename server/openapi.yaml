@@ -1801,6 +1801,36 @@ paths:
         '500':
           $ref: '#/components/responses/ErrorResponse'
 
+  /user/getUserActivity/{username}:
+    get:
+      tags:
+        - Users
+      summary: Retrieve activity metrics for a user.
+      parameters:
+        - in: path
+          name: username
+          schema:
+            type: string
+          required: true
+          description: The username of the user whose activity is being requested.
+        - in: query
+          name: viewer
+          schema:
+            type: string
+          required: false
+          description: The username of the viewer requesting the data (used for privacy enforcement).
+      responses:
+        '200':
+          description: Successfully retrieved user activity details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserActivityResponse'
+        '404':
+          description: User not found.
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
   /user/getUsers:
     get:
       tags:
@@ -2503,6 +2533,136 @@ components:
         dmEnabled:
           type: boolean
           description: Whether the user accepts direct messages
+
+    UserActivityTagSummary:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: object-id
+          description: Unique identifier of the associated tag.
+        name:
+          type: string
+          description: Name of the tag.
+
+    UserActivityQuestionSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the question.
+        title:
+          type: string
+          description: Title of the question.
+        askDateTime:
+          type: string
+          format: date-time
+          description: When the question was asked.
+        viewsCount:
+          type: integer
+          minimum: 0
+          description: Total number of recorded views.
+        answersCount:
+          type: integer
+          minimum: 0
+          description: Number of answers this question has received.
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserActivityTagSummary'
+          description: Tags attached to the question.
+
+    UserActivityAnswerSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the answer.
+        text:
+          type: string
+          description: Body text of the answer.
+        ansDateTime:
+          type: string
+          format: date-time
+          description: When the answer was posted.
+        commentsCount:
+          type: integer
+          minimum: 0
+          description: Number of comments left on this answer.
+        question:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+              description: Unique identifier of the related question.
+            title:
+              type: string
+              description: Title of the related question.
+            askDateTime:
+              type: string
+              format: date-time
+            askedBy:
+              type: string
+              description: Author of the related question.
+            viewsCount:
+              type: integer
+              minimum: 0
+              description: Total number of views for the related question.
+
+    UserActivityProfile:
+      type: object
+      properties:
+        username:
+          type: string
+        biography:
+          type: string
+        dateJoined:
+          type: string
+          format: date-time
+          nullable: true
+        profileVisibility:
+          type: string
+          enum:
+            - private
+            - public-metrics-only
+            - public-full
+
+    UserActivitySummary:
+      type: object
+      properties:
+        totalQuestions:
+          type: integer
+          minimum: 0
+        totalAnswers:
+          type: integer
+          minimum: 0
+
+    UserActivityResponse:
+      type: object
+      properties:
+        profile:
+          $ref: '#/components/schemas/UserActivityProfile'
+        summary:
+          $ref: '#/components/schemas/UserActivitySummary'
+        visibility:
+          type: string
+          enum:
+            - private
+            - public-metrics-only
+            - public-full
+        canViewDetails:
+          type: boolean
+        isOwner:
+          type: boolean
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserActivityQuestionSummary'
+        answers:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserActivityAnswerSummary'
 
     # --------------------
     # RESUME SCHEMAS

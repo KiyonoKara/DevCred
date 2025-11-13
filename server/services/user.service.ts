@@ -1,4 +1,7 @@
 import UserModel from '../models/users.model';
+import QuestionModel from '../models/questions.model';
+import AnswerModel from '../models/answers.model';
+import TagModel from '../models/tags.model';
 import {
   DatabaseUser,
   SafeDatabaseUser,
@@ -6,6 +9,9 @@ import {
   UserCredentials,
   UserResponse,
   UsersResponse,
+  DatabaseQuestion,
+  DatabaseAnswer,
+  DatabaseTag,
 } from '../types/types';
 
 // TODO: Add in recruiter validation checks + Ability to sign up as recruiter
@@ -170,6 +176,217 @@ export const updateUserPrivacySettings = async (
   },
 ): Promise<UserResponse> => {
   return updateUser(username, privacySettings);
+};
+
+type QuestionWithTags = Omit<DatabaseQuestion, 'tags'> & {
+  tags?: unknown[];
+};
+
+type AnswerWithComments = Omit<DatabaseAnswer, 'comments'> & {
+  comments?: unknown[];
+};
+
+export interface UserActivityQuestionSummary {
+  id: string;
+  title: string;
+  askDateTime: Date;
+  viewsCount: number;
+  answersCount: number;
+  tags: Pick<DatabaseTag, 'name' | '_id'>[];
+}
+
+export interface UserActivityAnswerSummary {
+  id: string;
+  text: string;
+  ansDateTime: Date;
+  commentsCount: number;
+  question: {
+    id: string;
+    title: string;
+    askDateTime: Date;
+    askedBy: string;
+    viewsCount: number;
+  } | null;
+}
+
+export interface UserActivityResult {
+  profile: {
+    username: string;
+    biography: string;
+    dateJoined: Date | null;
+    profileVisibility: 'private' | 'public-metrics-only' | 'public-full';
+  };
+  summary: {
+    totalQuestions: number;
+    totalAnswers: number;
+  };
+  visibility: 'private' | 'public-metrics-only' | 'public-full';
+  canViewDetails: boolean;
+  isOwner: boolean;
+  questions: UserActivityQuestionSummary[];
+  answers: UserActivityAnswerSummary[];
+}
+
+const mapQuestionSummary = (question: QuestionWithTags): UserActivityQuestionSummary => {
+  const tags =
+    Array.isArray(question.tags) ?
+      question.tags
+        .filter(
+          (tag): tag is DatabaseTag =>
+            typeof (tag as DatabaseTag).name === 'string' &&
+            Boolean((tag as DatabaseTag)._id),
+        )
+        .map(tag => ({ _id: tag._id, name: tag.name })) :
+      [];
+
+  return {
+    id: String(question._id),
+    title: question.title,
+    askDateTime: question.askDateTime,
+    viewsCount: question.views ? question.views.length : 0,
+    answersCount: question.answers ? question.answers.length : 0,
+    tags,
+  };
+};
+
+const mapAnswerSummary = (
+  answer: AnswerWithComments,
+  relatedQuestion: DatabaseQuestion | undefined,
+): UserActivityAnswerSummary => ({
+  id: String(answer._id),
+  text: answer.text,
+  ansDateTime: answer.ansDateTime,
+  commentsCount: Array.isArray(answer.comments) ? answer.comments.length : 0,
+  question: relatedQuestion
+    ? {
+        id: String(relatedQuestion._id),
+        title: relatedQuestion.title,
+        askDateTime: relatedQuestion.askDateTime,
+        askedBy: relatedQuestion.askedBy,
+        viewsCount: relatedQuestion.views ? relatedQuestion.views.length : 0,
+      }
+    : null,
+});
+
+/**
+ * Retrieves detailed activity information for a user, respecting their profile visibility settings.
+ *
+ * @param username - The username whose activity should be fetched.
+ * @param viewerUsername - The username of the viewer requesting the data (used for privacy checks).
+ * @returns Aggregated question and answer activity for the user.
+ */
+export const getUserActivityData = async (
+  username: string,
+  viewerUsername?: string,
+): Promise<UserActivityResult | { error: string; statusCode?: number }> => {
+  try {
+    const userDoc = await UserModel.findOne({ username })
+      .select('username biography dateJoined profileVisibility')
+      .lean();
+
+    if (!userDoc) {
+      return { error: 'User not found', statusCode: 404 };
+    }
+
+    const profileVisibility =
+      userDoc.profileVisibility ?? ('public-full' as 'private' | 'public-metrics-only' | 'public-full');
+    const isOwner = viewerUsername === username;
+    const canViewDetails = isOwner || profileVisibility === 'public-full';
+
+    const [totalQuestions, totalAnswers] = await Promise.all([
+      QuestionModel.countDocuments({ askedBy: username }),
+      AnswerModel.countDocuments({ ansBy: username }),
+    ]);
+
+    if (!canViewDetails && profileVisibility === 'private') {
+      return {
+        profile: {
+          username: userDoc.username,
+          biography: userDoc.biography ?? '',
+          dateJoined: userDoc.dateJoined ?? null,
+          profileVisibility,
+        },
+        summary: {
+          totalQuestions,
+          totalAnswers,
+        },
+        visibility: profileVisibility,
+        canViewDetails,
+        isOwner,
+        questions: [],
+        answers: [],
+      };
+    }
+
+    const questionDocs: QuestionWithTags[] = canViewDetails
+      ? ((await QuestionModel.find({ askedBy: username })
+          .populate<{ tags: DatabaseTag[] }>({
+            path: 'tags',
+            model: TagModel,
+            select: ['name'],
+          })
+          .select(['title', 'askDateTime', 'views', 'answers', 'tags'])
+          .lean()) as QuestionWithTags[])
+      : [];
+
+    const questionSummaries = questionDocs.map(question => mapQuestionSummary(question));
+
+    let answerSummaries: UserActivityAnswerSummary[] = [];
+
+    if (canViewDetails) {
+      const answerDocs = await AnswerModel.find({ ansBy: username })
+        .select(['text', 'ansDateTime', 'comments'])
+        .lean<AnswerWithComments[]>();
+
+      if (answerDocs.length > 0) {
+        const answerIds = answerDocs.map(answer => answer._id);
+        const answerIdStrings = new Set(answerIds.map(id => String(id)));
+        const questionDocsForAnswers = await QuestionModel.find({
+          answers: { $in: answerIds },
+        })
+          .select(['_id', 'title', 'askDateTime', 'askedBy', 'views', 'answers'])
+          .lean();
+
+        const questionByAnswerId = new Map<string, DatabaseQuestion>();
+
+        questionDocsForAnswers.forEach(question => {
+          question.answers?.forEach(answerId => {
+            const key = String(answerId);
+            if (answerIdStrings.has(key)) {
+              questionByAnswerId.set(key, question as DatabaseQuestion);
+            }
+          });
+        });
+
+        answerSummaries = answerDocs.map(answer =>
+          mapAnswerSummary(
+            answer as DatabaseAnswer,
+            questionByAnswerId.get(String(answer._id)) as DatabaseQuestion | undefined,
+          ),
+        );
+      }
+    }
+
+    return {
+      profile: {
+        username: userDoc.username,
+        biography: userDoc.biography ?? '',
+        dateJoined: userDoc.dateJoined ?? null,
+        profileVisibility,
+      },
+      summary: {
+        totalQuestions,
+        totalAnswers,
+      },
+      visibility: profileVisibility,
+      canViewDetails,
+      isOwner,
+      questions: questionSummaries,
+      answers: answerSummaries,
+    };
+  } catch (error) {
+    return { error: `Error occurred when retrieving user activity: ${error}` };
+  }
 };
 
 /**
