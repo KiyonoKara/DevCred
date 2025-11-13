@@ -175,6 +175,47 @@ paths:
         '500':
           $ref: '#/components/responses/ErrorResponse'
 
+  /question/delete/{qid}:
+    delete:
+      tags:
+        - Questions
+      summary: Delete a question created by the requesting user.
+      parameters:
+        - in: path
+          name: qid
+          schema:
+            type: string
+            format: object-id
+          required: true
+          description: The unique ID of the question to delete.
+        - in: query
+          name: username
+          schema:
+            type: string
+          required: true
+          description: Username of the user attempting to delete the question.
+      responses:
+        '200':
+          description: Question successfully deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteQuestionResult'
+        '403':
+          description: The user is not allowed to delete this question.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '404':
+          description: Question not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
   # --------------------
   # ANSWER CONTROLLER
   # --------------------
@@ -198,6 +239,47 @@ paths:
                 $ref: '#/components/schemas/DatabaseAnswer'
         '400':
           $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /answer/delete/{aid}:
+    delete:
+      tags:
+        - Answers
+      summary: Delete an answer created by the requesting user.
+      parameters:
+        - in: path
+          name: aid
+          schema:
+            type: string
+            format: object-id
+          required: true
+          description: The unique ID of the answer to delete.
+        - in: query
+          name: username
+          schema:
+            type: string
+          required: true
+          description: Username of the user attempting to delete the answer.
+      responses:
+        '200':
+          description: Answer successfully deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteAnswerResult'
+        '403':
+          description: The user is not allowed to delete this answer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '404':
+          description: Answer not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
         '500':
           $ref: '#/components/responses/ErrorResponse'
 
@@ -823,6 +905,37 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/DatabaseCommunity'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /community/userEngagement/{username}:
+    get:
+      tags:
+        - Communities
+      summary: Retrieve the communities a user engages with the most.
+      parameters:
+        - in: path
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username whose community engagement should be retrieved.
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+          description: Maximum number of communities to return.
+      responses:
+        '200':
+          description: Successfully retrieved community engagement summary.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CommunityEngagementSummary'
         '500':
           $ref: '#/components/responses/ErrorResponse'
 
@@ -1801,6 +1914,36 @@ paths:
         '500':
           $ref: '#/components/responses/ErrorResponse'
 
+  /user/getUserActivity/{username}:
+    get:
+      tags:
+        - Users
+      summary: Retrieve activity metrics for a user.
+      parameters:
+        - in: path
+          name: username
+          schema:
+            type: string
+          required: true
+          description: The username of the user whose activity is being requested.
+        - in: query
+          name: viewer
+          schema:
+            type: string
+          required: false
+          description: The username of the viewer requesting the data (used for privacy enforcement).
+      responses:
+        '200':
+          description: Successfully retrieved user activity details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserActivityResponse'
+        '404':
+          description: User not found.
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
   /user/getUsers:
     get:
       tags:
@@ -2128,6 +2271,66 @@ components:
           format: object-id
           nullable: true
 
+    DatabaseQuestion:
+      type: object
+      description: A question document as stored in MongoDB.
+      required:
+        - _id
+        - title
+        - text
+        - tags
+        - askedBy
+        - askDateTime
+        - answers
+        - views
+        - upVotes
+        - downVotes
+        - comments
+      properties:
+        _id:
+          type: string
+          format: object-id
+        title:
+          type: string
+        text:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+            format: object-id
+        askedBy:
+          type: string
+        askDateTime:
+          type: string
+          format: date-time
+        answers:
+          type: array
+          items:
+            type: string
+            format: object-id
+        views:
+          type: array
+          items:
+            type: string
+        upVotes:
+          type: array
+          items:
+            type: string
+        downVotes:
+          type: array
+          items:
+            type: string
+        comments:
+          type: array
+          items:
+            type: string
+            format: object-id
+        community:
+          type: string
+          format: object-id
+          nullable: true
+
     PopulatedQuestion:
       type: object
       description: A fully populated question object with embedded tags, answers, and comments.
@@ -2167,7 +2370,29 @@ components:
 
     DatabaseAnswer:
       type: object
-      description: An answer object as stored in the database.
+      description: An answer object as stored in MongoDB.
+      required:
+        - _id
+        - text
+        - ansBy
+        - ansDateTime
+        - comments
+      properties:
+        _id:
+          type: string
+          format: object-id
+        text:
+          type: string
+        ansBy:
+          type: string
+        ansDateTime:
+          type: string
+          format: date-time
+        comments:
+          type: array
+          items:
+            type: string
+            format: object-id
 
     # --------------------
     # TAG SCHEMAS
@@ -2435,6 +2660,41 @@ components:
       type: object
       description: A community object as stored in the database.
 
+    CommunityEngagementSummary:
+      type: object
+      properties:
+        community:
+          $ref: '#/components/schemas/DatabaseCommunity'
+        questionCount:
+          type: integer
+          minimum: 0
+        answerCount:
+          type: integer
+          minimum: 0
+        score:
+          type: integer
+          minimum: 0
+
+    DeleteQuestionResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        deletedQuestionId:
+          type: string
+          format: object-id
+
+    DeleteAnswerResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        deletedAnswerId:
+          type: string
+          format: object-id
+
     # --------------------
     # USER SCHEMAS
     # --------------------
@@ -2503,6 +2763,136 @@ components:
         dmEnabled:
           type: boolean
           description: Whether the user accepts direct messages
+
+    UserActivityTagSummary:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: object-id
+          description: Unique identifier of the associated tag.
+        name:
+          type: string
+          description: Name of the tag.
+
+    UserActivityQuestionSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the question.
+        title:
+          type: string
+          description: Title of the question.
+        askDateTime:
+          type: string
+          format: date-time
+          description: When the question was asked.
+        viewsCount:
+          type: integer
+          minimum: 0
+          description: Total number of recorded views.
+        answersCount:
+          type: integer
+          minimum: 0
+          description: Number of answers this question has received.
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserActivityTagSummary'
+          description: Tags attached to the question.
+
+    UserActivityAnswerSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the answer.
+        text:
+          type: string
+          description: Body text of the answer.
+        ansDateTime:
+          type: string
+          format: date-time
+          description: When the answer was posted.
+        commentsCount:
+          type: integer
+          minimum: 0
+          description: Number of comments left on this answer.
+        question:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+              description: Unique identifier of the related question.
+            title:
+              type: string
+              description: Title of the related question.
+            askDateTime:
+              type: string
+              format: date-time
+            askedBy:
+              type: string
+              description: Author of the related question.
+            viewsCount:
+              type: integer
+              minimum: 0
+              description: Total number of views for the related question.
+
+    UserActivityProfile:
+      type: object
+      properties:
+        username:
+          type: string
+        biography:
+          type: string
+        dateJoined:
+          type: string
+          format: date-time
+          nullable: true
+        profileVisibility:
+          type: string
+          enum:
+            - private
+            - public-metrics-only
+            - public-full
+
+    UserActivitySummary:
+      type: object
+      properties:
+        totalQuestions:
+          type: integer
+          minimum: 0
+        totalAnswers:
+          type: integer
+          minimum: 0
+
+    UserActivityResponse:
+      type: object
+      properties:
+        profile:
+          $ref: '#/components/schemas/UserActivityProfile'
+        summary:
+          $ref: '#/components/schemas/UserActivitySummary'
+        visibility:
+          type: string
+          enum:
+            - private
+            - public-metrics-only
+            - public-full
+        canViewDetails:
+          type: boolean
+        isOwner:
+          type: boolean
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserActivityQuestionSummary'
+        answers:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserActivityAnswerSummary'
 
     # --------------------
     # RESUME SCHEMAS

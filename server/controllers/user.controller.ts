@@ -7,6 +7,7 @@ import {
   saveUser,
   updateUser,
   updateUserPrivacySettings,
+  getUserActivityData,
 } from '../services/user.service';
 import {
   FakeSOSocket,
@@ -230,12 +231,37 @@ const userController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Retrieves aggregated activity information for a user, respecting profile visibility settings.
+   * @param req The request containing the username as a route parameter and viewer as optional query param.
+   * @param res The response returning activity data or an error.
+   */
+  const getUserActivity = async (req: Request, res: Response): Promise<void> => {
+    const { username } = req.params;
+    const viewerUsername = typeof req.query.viewer === 'string' ? req.query.viewer : undefined;
+
+    try {
+      const activity = await getUserActivityData(username, viewerUsername);
+
+      if ('error' in activity) {
+        const status = activity.statusCode ?? 500;
+        res.status(status).send(activity.error);
+        return;
+      }
+
+      res.status(200).json(activity);
+    } catch (error) {
+      res.status(500).send(`Error when fetching user activity: ${error}`);
+    }
+  };
+
   // Define routes for the user-related operations.
   router.post('/signup', createUser);
   router.post('/login', userLogin);
   router.patch('/resetPassword', resetPassword);
   router.get('/getUser/:username', getUser);
   router.get('/getUsers', getUsers);
+  router.get('/getUserActivity/:username', getUserActivity);
   router.delete('/deleteUser/:username', deleteUser);
   router.patch('/updateBiography', updateBiography);
   router.patch('/updatePrivacySettings', updatePrivacySettings);

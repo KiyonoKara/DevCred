@@ -9,9 +9,11 @@ import {
   FakeSOSocket,
   PopulatedDatabaseQuestion,
   CommunityQuestionsRequest,
+  DeleteQuestionRequest,
 } from '../types/types';
 import {
   addVoteToQuestion,
+  deleteQuestionById,
   fetchAndIncrementQuestionViewsById,
   filterQuestionsByAskedBy,
   filterQuestionsBySearch,
@@ -238,6 +240,45 @@ const questionController = (socket: FakeSOSocket) => {
     }
   };
 
+  const deleteQuestion = async (req: DeleteQuestionRequest, res: Response): Promise<void> => {
+    const { qid } = req.params;
+    const { username } = req.query;
+
+    if (!qid || !username) {
+      res.status(400).send('Missing question id or username');
+      return;
+    }
+
+    if (!ObjectId.isValid(qid)) {
+      res.status(400).send('Invalid ID format');
+      return;
+    }
+
+    try {
+      const deletionResult = await deleteQuestionById(qid, username);
+
+      if ('error' in deletionResult) {
+        if (deletionResult.error.includes('Unauthorized')) {
+          res.status(403).json({ error: deletionResult.error });
+          return;
+        }
+        if (deletionResult.error.includes('not found')) {
+          res.status(404).json({ error: deletionResult.error });
+          return;
+        }
+        throw new Error(deletionResult.error);
+      }
+
+      // eslint-disable-next-line no-console
+      console.log(`[question.controller] Question ${qid} deleted by ${username}`);
+      res.json({ success: true, deletedQuestionId: qid });
+    } catch (err: unknown) {
+      // eslint-disable-next-line no-console
+      console.error(`[question.controller] Failed to delete question ${qid} for ${username}:`, err);
+      res.status(500).send(`Error when deleting question: ${(err as Error).message}`);
+    }
+  };
+
   // add appropriate HTTP verbs and their endpoints to the router
   router.get('/getQuestion', getQuestionsByFilter);
   router.get('/getQuestionById/:qid', getQuestionById);
@@ -245,6 +286,7 @@ const questionController = (socket: FakeSOSocket) => {
   router.post('/upvoteQuestion', upvoteQuestion);
   router.post('/downvoteQuestion', downvoteQuestion);
   router.get('/getCommunityQuestions/:communityId', getCommunityQuestionsRoute);
+  router.delete('/delete/:qid', deleteQuestion);
 
   return router;
 };

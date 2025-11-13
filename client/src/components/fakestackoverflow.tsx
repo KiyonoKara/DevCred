@@ -7,15 +7,18 @@ import Login from './auth/login';
 import Signup from './auth/signup';
 import Layout from './layout';
 import AnswerPage from './main/answerPage';
+import UsersListPage from './main/usersListPage';
+import ProfileSettings from './profileSettings';
+import UserActivityPage from './main/userActivityPage';
+import AllGamesPage from './main/games/allGamesPage';
+import GamePage from './main/games/gamePage';
+import AllCommunitiesPage from './main/communities/allCommunitiesPage';
+import NewCommunityPage from './main/communities/newCommunityPage';
+import CommunityPage from './main/communities/communityPage';
 import AllCollectionsPage from './main/collections/allCollectionsPage';
 import CollectionPage from './main/collections/collectionPage';
 import NewCollectionPage from './main/collections/newCollectionPage';
-import AllCommunitiesPage from './main/communities/allCommunitiesPage';
-import CommunityPage from './main/communities/communityPage';
-import NewCommunityPage from './main/communities/newCommunityPage';
 import DirectMessage from './main/directMessage';
-import AllGamesPage from './main/games/allGamesPage';
-import GamePage from './main/games/gamePage';
 import TalentApplicationView from './main/jobs/jobApplicationsPage';
 import JobBoard from './main/jobs/jobBoardPage';
 import RecruiterJobPostings from './main/jobs/jobPostingsPage';
@@ -27,8 +30,6 @@ import NewAnswerPage from './main/newAnswer';
 import NewQuestionPage from './main/newQuestion';
 import QuestionPage from './main/questionPage';
 import TagPage from './main/tagPage';
-import UsersListPage from './main/usersListPage';
-import ProfileSettings from './profileSettings';
 
 const ProtectedRoute = ({
   user,
@@ -75,7 +76,8 @@ const FakeStackOverflow = ({ socket }: { socket: FakeSOSocket | null }) => {
             <Route path='/new/question' element={<NewQuestionPage />} />
             <Route path='/new/answer/:qid' element={<NewAnswerPage />} />
             <Route path='/users' element={<UsersListPage />} />
-            <Route path='/user/:username' element={<ProfileSettings />} />
+            <Route path='/user/:username/settings' element={<ProfileSettings />} />
+            <Route path='/user/:username' element={<UserActivityPage />} />
             <Route path='/new/collection' element={<NewCollectionPage />} />
             <Route path='/collections/:username' element={<AllCollectionsPage />} />
             <Route path='/collections/:username/:collectionId' element={<CollectionPage />} />

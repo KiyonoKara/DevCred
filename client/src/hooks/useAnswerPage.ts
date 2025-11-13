@@ -10,6 +10,7 @@ import {
 import useUserContext from './useUserContext';
 import addComment from '../services/commentService';
 import { getQuestionById } from '../services/questionService';
+import { AxiosError } from 'axios';
 
 /**
  * Custom hook for managing the answer page's state, navigation, and real-time updates.
@@ -74,10 +75,16 @@ const useAnswerPage = () => {
     const fetchData = async () => {
       try {
         const res = await getQuestionById(questionID, user.username);
+        // eslint-disable-next-line no-console
+        console.log('Fetched question', res);
         setQuestion(res || null);
       } catch (error) {
+        const axiosError = error as AxiosError;
         // eslint-disable-next-line no-console
-        console.error('Error fetching question:', error);
+        console.error(
+          'Error fetching question:',
+          axiosError.response?.data ?? axiosError.message ?? error,
+        );
       }
     };
 

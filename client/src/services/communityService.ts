@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
 import api from './config';
-import { Community, DatabaseCommunity } from '../types/types';
+import { Community, CommunityEngagementSummary, DatabaseCommunity } from '../types/types';
 
 const COMMUNITIES_API_URL = `/api/community`;
 
@@ -91,9 +91,25 @@ const deleteCommunity = async (communityId: string, username: string): Promise<v
   return res.data;
 };
 
+const getUserCommunityEngagement = async (
+  username: string,
+  limit = 10,
+): Promise<CommunityEngagementSummary[]> => {
+  const res = await api.get(`${COMMUNITIES_API_URL}/userEngagement/${username}`, {
+    params: { limit },
+  });
+
+  if (res.status !== 200) {
+    throw new Error('Error while fetching community engagement');
+  }
+
+  return res.data;
+};
+
 export {
   changeCommunityMembership,
   getCommunities,
+  getUserCommunityEngagement,
   createCommunity,
   getCommunityById,
   deleteCommunity,

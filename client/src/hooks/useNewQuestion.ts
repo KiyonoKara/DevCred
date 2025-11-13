@@ -1,10 +1,10 @@
-import { ChangeEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { validateHyperlink } from '../tool';
 import { addQuestion } from '../services/questionService';
 import useUserContext from './useUserContext';
-import { DatabaseCommunity, Question } from '../types/types';
-import { getCommunities } from '../services/communityService';
+import { CommunityEngagementSummary, DatabaseCommunity, Question } from '../types/types';
+import { getCommunities, getUserCommunityEngagement } from '../services/communityService';
 
 /**
  * Custom hook to handle question submission and form validation
@@ -30,6 +30,11 @@ const useNewQuestion = () => {
   const [tagErr, setTagErr] = useState<string>('');
 
   const [communityList, setCommunityList] = useState<DatabaseCommunity[]>([]);
+  const [topJoinedCommunities, setTopJoinedCommunities] = useState<DatabaseCommunity[]>([]);
+  const [communitySearch, setCommunitySearch] = useState<string>('');
+  const [searchResults, setSearchResults] = useState<DatabaseCommunity[]>([]);
+  const [searchPerformed, setSearchPerformed] = useState<boolean>(false);
+  const [engagedCommunities, setEngagedCommunities] = useState<CommunityEngagementSummary[]>([]);
 
   /**
    * Function to validate the form before submitting the question.
@@ -116,18 +121,58 @@ const useNewQuestion = () => {
     }
   };
 
-  const handleDropdownChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    const selectedCommunity = communityList.find(com => com._id.toString() === event.target.value);
+  const handleCommunitySearch = () => {
+    const term = communitySearch.trim().toLowerCase();
 
-    if (selectedCommunity) {
-      setCommunity(selectedCommunity);
+    if (!term) {
+      setSearchResults(engagedCommunities.map(item => item.community));
+      setSearchPerformed(true);
+      return;
     }
+
+    const matches = communityList.filter(com => com.name.toLowerCase().includes(term));
+
+    setSearchResults(matches);
+    setSearchPerformed(true);
+  };
+
+  const handleSelectCommunity = (selected: DatabaseCommunity | null) => {
+    setCommunity(selected);
+  };
+
+  const handleClearCommunity = () => {
+    setCommunity(null);
   };
 
   useEffect(() => {
     const fetchCommunities = async () => {
-      const allCommunities = await getCommunities();
-      setCommunityList(allCommunities.filter(com => com.participants.includes(user.username)));
+      const [allCommunities, engagement] = await Promise.all([
+        getCommunities(),
+        getUserCommunityEngagement(user.username, 10),
+      ]);
+
+      setCommunityList(allCommunities);
+      setEngagedCommunities(engagement);
+
+      const joined = allCommunities.filter(com => com.participants.includes(user.username));
+
+      const engagementScores = new Map(
+        engagement.map(item => [item.community._id.toString(), item.score]),
+      );
+
+      const sortedJoined = [...joined].sort((a, b) => {
+        const scoreA = engagementScores.get(a._id.toString()) ?? 0;
+        const scoreB = engagementScores.get(b._id.toString()) ?? 0;
+        return scoreB - scoreA;
+      });
+
+      const preview = sortedJoined.slice(0, 5);
+
+      if (preview.length > 0) {
+        setTopJoinedCommunities(preview);
+      } else {
+        setTopJoinedCommunities(joined.slice(0, 5));
+      }
     };
 
     fetchCommunities();
@@ -146,8 +191,15 @@ const useNewQuestion = () => {
     textErr,
     tagErr,
     postQuestion,
-    communityList,
-    handleDropdownChange,
+    communitySearch,
+    setCommunitySearch,
+    handleCommunitySearch,
+    searchResults,
+    handleSelectCommunity,
+    handleClearCommunity,
+    searchPerformed,
+    selectedCommunity: community,
+    topJoinedCommunities,
   };
 };
 

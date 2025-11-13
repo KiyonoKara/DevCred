@@ -76,3 +76,19 @@ export interface DeleteCommunityRequest extends CommunityIdRequest {
  * Either returns a DatabaseCommunity (successful operation) or an error message
  */
 export type CommunityResponse = DatabaseCommunity | { error: string };
+
+export interface CommunityEngagementSummary {
+  community: DatabaseCommunity;
+  questionCount: number;
+  answerCount: number;
+  score: number;
+}
+
+export interface CommunityEngagementRequest extends Request {
+  params: {
+    username: string;
+  };
+  query: {
+    limit?: string;
+  };
+}

@@ -147,6 +147,62 @@ const updatePrivacySettings = async (
   return res.data;
 };
 
+export interface UserActivityQuestionSummary {
+  id: string;
+  title: string;
+  askDateTime: string;
+  viewsCount: number;
+  answersCount: number;
+  tags: { _id: string; name: string }[];
+}
+
+export interface UserActivityAnswerSummary {
+  id: string;
+  text: string;
+  ansDateTime: string;
+  commentsCount: number;
+  question: {
+    id: string;
+    title: string;
+    askDateTime: string;
+    askedBy: string;
+    viewsCount: number;
+  } | null;
+}
+
+export interface UserActivityResponse {
+  profile: {
+    username: string;
+    biography: string;
+    dateJoined: string | null;
+    profileVisibility: 'private' | 'public-metrics-only' | 'public-full';
+  };
+  summary: {
+    totalQuestions: number;
+    totalAnswers: number;
+  };
+  visibility: 'private' | 'public-metrics-only' | 'public-full';
+  canViewDetails: boolean;
+  isOwner: boolean;
+  questions: UserActivityQuestionSummary[];
+  answers: UserActivityAnswerSummary[];
+}
+
+const getUserActivity = async (
+  username: string,
+  viewerUsername?: string,
+): Promise<UserActivityResponse> => {
+  const res = await api.get(`${USER_API_URL}/getUserActivity/${username}`, {
+    params: viewerUsername ? { viewer: viewerUsername } : {},
+  });
+
+  if (res.status !== 200) {
+    throw new Error('Error when fetching user activity');
+  }
+
+  return res.data;
+};
+
 export {
   getUsers,
   getUserByUsername,
@@ -156,4 +212,5 @@ export {
   resetPassword,
   updateBiography,
   updatePrivacySettings,
+  getUserActivity,
 };
