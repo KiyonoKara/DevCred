@@ -1,0 +1,291 @@
+/**
+ * Styles for the CodingTournamentPage component
+ */
+
+.coding-tournament-page {
+  padding: 20px;
+  background-color: #f5f7fa;
+  min-height: 600px;
+}
+
+.tournament-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.code-submission-section,
+.submissions-section {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.code-submission-section h3,
+.submissions-section h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 20px;
+}
+
+.submission-error {
+  padding: 12px;
+  background-color: #fee;
+  color: #c00;
+  border: 1px solid #fcc;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.submission-success {
+  padding: 12px;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.submission-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.language-select {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: white;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.language-select:hover {
+  border-color: #999;
+}
+
+.language-select:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+.code-input {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: 'Monaco', 'Courier New', monospace;
+  resize: vertical;
+  transition: border-color 0.2s ease;
+}
+
+.code-input:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+.submit-btn {
+  padding: 12px 24px;
+  background-color: #0066cc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background-color: #0052a3;
+}
+
+.submit-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.no-submissions {
+  padding: 40px 20px;
+  text-align: center;
+  color: #999;
+  font-size: 14px;
+}
+
+.submissions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-height: 700px;
+  overflow-y: auto;
+}
+
+.submission-card {
+  padding: 15px;
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.submission-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.submission-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.submission-by {
+  font-weight: 600;
+  color: #0066cc;
+  font-size: 13px;
+}
+
+.submission-time {
+  font-size: 12px;
+  color: #999;
+}
+
+.submission-grade {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.grade-value {
+  font-weight: 700;
+}
+
+.submission-language {
+  display: flex;
+  gap: 5px;
+}
+
+.language-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  background-color: #fff3e0;
+  color: #e65100;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.submission-code {
+  padding: 10px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-family: 'Monaco', 'Courier New', monospace;
+  font-size: 12px;
+  color: #333;
+  line-height: 1.4;
+}
+
+.submission-code code {
+  display: block;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.submission-feedback {
+  padding: 10px;
+  background-color: #f0f7ff;
+  border-left: 3px solid #0066cc;
+  border-radius: 2px;
+  font-size: 13px;
+  color: #333;
+}
+
+.submission-feedback strong {
+  color: #0066cc;
+}
+
+.submission-actions {
+  padding: 12px;
+  background-color: #fff3e0;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.grade-prompt {
+  margin: 0;
+  color: #e65100;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.submission-graded-by {
+  font-size: 12px;
+  color: #666;
+}
+
+.submission-graded-by span {
+  font-weight: 600;
+  color: #333;
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .tournament-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .coding-tournament-page {
+    padding: 15px;
+  }
+
+  .code-submission-section,
+  .submissions-section {
+    padding: 15px;
+  }
+
+  .code-input {
+    font-size: 12px;
+  }
+
+  .submissions-list {
+    max-height: 400px;
+  }
+
+  .submission-card {
+    gap: 8px;
+  }
+}
