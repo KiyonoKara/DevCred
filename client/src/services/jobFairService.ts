@@ -68,13 +68,15 @@ const createJobFair = async (jobFairData: {
  * Updates the status of a job fair.
  * @param jobFairId The ID of the job fair
  * @param status The new status ('upcoming', 'live', or 'ended')
+ * @param hostUsername The username of the host updating the status
  * @returns The updated DatabaseJobFair object
  */
 const updateJobFairStatus = async (
   jobFairId: string,
   status: 'upcoming' | 'live' | 'ended',
+  hostUsername: string,
 ): Promise<DatabaseJobFair> => {
-  const res = await api.patch(`${JOB_FAIR_API_URL}/${jobFairId}/status`, { status });
+  const res = await api.patch(`${JOB_FAIR_API_URL}/${jobFairId}/status`, { status, hostUsername });
 
   if (res.status !== 200) {
     throw new Error('Error updating job fair status.');
@@ -148,6 +150,7 @@ const addJobFairMessage = async (
  * Submits a coding solution to the job fair tournament.
  * @param jobFairId The ID of the job fair
  * @param submission The coding submission data
+ * @param submittedBy The username of the person submitting
  * @returns The updated DatabaseJobFair object
  */
 const submitCodingChallenge = async (
@@ -157,8 +160,12 @@ const submitCodingChallenge = async (
     language: string;
     submittedAt: Date | string;
   },
+  submittedBy: string,
 ): Promise<DatabaseJobFair> => {
-  const res = await api.post(`${JOB_FAIR_API_URL}/${jobFairId}/submission`, submission);
+  const res = await api.post(`${JOB_FAIR_API_URL}/${jobFairId}/submission`, {
+    ...submission,
+    submittedBy,
+  });
 
   if (res.status !== 200) {
     throw new Error('Error submitting coding challenge.');

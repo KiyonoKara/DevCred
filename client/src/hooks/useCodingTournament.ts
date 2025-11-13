@@ -62,7 +62,7 @@ const useCodingTournament = (jobFairId: string, jobFair: DatabaseJobFair | null)
         submittedAt: new Date(),
       };
 
-      await jobFairService.submitCodingChallenge(jobFairId, submission);
+      await jobFairService.submitCodingChallenge(jobFairId, submission, currentUser.username);
 
       // Add to local submissions
       setSubmissions(prev => [

@@ -86,12 +86,16 @@ const useJobFairPage = () => {
 
     try {
       setError(null);
-      const updated = await jobFairService.updateJobFairStatus(jobFairId, 'live');
+      const updated = await jobFairService.updateJobFairStatus(
+        jobFairId,
+        'live',
+        currentUser.username,
+      );
       setJobFair(updated);
     } catch (err) {
       setError((err as Error).message || 'Failed to start job fair');
     }
-  }, [jobFairId, isHost]);
+  }, [jobFairId, isHost, currentUser.username]);
 
   // For ending the job fair only for recruiter host
   const handleEndJobFair = useCallback(async () => {
@@ -99,12 +103,16 @@ const useJobFairPage = () => {
 
     try {
       setError(null);
-      const updated = await jobFairService.updateJobFairStatus(jobFairId, 'ended');
+      const updated = await jobFairService.updateJobFairStatus(
+        jobFairId,
+        'ended',
+        currentUser.username,
+      );
       setJobFair(updated);
     } catch (err) {
       setError((err as Error).message || 'Failed to end job fair');
     }
-  }, [jobFairId, isHost]);
+  }, [jobFairId, isHost, currentUser.username]);
 
   // WebSocket events for updates
   useEffect(() => {
