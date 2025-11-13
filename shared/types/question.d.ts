@@ -146,3 +146,12 @@ export interface CommunityQuestionsRequest extends Request {
     communityId: string;
   };
 }
+
+export interface DeleteQuestionRequest extends Request {
+  params: {
+    qid: string;
+  };
+  query: {
+    username: string;
+  };
+}

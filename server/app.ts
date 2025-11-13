@@ -37,12 +37,12 @@ const PORT = parseInt(process.env.PORT || '8000');
 const app = express();
 const server = http.createServer(app);
 // allow requests from the local dev client or the production client only
-const clientOrigin = process.env.CLIENT_URL || 'http://localhost:4530';
+const CLIENT_ORIGIN = process.env.CLIENT_URL || 'http://localhost:4530';
 
 const socket: FakeSOSocket = new Server(server, {
   path: '/socket.io',
   cors: {
-    origin: clientOrigin,
+    origin: CLIENT_ORIGIN,
     credentials: true,
   },
 });
@@ -78,7 +78,7 @@ process.on('SIGINT', async () => {
 
 app.use(
   cors({
-    origin: clientOrigin,
+    origin: CLIENT_ORIGIN,
     credentials: true,
   }),
 );

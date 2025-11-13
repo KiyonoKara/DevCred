@@ -228,16 +228,14 @@ export interface UserActivityResult {
 }
 
 const mapQuestionSummary = (question: QuestionWithTags): UserActivityQuestionSummary => {
-  const tags =
-    Array.isArray(question.tags) ?
-      question.tags
+  const tags = Array.isArray(question.tags)
+    ? question.tags
         .filter(
           (tag): tag is DatabaseTag =>
-            typeof (tag as DatabaseTag).name === 'string' &&
-            Boolean((tag as DatabaseTag)._id),
+            typeof (tag as DatabaseTag).name === 'string' && Boolean((tag as DatabaseTag)._id),
         )
-        .map(tag => ({ _id: String(tag._id), name: tag.name })) :
-      [];
+        .map(tag => ({ _id: String(tag._id), name: tag.name }))
+    : [];
 
   return {
     id: String(question._id),
@@ -288,8 +286,8 @@ export const getUserActivityData = async (
       return { error: 'User not found', statusCode: 404 };
     }
 
-    const profileVisibility =
-      userDoc.profileVisibility ?? ('public-full' as 'private' | 'public-metrics-only' | 'public-full');
+    const profileVisibility: 'private' | 'public-metrics-only' | 'public-full' =
+      userDoc.profileVisibility ?? 'public-full';
     const isOwner = viewerUsername === username;
     const canViewDetails = isOwner || profileVisibility === 'public-full';
 

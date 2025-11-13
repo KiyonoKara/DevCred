@@ -20,4 +20,15 @@ const addAnswer = async (qid: string, ans: Answer): Promise<PopulatedDatabaseAns
   return res.data;
 };
 
+const deleteAnswer = async (aid: string, username: string): Promise<void> => {
+  const res = await api.delete(`${ANSWER_API_URL}/delete/${aid}`, {
+    params: { username },
+  });
+
+  if (res.status !== 200) {
+    throw new Error('Error while deleting answer');
+  }
+};
+
 export default addAnswer;
+export { deleteAnswer };

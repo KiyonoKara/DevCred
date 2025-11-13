@@ -73,3 +73,34 @@ export const addAnswerToQuestion = async (
     return { error: 'Error when adding answer to question' };
   }
 };
+
+export const deleteAnswerById = async (aid: string, username: string): Promise<AnswerResponse> => {
+  try {
+    const answer = await AnswerModel.findById(aid);
+
+    if (!answer) {
+      // eslint-disable-next-line no-console
+      console.warn(`[deleteAnswerById] Answer not found for id ${aid}`);
+      return { error: 'Answer not found' };
+    }
+
+    if (answer.ansBy !== username) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[deleteAnswerById] Unauthorized delete attempt by ${username} for answer ${aid}`,
+      );
+      return { error: 'Unauthorized to delete this answer' };
+    }
+
+    await AnswerModel.findByIdAndDelete(aid);
+    await QuestionModel.updateMany({ answers: aid }, { $pull: { answers: aid } });
+
+    // eslint-disable-next-line no-console
+    console.log(`[deleteAnswerById] Answer ${aid} deleted by ${username}`);
+    return answer;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error(`[deleteAnswerById] Failed to delete answer ${aid}:`, error);
+    return { error: 'Error when deleting answer' };
+  }
+};

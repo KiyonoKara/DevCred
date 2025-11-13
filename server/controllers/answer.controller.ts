@@ -1,7 +1,13 @@
 import express, { Response } from 'express';
 import { ObjectId } from 'mongodb';
-import { Answer, AddAnswerRequest, FakeSOSocket, PopulatedDatabaseAnswer } from '../types/types';
-import { addAnswerToQuestion, saveAnswer } from '../services/answer.service';
+import {
+  Answer,
+  AddAnswerRequest,
+  DeleteAnswerRequest,
+  FakeSOSocket,
+  PopulatedDatabaseAnswer,
+} from '../types/types';
+import { addAnswerToQuestion, deleteAnswerById, saveAnswer } from '../services/answer.service';
 import { populateDocument } from '../utils/database.util';
 
 const answerController = (socket: FakeSOSocket) => {
@@ -44,14 +50,63 @@ const answerController = (socket: FakeSOSocket) => {
         qid: new ObjectId(qid),
         answer: populatedAns as PopulatedDatabaseAnswer,
       });
-      res.json(ansFromDb);
+      const responsePayload = {
+        _id: ansFromDb._id.toString(),
+        text: ansFromDb.text,
+        ansBy: ansFromDb.ansBy,
+        ansDateTime: ansFromDb.ansDateTime,
+        comments: Array.isArray(ansFromDb.comments)
+          ? ansFromDb.comments.map(comment => comment.toString())
+          : [],
+      };
+      res.json(responsePayload);
     } catch (err) {
       res.status(500).send(`Error when adding answer: ${(err as Error).message}`);
     }
   };
 
+  const deleteAnswer = async (req: DeleteAnswerRequest, res: Response): Promise<void> => {
+    const { aid } = req.params;
+    const { username } = req.query;
+
+    if (!aid || !username) {
+      res.status(400).send('Missing answer id or username');
+      return;
+    }
+
+    if (!ObjectId.isValid(aid)) {
+      res.status(400).send('Invalid ID format');
+      return;
+    }
+
+    try {
+      const deletionResult = await deleteAnswerById(aid, username);
+
+      if ('error' in deletionResult) {
+        if (deletionResult.error.includes('Unauthorized')) {
+          res.status(403).json({ error: deletionResult.error });
+          return;
+        }
+        if (deletionResult.error.includes('not found')) {
+          res.status(404).json({ error: deletionResult.error });
+          return;
+        }
+        throw new Error(deletionResult.error);
+      }
+
+      // eslint-disable-next-line no-console
+      console.log(`[answer.controller] Answer ${aid} deleted by ${username}`);
+      res.json({ success: true, deletedAnswerId: aid });
+    } catch (err: unknown) {
+      // eslint-disable-next-line no-console
+      console.error(`[answer.controller] Failed to delete answer ${aid} for ${username}:`, err);
+      res.status(500).send(`Error when deleting answer: ${(err as Error).message}`);
+    }
+  };
+
   // add appropriate HTTP verbs and their endpoints to the router.
   router.post('/addAnswer', addAnswer);
+  router.delete('/delete/:aid', deleteAnswer);
 
   return router;
 };

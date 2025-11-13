@@ -69,10 +69,7 @@ const NewQuestionPage = () => {
           value={communitySearch}
           onChange={event => setCommunitySearch(event.target.value)}
         />
-        <button
-          className='community-search-button'
-          type='button'
-          onClick={handleCommunitySearch}>
+        <button className='community-search-button' type='button' onClick={handleCommunitySearch}>
           Search
         </button>
       </div>
@@ -80,10 +77,7 @@ const NewQuestionPage = () => {
         <div className='selected-community'>
           Selected community:{' '}
           <span className='selected-community__name'>{selectedCommunity.name}</span>
-          <button
-            type='button'
-            className='clear-community-button'
-            onClick={handleClearCommunity}>
+          <button type='button' className='clear-community-button' onClick={handleClearCommunity}>
             Clear
           </button>
         </div>

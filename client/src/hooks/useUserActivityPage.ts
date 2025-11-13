@@ -257,4 +257,3 @@ const useUserActivityPage = () => {
 };
 
 export default useUserActivityPage;
-

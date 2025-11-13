@@ -17,6 +17,8 @@ const UserActivityPage = () => {
     handleGoToSettings,
     canEditProfile,
     canViewDetails,
+    handleDeleteQuestion,
+    handleDeleteAnswer,
     showAllQuestions,
     setShowAllQuestions,
     showAllAnswers,
@@ -104,9 +106,19 @@ const UserActivityPage = () => {
                 {sortedQuestions.map(question => (
                   <li key={question.id} className='user-activity-item'>
                     <div className='item-main'>
-                      <Link to={`/question/${question.id}`} className='item-title'>
-                        {question.title}
-                      </Link>
+                      <div className='item-header'>
+                        <Link to={`/question/${question.id}`} className='item-title'>
+                          {question.title}
+                        </Link>
+                        {canEditProfile && (
+                          <button
+                            type='button'
+                            className='user-activity-delete-button'
+                            onClick={() => handleDeleteQuestion(question.id)}>
+                            Delete
+                          </button>
+                        )}
+                      </div>
                       <div className='item-meta'>
                         <span>Asked {new Date(question.askDateTime).toLocaleString()}</span>
                         <span>{question.viewsCount} views</span>
@@ -178,22 +190,32 @@ const UserActivityPage = () => {
                 {sortedAnswers.map(answer => (
                   <li key={answer.id} className='user-activity-item'>
                     <div className='item-main'>
-                      {answer.question ? (
-                        <Link to={`/question/${answer.question.id}`} className='item-title'>
-                          Answer to: {answer.question.title}
-                        </Link>
-                      ) : (
-                        <span className='item-title'>Answer (question unavailable)</span>
-                      )}
+                      <div className='item-header'>
+                        {answer.question ? (
+                          <Link to={`/question/${answer.question.id}`} className='item-title'>
+                            Answer to: {answer.question.title}
+                          </Link>
+                        ) : (
+                          <span className='item-title'>Answer (question unavailable)</span>
+                        )}
+                        {canEditProfile && (
+                          <button
+                            type='button'
+                            className='user-activity-delete-button'
+                            onClick={() => handleDeleteAnswer(answer.id)}>
+                            Delete
+                          </button>
+                        )}
+                      </div>
                       <div className='item-meta'>
                         <span>Answered {new Date(answer.ansDateTime).toLocaleString()}</span>
-                        {answer.question && <span>{answer.question.viewsCount} question views</span>}
+                        {answer.question && (
+                          <span>{answer.question.viewsCount} question views</span>
+                        )}
                         <span>{answer.commentsCount} comments</span>
                       </div>
                       <p className='answer-preview'>
-                        {answer.text.length > 200
-                          ? `${answer.text.slice(0, 200)}…`
-                          : answer.text}
+                        {answer.text.length > 200 ? `${answer.text.slice(0, 200)}…` : answer.text}
                       </p>
                     </div>
                   </li>
@@ -235,4 +257,3 @@ const UserActivityPage = () => {
 };
 
 export default UserActivityPage;
-

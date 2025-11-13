@@ -113,8 +113,8 @@ const useQuestionPage = () => {
   }, [questionOrder, search, qlist.length]);
 
   const totalPages = useMemo(
-    () => Math.max(1, Math.ceil(qlist.length / QUESTIONS_PER_PAGE)),
-    [qlist.length],
+    () => Math.max(1, Math.ceil(qlist.length / questionsPerPage)),
+    [qlist.length, questionsPerPage],
   );
 
   useEffect(() => {
@@ -124,9 +124,9 @@ const useQuestionPage = () => {
   }, [currentPage, totalPages]);
 
   const paginatedQuestions = useMemo(() => {
-    const start = (currentPage - 1) * QUESTIONS_PER_PAGE;
-    return qlist.slice(start, start + QUESTIONS_PER_PAGE);
-  }, [qlist, currentPage]);
+    const start = (currentPage - 1) * questionsPerPage;
+    return qlist.slice(start, start + questionsPerPage);
+  }, [qlist, currentPage, questionsPerPage]);
 
   return {
     titleText,

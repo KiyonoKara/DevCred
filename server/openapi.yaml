@@ -175,6 +175,47 @@ paths:
         '500':
           $ref: '#/components/responses/ErrorResponse'
 
+  /question/delete/{qid}:
+    delete:
+      tags:
+        - Questions
+      summary: Delete a question created by the requesting user.
+      parameters:
+        - in: path
+          name: qid
+          schema:
+            type: string
+            format: object-id
+          required: true
+          description: The unique ID of the question to delete.
+        - in: query
+          name: username
+          schema:
+            type: string
+          required: true
+          description: Username of the user attempting to delete the question.
+      responses:
+        '200':
+          description: Question successfully deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteQuestionResult'
+        '403':
+          description: The user is not allowed to delete this question.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '404':
+          description: Question not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
   # --------------------
   # ANSWER CONTROLLER
   # --------------------
@@ -198,6 +239,47 @@ paths:
                 $ref: '#/components/schemas/DatabaseAnswer'
         '400':
           $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /answer/delete/{aid}:
+    delete:
+      tags:
+        - Answers
+      summary: Delete an answer created by the requesting user.
+      parameters:
+        - in: path
+          name: aid
+          schema:
+            type: string
+            format: object-id
+          required: true
+          description: The unique ID of the answer to delete.
+        - in: query
+          name: username
+          schema:
+            type: string
+          required: true
+          description: Username of the user attempting to delete the answer.
+      responses:
+        '200':
+          description: Answer successfully deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteAnswerResult'
+        '403':
+          description: The user is not allowed to delete this answer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '404':
+          description: Answer not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
         '500':
           $ref: '#/components/responses/ErrorResponse'
 
@@ -2189,6 +2271,66 @@ components:
           format: object-id
           nullable: true
 
+    DatabaseQuestion:
+      type: object
+      description: A question document as stored in MongoDB.
+      required:
+        - _id
+        - title
+        - text
+        - tags
+        - askedBy
+        - askDateTime
+        - answers
+        - views
+        - upVotes
+        - downVotes
+        - comments
+      properties:
+        _id:
+          type: string
+          format: object-id
+        title:
+          type: string
+        text:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+            format: object-id
+        askedBy:
+          type: string
+        askDateTime:
+          type: string
+          format: date-time
+        answers:
+          type: array
+          items:
+            type: string
+            format: object-id
+        views:
+          type: array
+          items:
+            type: string
+        upVotes:
+          type: array
+          items:
+            type: string
+        downVotes:
+          type: array
+          items:
+            type: string
+        comments:
+          type: array
+          items:
+            type: string
+            format: object-id
+        community:
+          type: string
+          format: object-id
+          nullable: true
+
     PopulatedQuestion:
       type: object
       description: A fully populated question object with embedded tags, answers, and comments.
@@ -2228,7 +2370,29 @@ components:
 
     DatabaseAnswer:
       type: object
-      description: An answer object as stored in the database.
+      description: An answer object as stored in MongoDB.
+      required:
+        - _id
+        - text
+        - ansBy
+        - ansDateTime
+        - comments
+      properties:
+        _id:
+          type: string
+          format: object-id
+        text:
+          type: string
+        ansBy:
+          type: string
+        ansDateTime:
+          type: string
+          format: date-time
+        comments:
+          type: array
+          items:
+            type: string
+            format: object-id
 
     # --------------------
     # TAG SCHEMAS
@@ -2510,6 +2674,26 @@ components:
         score:
           type: integer
           minimum: 0
+
+    DeleteQuestionResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        deletedQuestionId:
+          type: string
+          format: object-id
+
+    DeleteAnswerResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        deletedAnswerId:
+          type: string
+          format: object-id
 
     # --------------------
     # USER SCHEMAS

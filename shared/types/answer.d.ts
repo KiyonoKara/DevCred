@@ -51,3 +51,12 @@ export interface AddAnswerRequest extends Request {
  * - Either a `DatabaseAnswer` object or an error message.
  */
 export type AnswerResponse = DatabaseAnswer | { error: string };
+
+export interface DeleteAnswerRequest extends Request {
+  params: {
+    aid: string;
+  };
+  query: {
+    username: string;
+  };
+}

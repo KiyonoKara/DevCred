@@ -281,3 +281,40 @@ export const getCommunityQuestions = async (communityId: string): Promise<Databa
     return [];
   }
 };
+
+export const deleteQuestionById = async (
+  qid: string,
+  username: string,
+): Promise<QuestionResponse> => {
+  try {
+    const question = await QuestionModel.findById(qid);
+
+    if (!question) {
+      // eslint-disable-next-line no-console
+      console.warn(`[deleteQuestionById] Question not found for id ${qid}`);
+      return { error: 'Question not found' };
+    }
+
+    if (question.askedBy !== username) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[deleteQuestionById] Unauthorized delete attempt by ${username} for question ${qid}`,
+      );
+      return { error: 'Unauthorized to delete this question' };
+    }
+
+    if (question.answers.length > 0) {
+      await AnswerModel.deleteMany({ _id: { $in: question.answers } });
+    }
+
+    await QuestionModel.findByIdAndDelete(qid);
+
+    // eslint-disable-next-line no-console
+    console.log(`[deleteQuestionById] Question ${qid} deleted by ${username}`);
+    return question;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error(`[deleteQuestionById] Failed to delete question ${qid}:`, error);
+    return { error: 'Error when deleting question' };
+  }
+};

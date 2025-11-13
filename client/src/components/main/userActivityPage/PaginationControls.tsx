@@ -163,4 +163,3 @@ const PaginationControls = ({
 };
 
 export default PaginationControls;
-

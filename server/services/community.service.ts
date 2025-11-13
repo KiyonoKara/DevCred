@@ -1,7 +1,22 @@
 import { Types } from 'mongoose';
 import CommunityModel from '../models/community.model';
 import QuestionModel from '../models/questions.model';
-import { Community, CommunityResponse, DatabaseCommunity, CommunityEngagementSummary } from '../types/types';
+import {
+  Community,
+  CommunityResponse,
+  DatabaseCommunity,
+  CommunityEngagementSummary,
+} from '../types/types';
+
+interface QuestionCountAggregate {
+  _id: Types.ObjectId;
+  questionCount: number;
+}
+
+interface AnswerCountAggregate {
+  _id: Types.ObjectId;
+  answerCount: number;
+}
 
 /**
  * Retrieves a community by its ID.
@@ -47,9 +62,7 @@ export const getUserCommunityEngagement = async (
   limit = 10,
 ): Promise<CommunityEngagementSummary[] | { error: string }> => {
   try {
-    const questionCounts = await QuestionModel.aggregate<
-      { _id: Types.ObjectId; questionCount: number }
-    >([
+    const questionCounts = await QuestionModel.aggregate<QuestionCountAggregate>([
       {
         $match: {
           askedBy: username,
@@ -64,9 +77,7 @@ export const getUserCommunityEngagement = async (
       },
     ]);
 
-    const answerCounts = await QuestionModel.aggregate<
-      { _id: Types.ObjectId; answerCount: number }
-    >([
+    const answerCounts = await QuestionModel.aggregate<AnswerCountAggregate>([
       {
         $match: {
           community: { $ne: null },
