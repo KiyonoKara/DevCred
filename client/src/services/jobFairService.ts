@@ -1,7 +1,7 @@
 import { DatabaseJobFair } from '@fake-stack-overflow/shared';
 import api from './config';
 
-const JOB_FAIR_API_URL = '/api/jobFair';
+const JOB_FAIR_API_URL = '/api/jobfair';
 
 /**
  * Fetches all job fairs with optional filtering by status and visibility.
