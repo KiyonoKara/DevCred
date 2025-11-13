@@ -826,6 +826,37 @@ paths:
         '500':
           $ref: '#/components/responses/ErrorResponse'
 
+  /community/userEngagement/{username}:
+    get:
+      tags:
+        - Communities
+      summary: Retrieve the communities a user engages with the most.
+      parameters:
+        - in: path
+          name: username
+          required: true
+          schema:
+            type: string
+          description: The username whose community engagement should be retrieved.
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+          description: Maximum number of communities to return.
+      responses:
+        '200':
+          description: Successfully retrieved community engagement summary.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CommunityEngagementSummary'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
   /community/toggleMembership:
     post:
       tags:
@@ -2464,6 +2495,21 @@ components:
     DatabaseCommunity:
       type: object
       description: A community object as stored in the database.
+
+    CommunityEngagementSummary:
+      type: object
+      properties:
+        community:
+          $ref: '#/components/schemas/DatabaseCommunity'
+        questionCount:
+          type: integer
+          minimum: 0
+        answerCount:
+          type: integer
+          minimum: 0
+        score:
+          type: integer
+          minimum: 0
 
     # --------------------
     # USER SCHEMAS
