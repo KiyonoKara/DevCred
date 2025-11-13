@@ -25,6 +25,9 @@ import RecruiterJobPostings from './main/jobs/jobPostingsPage';
 import NewJobPostingPage from './main/jobs/newJobPostingPage';
 import RecruiterJobPostingsViewer from './main/jobs/recruiterJobPostingViewerPage';
 import ApplicantJobPostingsViewer from './main/jobs/talentJobPostingViewerPage';
+import JobFairListPage from './main/jobs/jobFairListPage';
+import JobFairDetailPage from './main/jobs/jobFairDetailPage';
+import RecruiterJobFairCreationPage from './main/jobs/recruiterJobFairCreationPage';
 import MessagingPage from './main/messagingPage';
 import NewAnswerPage from './main/newAnswer';
 import NewQuestionPage from './main/newQuestion';
@@ -95,6 +98,9 @@ const FakeStackOverflow = ({ socket }: { socket: FakeSOSocket | null }) => {
             <Route path='/talent/jobposting/:jobId' element={<ApplicantJobPostingsViewer />} />
             <Route path='/jobBoard' element={<JobBoard />} />
             <Route path='/jobapplication/:username' element={<TalentApplicationView />} />
+            <Route path='/jobfairs' element={<JobFairListPage />} />
+            <Route path='/jobfairs/:jobFairId' element={<JobFairDetailPage />} />
+            <Route path='/recruiters/jobfairs/new' element={<RecruiterJobFairCreationPage />} />
           </Route>
         }
       </Routes>
