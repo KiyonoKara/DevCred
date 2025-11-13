@@ -21,7 +21,8 @@ export interface JobFair {
   hostUsername: string;
   visibility: 'public' | 'invite-only';
   status: 'upcoming' | 'live' | 'ended';
-  scheduledDate: Date;
+  startTime: Date;
+  endTime: Date;
   participants: string[];
   invitedUsers: string[];
   chatMessages: ObjectId[];
@@ -46,10 +47,10 @@ export interface CreateJobFairRequest extends Request {
     title: string;
     description: string;
     visibility: 'public' | 'invite-only';
-    scheduledDate: Date;
+    startTime: Date;
+    endTime: Date;
+    hostUsername: string;
     invitedUsers?: string[];
-    // optional since it can be used from context
-    hostUsername?: string;
   };
 }
 
