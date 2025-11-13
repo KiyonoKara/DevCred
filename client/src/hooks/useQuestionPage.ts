@@ -21,7 +21,7 @@ const useQuestionPage = () => {
   const [qlist, setQlist] = useState<PopulatedDatabaseQuestion[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
 
-  const QUESTIONS_PER_PAGE = 20;
+  const questionsPerPage = 20;
 
   useEffect(() => {
     let pageTitle = 'All Questions';
@@ -126,7 +126,7 @@ const useQuestionPage = () => {
   const paginatedQuestions = useMemo(() => {
     const start = (currentPage - 1) * QUESTIONS_PER_PAGE;
     return qlist.slice(start, start + QUESTIONS_PER_PAGE);
-  }, [qlist, currentPage, QUESTIONS_PER_PAGE]);
+  }, [qlist, currentPage]);
 
   return {
     titleText,

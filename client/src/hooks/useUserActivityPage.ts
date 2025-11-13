@@ -7,6 +7,8 @@ import {
   UserActivityQuestionSummary,
   UserActivityResponse,
 } from '../services/userService';
+import { deleteQuestion } from '../services/questionService';
+import { deleteAnswer } from '../services/answerService';
 
 type QuestionSortOption = 'newest' | 'oldest' | 'mostViewed';
 type AnswerSortOption = 'newest' | 'oldest';
@@ -155,6 +157,69 @@ const useUserActivityPage = () => {
     navigate(`/user/${activity.profile.username}/settings`);
   };
 
+  const handleDeleteQuestion = async (questionId: string) => {
+    if (!activity?.isOwner) {
+      setError('You are not allowed to delete this question.');
+      return;
+    }
+
+    if (!window.confirm('Are you sure you want to delete this question?')) {
+      return;
+    }
+
+    try {
+      await deleteQuestion(questionId, currentUser.username);
+      setActivity(prev => {
+        if (!prev) {
+          return prev;
+        }
+        const updatedQuestions = prev.questions.filter(question => question.id !== questionId);
+        return {
+          ...prev,
+          questions: updatedQuestions,
+          summary: {
+            ...prev.summary,
+            totalQuestions: Math.max(prev.summary.totalQuestions - 1, 0),
+          },
+        };
+      });
+      setError(null);
+    } catch {
+      setError('Failed to delete question. Please try again.');
+    }
+  };
+  const handleDeleteAnswer = async (answerId: string) => {
+    if (!activity?.isOwner) {
+      setError('You are not allowed to delete this answer.');
+      return;
+    }
+
+    if (!window.confirm('Are you sure you want to delete this answer?')) {
+      return;
+    }
+
+    try {
+      await deleteAnswer(answerId, currentUser.username);
+      setActivity(prev => {
+        if (!prev) {
+          return prev;
+        }
+        const updatedAnswers = prev.answers.filter(answer => answer.id !== answerId);
+        return {
+          ...prev,
+          answers: updatedAnswers,
+          summary: {
+            ...prev.summary,
+            totalAnswers: Math.max(prev.summary.totalAnswers - 1, 0),
+          },
+        };
+      });
+      setError(null);
+    } catch {
+      setError('Failed to delete answer. Please try again.');
+    }
+  };
+
   return {
     loading,
     error,
@@ -186,6 +251,8 @@ const useUserActivityPage = () => {
       onPageChange: setAnswerPage,
       showDirectInput: answerTotalPages > MAX_VISIBLE_PAGES,
     },
+    handleDeleteQuestion,
+    handleDeleteAnswer,
   };
 };
 
