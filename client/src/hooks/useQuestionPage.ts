@@ -1,5 +1,5 @@
 import { useSearchParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import useUserContext from './useUserContext';
 import { AnswerUpdatePayload, OrderType, PopulatedDatabaseQuestion } from '../types/types';
 import { getQuestionsByFilter } from '../services/questionService';
@@ -19,6 +19,9 @@ const useQuestionPage = () => {
   const [search, setSearch] = useState<string>('');
   const [questionOrder, setQuestionOrder] = useState<OrderType>('newest');
   const [qlist, setQlist] = useState<PopulatedDatabaseQuestion[]>([]);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
+  const QUESTIONS_PER_PAGE = 20;
 
   useEffect(() => {
     let pageTitle = 'All Questions';
@@ -105,7 +108,35 @@ const useQuestionPage = () => {
     };
   }, [questionOrder, search, socket]);
 
-  return { titleText, qlist, setQuestionOrder };
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [questionOrder, search, qlist.length]);
+
+  const totalPages = useMemo(
+    () => Math.max(1, Math.ceil(qlist.length / QUESTIONS_PER_PAGE)),
+    [qlist.length],
+  );
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const paginatedQuestions = useMemo(() => {
+    const start = (currentPage - 1) * QUESTIONS_PER_PAGE;
+    return qlist.slice(start, start + QUESTIONS_PER_PAGE);
+  }, [qlist, currentPage, QUESTIONS_PER_PAGE]);
+
+  return {
+    titleText,
+    qlist,
+    paginatedQuestions,
+    currentPage,
+    totalPages,
+    setQuestionOrder,
+    setCurrentPage,
+  };
 };
 
 export default useQuestionPage;

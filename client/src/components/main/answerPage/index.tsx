@@ -16,8 +16,11 @@ const AnswerPage = () => {
   const { questionID, question, handleNewComment, handleNewAnswer } = useAnswerPage();
 
   if (!question) {
-    return null;
+    return <div className='right_padding'>Loading question…</div>;
   }
+
+  // eslint-disable-next-line no-console
+  console.log('Rendering question', question.title);
 
   return (
     <>

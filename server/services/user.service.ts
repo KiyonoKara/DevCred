@@ -192,7 +192,7 @@ export interface UserActivityQuestionSummary {
   askDateTime: Date;
   viewsCount: number;
   answersCount: number;
-  tags: Pick<DatabaseTag, 'name' | '_id'>[];
+  tags: { _id: string; name: string }[];
 }
 
 export interface UserActivityAnswerSummary {
@@ -236,7 +236,7 @@ const mapQuestionSummary = (question: QuestionWithTags): UserActivityQuestionSum
             typeof (tag as DatabaseTag).name === 'string' &&
             Boolean((tag as DatabaseTag)._id),
         )
-        .map(tag => ({ _id: tag._id, name: tag.name })) :
+        .map(tag => ({ _id: String(tag._id), name: tag.name })) :
       [];
 
   return {
