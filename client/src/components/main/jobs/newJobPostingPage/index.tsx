@@ -80,7 +80,7 @@ const NewJobPostingPage = () => {
       <h4>Position Deadline (MM/DD/YYYY)</h4>
       <input
         type='text'
-        placeholder='Enter Date'
+        placeholder='Enter Date (MM/DD/YYYY)'
         className='new-job_posting-input'
         value={deadline}
         onChange={e => setDeadline(e.target.value)}
@@ -89,7 +89,7 @@ const NewJobPostingPage = () => {
       <h4>Tags (Please add them separated by a space)</h4>
       <input
         type='text'
-        placeholder='Enter Date'
+        placeholder='Enter Tags Here...'
         className='new-job_posting-input'
         value={tags}
         onChange={e => setTags(e.target.value)}
