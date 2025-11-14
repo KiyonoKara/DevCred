@@ -1,14 +1,52 @@
 .tagNode {
-  place-self: center;
-  border: #000000 1px dashed;
-  padding: 5%;
-  width: 30%;
+  border: 1px dashed #000000;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 320px;
+  min-height: 220px;
   display: flex;
   flex-direction: column;
-  justify-items: center;
-  align-items: center;
+  align-items: stretch;
+  gap: 0.75rem;
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tagNode:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.08);
 }
 
 .tagName {
   color: cornflowerblue;
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.tagDescription {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #222222;
+  overflow-y: auto;
+  max-height: 6.5rem;
+  padding-right: 0.4rem;
+}
+
+.tagDescription::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tagDescription::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 149, 237, 0.6);
+  border-radius: 999px;
+}
+
+.tagNode > div:last-child {
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-align: center;
+  color: #555555;
 }

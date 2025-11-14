@@ -1,5 +1,6 @@
 .tag_list {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-gap: 80px 20px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 48px 32px;
+  align-items: stretch;
 }

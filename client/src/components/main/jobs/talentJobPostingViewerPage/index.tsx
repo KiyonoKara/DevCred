@@ -32,7 +32,22 @@ const ApplicantJobPostingsViewer = () => {
           </button>
         )}
 
-        {!!jobPosting.deadline && <p> Application Deadline: {jobPosting.deadline.toString()}</p>}
+        {!!jobPosting.deadline && (
+          <p>
+            Application Deadline:{' '}
+            {(() => {
+              const date = new Date(jobPosting.deadline);
+              if (Number.isNaN(date.getTime())) {
+                return 'Unknown';
+              }
+              return date.toLocaleDateString(undefined, {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+              });
+            })()}
+          </p>
+        )}
 
         <p> Position Overview: {jobPosting.description}</p>
 

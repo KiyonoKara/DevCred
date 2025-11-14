@@ -17,9 +17,8 @@ const getJobPostingByUserId = async (
   recruiter: string,
   requestor: string,
 ): Promise<DatabaseJobPosting[]> => {
-  const res = await api.get(
-    `${JOB_POSTING_API_URL}/recruiter/${recruiter}?requestorUsername=${requestor}`,
-  );
+  const params = new URLSearchParams({ requestorUsername: requestor });
+  const res = await api.get(`${JOB_POSTING_API_URL}/recruiter/${recruiter}?${params.toString()}`);
 
   if (res.status !== 200) {
     throw new Error('Error while fetching job postings.');
@@ -32,7 +31,8 @@ const getJobPostingByJobId = async (
   jobId: string,
   requestor: string,
 ): Promise<DatabaseJobPosting> => {
-  const res = await api.get(`${JOB_POSTING_API_URL}/${jobId}?requestor=${requestor}`);
+  const params = new URLSearchParams({ requestor });
+  const res = await api.get(`${JOB_POSTING_API_URL}/${jobId}?${params.toString()}`);
 
   if (res.status !== 200) {
     throw new Error('Error while fetching job postings.');
@@ -45,7 +45,8 @@ const toggleJobPostingActiveStatus = async (
   jobId: string,
   requestor: string,
 ): Promise<DatabaseJobPosting> => {
-  const res = await api.patch(`${JOB_POSTING_API_URL}/${jobId}/toggle?requestor=${requestor}`);
+  const params = new URLSearchParams({ requestor });
+  const res = await api.patch(`${JOB_POSTING_API_URL}/${jobId}/toggle?${params.toString()}`);
 
   if (res.status !== 200) {
     throw new Error('Error toggling job posting active status.');
@@ -55,7 +56,8 @@ const toggleJobPostingActiveStatus = async (
 };
 
 const deleteJobPosting = async (jobId: string, requestor: string): Promise<DatabaseJobPosting> => {
-  const res = await api.delete(`${JOB_POSTING_API_URL}/${jobId}?requestor=${requestor}`);
+  const params = new URLSearchParams({ requestor });
+  const res = await api.delete(`${JOB_POSTING_API_URL}/${jobId}?${params.toString()}`);
 
   if (res.status !== 200) {
     throw new Error('Error deleting job posting');
@@ -70,17 +72,19 @@ const getJobBoardListings = async (
   jobType?: string,
   search?: string,
 ): Promise<DatabaseJobPosting[]> => {
-  let queryString = '';
+  const params = new URLSearchParams({ requestor });
   if (location) {
-    queryString += `location=${location}`;
+    params.append('location', location);
   }
   if (jobType) {
-    queryString += `jobType=${jobType}`;
+    params.append('jobType', jobType);
   }
   if (search) {
-    queryString += `search=${search}`;
+    params.append('search', search);
   }
-  const res = await api.get(`${JOB_POSTING_API_URL}/list?requestor=${requestor}&${queryString}`);
+
+  const queryString = params.toString();
+  const res = await api.get(`${JOB_POSTING_API_URL}/list?${queryString}`);
 
   if (res.status !== 200) {
     throw new Error('Error while fetching job postings.');

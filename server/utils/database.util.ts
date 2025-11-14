@@ -144,17 +144,19 @@ const populateCollection = async (
     return collectionDoc;
   }
 
-  const populatedQuestions = await Promise.all(
-    collectionDoc.questions.map(async (questionId: ObjectId) => {
-      const question = await populateQuestion(questionId.toString());
+  const populatedQuestions = (
+    await Promise.all(
+      collectionDoc.questions.map(async (questionId: ObjectId) => {
+        const question = await populateQuestion(questionId.toString());
 
-      if (!question) {
-        throw new Error('Question not found');
-      }
+        if (!question) {
+          return null;
+        }
 
-      return question;
-    }),
-  );
+        return question;
+      }),
+    )
+  ).filter((question): question is PopulatedDatabaseQuestion => question !== null);
 
   const populatedCollection: PopulatedDatabaseCollection = {
     ...collectionDoc.toObject(),

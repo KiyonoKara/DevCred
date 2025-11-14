@@ -3,11 +3,19 @@
  */
 
 .job-fair-detail-page {
-  padding: 20px;
+  padding: 20px 40px 20px 140px;
   max-width: 1400px;
   margin: 0 auto;
   min-height: 100vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+}
+
+.job-fair-detail-info {
+  margin-bottom: 32px;
+}
+
+.job-fair-detail-info .info-section {
+  margin-bottom: 24px;
 }
 
 .loading-spinner {

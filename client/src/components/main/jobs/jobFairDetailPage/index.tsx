@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom';
 import useJobFairPage from '../../../../hooks/useJobFairPage';
 import JobFairChatPage from '../jobFairChatPage/index';
 import CodingTournamentPage from '../codingTournamentPage/index';
+import './index.css';
 
 // JobFairDetailPage component for showing details of a job fair
 const JobFairDetailPage = () => {
