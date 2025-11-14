@@ -23,6 +23,7 @@ export interface JobFair {
   status: 'upcoming' | 'live' | 'ended';
   startTime: Date;
   endTime: Date;
+  codingTournamentEnabled: boolean;
   participants: string[];
   invitedUsers: string[];
   chatMessages: ObjectId[];
@@ -50,6 +51,7 @@ export interface CreateJobFairRequest extends Request {
     startTime: Date;
     endTime: Date;
     hostUsername: string;
+    codingTournamentEnabled?: boolean;
     invitedUsers?: string[];
   };
 }
