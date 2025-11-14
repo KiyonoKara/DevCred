@@ -1,5 +1,7 @@
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import useJobFairPage from '../../../../hooks/useJobFairPage';
+import jobFairService from '../../../../services/jobFairService';
 import JobFairChatPage from '../jobFairChatPage/index';
 import CodingTournamentPage from '../codingTournamentPage/index';
 import './index.css';
@@ -7,6 +9,9 @@ import './index.css';
 // JobFairDetailPage component for showing details of a job fair
 const JobFairDetailPage = () => {
   const { jobFairId } = useParams<{ jobFairId: string }>();
+  const navigate = useNavigate();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const {
     jobFair,
     loading,
@@ -20,6 +25,27 @@ const JobFairDetailPage = () => {
     handleStartJobFair,
     handleEndJobFair,
   } = useJobFairPage();
+
+  const handleDeleteJobFair = async () => {
+    if (!jobFairId || !isHost) return;
+
+    // Confirm deletion
+    const confirmed = window.confirm(
+      'Are you sure you want to delete this job fair? This action cannot be undone.',
+    );
+    if (!confirmed) return;
+
+    try {
+      setIsDeleting(true);
+      setDeleteError(null);
+      await jobFairService.deleteJobFair(jobFairId);
+      // Redirect to job fairs list after successful deletion
+      navigate('/jobfairs');
+    } catch (err) {
+      setDeleteError((err as Error).message || 'Failed to delete job fair');
+      setIsDeleting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -57,15 +83,32 @@ const JobFairDetailPage = () => {
           {isHost ? (
             <>
               {jobFair.status === 'upcoming' && (
-                <button className='action-btn btn-primary' onClick={handleStartJobFair}>
-                  Start Job Fair
-                </button>
+                <>
+                  <button className='action-btn btn-primary' onClick={handleStartJobFair}>
+                    Start Job Fair
+                  </button>
+                  <button
+                    className='action-btn btn-danger'
+                    onClick={handleDeleteJobFair}
+                    disabled={isDeleting}>
+                    {isDeleting ? 'Deleting...' : 'Delete Job Fair'}
+                  </button>
+                </>
               )}
               {jobFair.status === 'live' && (
                 <button className='action-btn btn-danger' onClick={handleEndJobFair}>
                   End Job Fair
                 </button>
               )}
+              {jobFair.status === 'ended' && (
+                <button
+                  className='action-btn btn-danger'
+                  onClick={handleDeleteJobFair}
+                  disabled={isDeleting}>
+                  {isDeleting ? 'Deleting...' : 'Delete Job Fair'}
+                </button>
+              )}
+              {deleteError && <div className='job-fair-error'>{deleteError}</div>}
             </>
           ) : (
             <>
@@ -74,7 +117,7 @@ const JobFairDetailPage = () => {
                   Join Job Fair
                 </button>
               )}
-              {isParticipant && (
+              {isParticipant && jobFair.status === 'live' && (
                 <button className='action-btn btn-secondary' onClick={handleLeaveJobFair}>
                   Leave Job Fair
                 </button>
@@ -150,11 +193,13 @@ const JobFairDetailPage = () => {
                 onClick={() => setActiveTab('chat')}>
                 💬 Live Chat
               </button>
-              <button
-                className={`tab-btn ${activeTab === 'tournament' ? 'active' : ''}`}
-                onClick={() => setActiveTab('tournament')}>
-                🏆 Coding Tournament
-              </button>
+              {jobFair.codingTournamentEnabled && (
+                <button
+                  className={`tab-btn ${activeTab === 'tournament' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('tournament')}>
+                  🏆 Coding Tournament
+                </button>
+              )}
             </>
           )}
         </div>
@@ -167,10 +212,10 @@ const JobFairDetailPage = () => {
           )}
           {activeTab === 'chat' && jobFairId && (
             <div>
-              <JobFairChatPage jobFairId={jobFairId} />
+              <JobFairChatPage jobFairId={jobFairId} jobFairStatus={jobFair.status} />
             </div>
           )}
-          {activeTab === 'tournament' && jobFairId && (
+          {activeTab === 'tournament' && jobFairId && jobFair.codingTournamentEnabled && (
             <div>
               <CodingTournamentPage jobFairId={jobFairId} />
             </div>

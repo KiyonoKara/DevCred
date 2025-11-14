@@ -7,13 +7,16 @@ import './index.css';
  */
 interface JobFairChatPageProps {
   jobFairId: string;
+  jobFairStatus?: 'upcoming' | 'live' | 'ended';
 }
 
 // JobFairChatPage component for live chat for all job fair participants
-const JobFairChatPage = ({ jobFairId }: JobFairChatPageProps) => {
+const JobFairChatPage = ({ jobFairId, jobFairStatus = 'live' }: JobFairChatPageProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { messages, inputMessage, setInputMessage, error, handleSendMessage } =
     useJobFairChatPage(jobFairId);
+
+  const isChatDisabled = jobFairStatus !== 'live';
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -57,10 +60,14 @@ const JobFairChatPage = ({ jobFairId }: JobFairChatPageProps) => {
             type='text'
             value={inputMessage}
             onChange={e => setInputMessage(e.target.value)}
-            placeholder='Type a message...'
+            placeholder={isChatDisabled ? 'Chat is disabled' : 'Type a message...'}
             className='message-input'
+            disabled={isChatDisabled}
           />
-          <button type='submit' className='send-btn' disabled={!inputMessage.trim()}>
+          <button
+            type='submit'
+            className='send-btn'
+            disabled={!inputMessage.trim() || isChatDisabled}>
             Send
           </button>
         </div>
