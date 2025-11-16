@@ -23,8 +23,7 @@ const CodingTournamentPage = ({ jobFairId }: CodingTournamentPageProps) => {
     isHost,
     isRecruiter,
     handleSubmitCode,
-  } =
-    useCodingTournament(jobFairId, jobFair);
+  } = useCodingTournament(jobFairId, jobFair);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,47 +36,47 @@ const CodingTournamentPage = ({ jobFairId }: CodingTournamentPageProps) => {
     <div className='coding-tournament-page'>
       <div className='tournament-container'>
         {!isRecruiter && (
-        <div className='code-submission-section'>
-          <h3>Code Submission</h3>
-          {error && <div className='submission-error'>{error}</div>}
-          {submissionStatus === 'success' && (
-            <div className='submission-success'>Code submitted successfully!</div>
-          )}
+          <div className='code-submission-section'>
+            <h3>Code Submission</h3>
+            {error && <div className='submission-error'>{error}</div>}
+            {submissionStatus === 'success' && (
+              <div className='submission-success'>Code submitted successfully!</div>
+            )}
 
-          <form onSubmit={handleSubmit} className='submission-form'>
-            <div className='form-group'>
-              <label htmlFor='language-select'>Programming Language</label>
-              <select
-                id='language-select'
-                value={selectedLanguage}
-                onChange={e => setSelectedLanguage(e.target.value)}
-                className='language-select'>
-                <option value='javascript'>JavaScript</option>
-                <option value='python'>Python</option>
-                <option value='java'>Java</option>
-                <option value='cpp'>C++</option>
-                <option value='csharp'>C#</option>
-                <option value='typescript'>TypeScript</option>
-              </select>
-            </div>
+            <form onSubmit={handleSubmit} className='submission-form'>
+              <div className='form-group'>
+                <label htmlFor='language-select'>Programming Language</label>
+                <select
+                  id='language-select'
+                  value={selectedLanguage}
+                  onChange={e => setSelectedLanguage(e.target.value)}
+                  className='language-select'>
+                  <option value='javascript'>JavaScript</option>
+                  <option value='python'>Python</option>
+                  <option value='java'>Java</option>
+                  <option value='cpp'>C++</option>
+                  <option value='csharp'>C#</option>
+                  <option value='typescript'>TypeScript</option>
+                </select>
+              </div>
 
-            <div className='form-group'>
-              <label htmlFor='code-input'>Your Code</label>
-              <textarea
-                id='code-input'
-                value={code}
-                onChange={e => setCode(e.target.value)}
-                placeholder='Paste your code here...'
-                className='code-input'
-                rows={12}
-              />
-            </div>
+              <div className='form-group'>
+                <label htmlFor='code-input'>Your Code</label>
+                <textarea
+                  id='code-input'
+                  value={code}
+                  onChange={e => setCode(e.target.value)}
+                  placeholder='Paste your code here...'
+                  className='code-input'
+                  rows={12}
+                />
+              </div>
 
-            <button type='submit' className='submit-btn' disabled={!code.trim()}>
-              Submit Code
-            </button>
-          </form>
-        </div>
+              <button type='submit' className='submit-btn' disabled={!code.trim()}>
+                Submit Code
+              </button>
+            </form>
+          </div>
         )}
 
         <div className='submissions-section'>

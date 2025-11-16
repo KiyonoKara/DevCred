@@ -26,14 +26,14 @@ const useJobFairChatPage = (jobFairId: string) => {
       try {
         const fair = await jobFairService.getJobFairById(jobFairId);
         // If server populated chatMessages, normalize to Message[]
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const populated = (fair as any)?.chatMessages;
-        if (Array.isArray(populated) && populated.length > 0) {
+        type PopulatedMessage = { msg: string; msgFrom: string; msgDateTime: string | Date };
+        const populatedUnknown = (fair as unknown as { chatMessages?: unknown }).chatMessages;
+        if (Array.isArray(populatedUnknown) && populatedUnknown.length > 0) {
           // Map to expected Message shape if needed
-          const history: Message[] = populated
+          const history: Message[] = (populatedUnknown as PopulatedMessage[])
             // ensure required fields exist
             .filter(
-              (m: any) =>
+              (m: PopulatedMessage) =>
                 m &&
                 m.msg &&
                 m.msgFrom &&
@@ -42,7 +42,7 @@ const useJobFairChatPage = (jobFairId: string) => {
                 typeof m.msg === 'string' &&
                 !m.msg.startsWith('__CODE_SUBMISSION__'),
             )
-            .map((m: any) => ({
+            .map((m: PopulatedMessage) => ({
               msg: m.msg,
               msgFrom: m.msgFrom,
               msgDateTime: new Date(m.msgDateTime),
@@ -100,7 +100,10 @@ const useJobFairChatPage = (jobFairId: string) => {
     (data: JobFairChatMessagePayload) => {
       if (data.jobFairId === jobFairId) {
         // Ignore code submission messages in chat stream
-        if (typeof data.message.msg === 'string' && data.message.msg.startsWith('__CODE_SUBMISSION__')) {
+        if (
+          typeof data.message.msg === 'string' &&
+          data.message.msg.startsWith('__CODE_SUBMISSION__')
+        ) {
           return;
         }
         // don't add message again if sent by the current user
