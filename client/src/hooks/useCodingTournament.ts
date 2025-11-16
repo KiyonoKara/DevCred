@@ -29,20 +29,47 @@ const useCodingTournament = (jobFairId: string, jobFair: DatabaseJobFair | null)
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const { user: currentUser } = useUserContext();
+  const { user: currentUser, socket } = useUserContext();
   const isRecruiter = currentUser.userType === 'recruiter';
   const isHost = jobFair?.hostUsername === currentUser.username;
 
-  // Load existing submissions
-  // TODO: May not continue with this part of the job fair
-  const loadSubmissions = useCallback(() => {
-    // TODO: Fetch full submissions from backend once endpoint is implemented
-    // For now, submissions are loaded when full job fair data is available
-    if (jobFair?.codingSubmissions && Array.isArray(jobFair.codingSubmissions)) {
-      // Will be populated with full submission objects from backend
-      // setSubmissions(jobFair.codingSubmissions);
+  // Load existing submissions from persisted chat messages
+  const loadSubmissions = useCallback(async () => {
+    try {
+      const fair = await jobFairService.getJobFairById(jobFairId);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const messages = (fair as any)?.chatMessages as Array<{
+        msg: string;
+        msgFrom: string;
+        msgDateTime: string | Date;
+      }>;
+      if (!Array.isArray(messages)) {
+        setSubmissions([]);
+        return;
+      }
+
+      const parsed = messages
+        .filter(m => typeof m.msg === 'string' && m.msg.startsWith('__CODE_SUBMISSION__'))
+        .map(m => {
+          // msg format: __CODE_SUBMISSION__<language>__\n<code>
+          const prefix = '__CODE_SUBMISSION__';
+          const secondSep = m.msg.indexOf('__', prefix.length);
+          const languageFromMsg =
+            secondSep > -1 ? m.msg.substring(prefix.length, secondSep) : 'javascript';
+          const codeFromMsg = secondSep > -1 ? m.msg.substring(secondSep + 2) : m.msg;
+          return {
+            code: codeFromMsg,
+            language: languageFromMsg,
+            submittedAt: new Date(m.msgDateTime),
+            submittedBy: m.msgFrom,
+          } as CodingSubmission;
+        });
+
+      setSubmissions(parsed);
+    } catch {
+      setSubmissions([]);
     }
-  }, [jobFair?.codingSubmissions]);
+  }, [jobFairId]);
 
   // Handles code submission to the job fair tournament.
   const handleSubmitCode = useCallback(async () => {
@@ -121,12 +148,63 @@ const useCodingTournament = (jobFairId: string, jobFair: DatabaseJobFair | null)
     loadSubmissions();
   }, [loadSubmissions]);
 
+  // Listen for realtime submissions from participants
+  useEffect(() => {
+    const handleIncomingSubmission = (data: {
+      jobFairId: string;
+      submission: { code: string; language: string; submittedAt: Date; submittedBy: string };
+    }) => {
+      if (data.jobFairId !== jobFairId) {
+        return;
+      }
+      // Ignore echo of my own submission; we already optimistically append it
+      if (data.submission.submittedBy === currentUser.username) {
+        return;
+      }
+      setSubmissions(prev => {
+        const next = [
+          ...prev,
+          {
+            code: data.submission.code,
+            language: data.submission.language,
+            submittedAt: new Date(data.submission.submittedAt),
+            submittedBy: data.submission.submittedBy,
+          },
+        ];
+        return next;
+      });
+    };
+
+    socket.on('codingSubmission', handleIncomingSubmission);
+    return () => {
+      socket.off('codingSubmission', handleIncomingSubmission);
+    };
+  }, [jobFairId, socket, currentUser.username]);
+
+  // For recruiters/hosts, only show the latest submission per user
+  const visibleSubmissions = (() => {
+    if (!isRecruiter && !isHost) {
+      return submissions;
+    }
+    const latestByUser = new Map<string, CodingSubmission>();
+    for (const sub of submissions) {
+      const key = sub.submittedBy || 'unknown';
+      const existing = latestByUser.get(key);
+      if (!existing || existing.submittedAt < sub.submittedAt) {
+        latestByUser.set(key, sub);
+      }
+    }
+    return Array.from(latestByUser.values()).sort(
+      (a, b) => b.submittedAt.getTime() - a.submittedAt.getTime(),
+    );
+  })();
+
   return {
     code,
     setCode,
     language,
     setLanguage,
-    submissions,
+    submissions: visibleSubmissions,
     loading,
     error,
     submissionStatus,
