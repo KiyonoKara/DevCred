@@ -14,7 +14,16 @@ interface CodingTournamentPageProps {
 const CodingTournamentPage = ({ jobFairId }: CodingTournamentPageProps) => {
   const [selectedLanguage, setSelectedLanguage] = useState<string>('javascript');
   const { jobFair } = useJobFairPage();
-  const { code, setCode, submissions, submissionStatus, error, isHost, handleSubmitCode } =
+  const {
+    code,
+    setCode,
+    submissions,
+    submissionStatus,
+    error,
+    isHost,
+    isRecruiter,
+    handleSubmitCode,
+  } =
     useCodingTournament(jobFairId, jobFair);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,6 +36,7 @@ const CodingTournamentPage = ({ jobFairId }: CodingTournamentPageProps) => {
   return (
     <div className='coding-tournament-page'>
       <div className='tournament-container'>
+        {!isRecruiter && (
         <div className='code-submission-section'>
           <h3>Code Submission</h3>
           {error && <div className='submission-error'>{error}</div>}
@@ -68,6 +78,7 @@ const CodingTournamentPage = ({ jobFairId }: CodingTournamentPageProps) => {
             </button>
           </form>
         </div>
+        )}
 
         <div className='submissions-section'>
           <h3>Submissions ({submissions.length})</h3>
@@ -96,7 +107,7 @@ const CodingTournamentPage = ({ jobFairId }: CodingTournamentPageProps) => {
                   </div>
 
                   <div className='submission-code'>
-                    <code>{sub.code.substring(0, 200)}...</code>
+                    <code>{sub.code}</code>
                   </div>
 
                   {sub.feedback && (

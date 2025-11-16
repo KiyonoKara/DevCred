@@ -74,7 +74,8 @@ export const getJobFairById = async (
   username?: string,
 ): Promise<JobFairResponse> => {
   try {
-    const jobFair = await JobFairModel.findById(jobFairId);
+    // Populate chat messages so clients can render history
+    const jobFair = await JobFairModel.findById(jobFairId).populate('chatMessages');
 
     if (!jobFair) {
       return { error: 'Job fair not found' };

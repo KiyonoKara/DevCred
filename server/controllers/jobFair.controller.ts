@@ -405,8 +405,11 @@ const jobFairController = (socket: FakeSOSocket) => {
         return res.status(401).json({ error: 'Authentication required' });
       }
 
+      // Persist coding submission as a special message so it loads with chat history.
+      // We prefix the payload to recover language and separate it from plain chat messages.
+      const payloadMsg = `__CODE_SUBMISSION__${language}__\n${code}`;
       const result = await addJobFairMessage(jobFairId, {
-        msg: code,
+        msg: payloadMsg,
         msgFrom: submittedBy,
         msgDateTime: new Date(submittedAt),
       });
