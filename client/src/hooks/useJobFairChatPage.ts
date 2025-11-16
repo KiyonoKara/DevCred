@@ -30,7 +30,7 @@ const useJobFairChatPage = (jobFairId: string) => {
         const populated = (fair as any)?.chatMessages;
         if (Array.isArray(populated) && populated.length > 0) {
           // Map to expected Message shape if needed
-          const history = populated
+          const history: Message[] = populated
             // ensure required fields exist
             .filter(
               (m: any) =>
@@ -46,7 +46,7 @@ const useJobFairChatPage = (jobFairId: string) => {
               msg: m.msg,
               msgFrom: m.msgFrom,
               msgDateTime: new Date(m.msgDateTime),
-              type: 'direct',
+              type: 'direct' as const,
             }));
           setMessages(history);
           setTimeout(() => scrollToBottom(), 0);
