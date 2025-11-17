@@ -10,6 +10,53 @@
   background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
 }
 
+.job-fair-detail-header {
+  margin-bottom: 24px;
+}
+
+.job-fair-detail-title-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.job-fair-detail-title {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0;
+  color: #1a1a1a;
+}
+
+.job-fair-status {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-block;
+  text-transform: capitalize;
+  border: 1px solid;
+}
+
+.job-fair-detail-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.action-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
 .job-fair-detail-info {
   margin-bottom: 32px;
 }
@@ -91,15 +138,15 @@
 }
 
 .status-upcoming {
-  background-color: rgba(76, 175, 80, 0.2);
-  color: #4caf50;
-  border: 1px solid #4caf50;
-}
-
-.status-live {
   background-color: rgba(255, 152, 0, 0.2);
   color: #ff9800;
   border: 1px solid #ff9800;
+}
+
+.status-live {
+  background-color: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+  border: 1px solid #4caf50;
   animation: pulse 2s infinite;
 }
 
@@ -158,36 +205,43 @@
 }
 
 .btn-primary {
-  background-color: white;
-  color: #0066cc;
-  border: 2px solid white;
+  background-color: #0066cc;
+  color: white;
+  border: 2px solid #0066cc;
 }
 
 .btn-primary:hover {
-  background-color: transparent;
-  color: white;
-  border-color: white;
+  background-color: #0052a3;
+  border-color: #0052a3;
 }
 
 .btn-secondary {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: #6c757d;
   color: white;
-  border: 2px solid white;
+  border: 2px solid #6c757d;
 }
 
 .btn-secondary:hover {
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: #5a6268;
+  border-color: #5a6268;
 }
 
 .btn-danger {
-  background-color: #cc0000;
+  background-color: #dc3545;
   color: white;
-  border: 2px solid #cc0000;
+  border: 2px solid #dc3545;
 }
 
 .btn-danger:hover {
-  background-color: #990000;
-  border-color: #990000;
+  background-color: #c82333;
+  border-color: #c82333;
+}
+
+.btn-danger:disabled {
+  background-color: #a9a9a9;
+  border-color: #a9a9a9;
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 /* ===== INFO CARD ===== */
@@ -310,6 +364,15 @@
 }
 
 /* ===== TABS CARD ===== */
+.job-fair-tabs {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
 .tabs-card {
   padding: 0;
 }
@@ -347,13 +410,24 @@
 }
 
 .tabs-content {
-  padding: 30px;
+  padding: 0;
   min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+}
+
+.tabs-content > div {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
 }
 
 .overview-content {
-  text-align: center;
   padding: 40px 20px;
+  text-align: center;
   color: #666;
 }
 
@@ -411,13 +485,13 @@
 }
 
 .status-pill.status-upcoming {
-  background-color: rgba(76, 175, 80, 0.1);
-  color: #4caf50;
+  background-color: rgba(255, 152, 0, 0.1);
+  color: #ff9800;
 }
 
 .status-pill.status-live {
-  background-color: rgba(255, 152, 0, 0.1);
-  color: #ff9800;
+  background-color: rgba(76, 175, 80, 0.1);
+  color: #4caf50;
 }
 
 .status-pill.status-ended {

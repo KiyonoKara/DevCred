@@ -15,6 +15,8 @@ const RecruiterJobFairCreationPage = () => {
     setStartTime,
     endTime,
     setEndTime,
+    codingTournamentEnabled,
+    setCodingTournamentEnabled,
     invitedUsers,
     currentInviteInput,
     setCurrentInviteInput,
@@ -112,6 +114,21 @@ const RecruiterJobFairCreationPage = () => {
                   <option value='public'>Public</option>
                   <option value='invite-only'>Invite-Only</option>
                 </select>
+              </div>
+
+              <div className='form-group checkbox-group'>
+                <label htmlFor='coding-tournament'>
+                  <input
+                    id='coding-tournament'
+                    type='checkbox'
+                    checked={codingTournamentEnabled}
+                    onChange={e => setCodingTournamentEnabled(e.target.checked)}
+                  />
+                  Enable Coding Tournament
+                </label>
+                <p className='checkbox-description'>
+                  Allow participants to submit and compete in coding challenges during the job fair
+                </p>
               </div>
             </div>
           </div>

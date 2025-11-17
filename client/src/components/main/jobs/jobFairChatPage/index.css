@@ -10,6 +10,8 @@
   background-color: #f9f9f9;
   border-radius: 8px;
   overflow: hidden;
+  width: 100%;
+  max-width: 100%;
 }
 
 .chat-error {
@@ -81,13 +83,19 @@
 
 .chat-input-form {
   border-top: 1px solid #ddd;
-  padding: 15px;
+  padding: 15px 20px;
   background-color: white;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .message-input-group {
   display: flex;
   gap: 10px;
+  width: 100%;
+  max-width: 100%;
 }
 
 .message-input {

@@ -20,6 +20,45 @@ const useJobFairChatPage = (jobFairId: string) => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
+  // Load existing chat history for the job fair
+  useEffect(() => {
+    const loadHistory = async () => {
+      try {
+        const fair = await jobFairService.getJobFairById(jobFairId);
+        // If server populated chatMessages, normalize to Message[]
+        type PopulatedMessage = { msg: string; msgFrom: string; msgDateTime: string | Date };
+        const populatedUnknown = (fair as unknown as { chatMessages?: unknown }).chatMessages;
+        if (Array.isArray(populatedUnknown) && populatedUnknown.length > 0) {
+          // Map to expected Message shape if needed
+          const history: Message[] = (populatedUnknown as PopulatedMessage[])
+            // ensure required fields exist
+            .filter(
+              (m: PopulatedMessage) =>
+                m &&
+                m.msg &&
+                m.msgFrom &&
+                m.msgDateTime &&
+                // Hide code submissions from chat history
+                typeof m.msg === 'string' &&
+                !m.msg.startsWith('__CODE_SUBMISSION__'),
+            )
+            .map((m: PopulatedMessage) => ({
+              msg: m.msg,
+              msgFrom: m.msgFrom,
+              msgDateTime: new Date(m.msgDateTime),
+              type: 'direct' as const,
+            }));
+          setMessages(history);
+          setTimeout(() => scrollToBottom(), 0);
+        }
+      } catch {
+        // ignore history load errors; chat still works realtime
+      }
+    };
+    loadHistory();
+    // only on mount/jobFairId change
+  }, [jobFairId, scrollToBottom]);
+
   // Sends message to job fair chat
   const handleSendMessage = useCallback(async () => {
     if (!inputMessage.trim()) {
@@ -60,6 +99,13 @@ const useJobFairChatPage = (jobFairId: string) => {
   const handleIncomingMessage = useCallback(
     (data: JobFairChatMessagePayload) => {
       if (data.jobFairId === jobFairId) {
+        // Ignore code submission messages in chat stream
+        if (
+          typeof data.message.msg === 'string' &&
+          data.message.msg.startsWith('__CODE_SUBMISSION__')
+        ) {
+          return;
+        }
         // don't add message again if sent by the current user
         if (data.message.msgFrom === currentUser.username) {
           return;
