@@ -9,7 +9,8 @@ import {
 } from '../types/types';
 import useUserContext from './useUserContext';
 import addComment from '../services/commentService';
-import { getQuestionById } from '../services/questionService';
+import { getQuestionById, deleteQuestion, updateQuestion } from '../services/questionService';
+import { deleteAnswer, updateAnswer } from '../services/answerService';
 import { AxiosError } from 'axios';
 
 /**
@@ -27,12 +28,83 @@ const useAnswerPage = () => {
   const { user, socket } = useUserContext();
   const [questionID, setQuestionID] = useState<string>(qid || '');
   const [question, setQuestion] = useState<PopulatedDatabaseQuestion | null>(null);
+  const [isOriginalPoster, setIsOriginalPoster] = useState<boolean>(false);
 
   /**
    * Function to handle navigation to the "New Answer" page.
    */
   const handleNewAnswer = () => {
     navigate(`/new/answer/${questionID}`);
+  };
+
+  /**
+   * Function to handle editing a question.
+   */
+  const handleEditQuestion = async (qid: string, title: string, text: string) => {
+    try {
+      const updatedQuestion = await updateQuestion(qid, title, text, user.username);
+      setQuestion(updatedQuestion);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Error updating question:', error);
+      throw error;
+    }
+  };
+
+  /**
+   * Function to handle deleting a question.
+   */
+  const handleDeleteQuestion = async (qid: string) => {
+    try {
+      await deleteQuestion(qid, user.username);
+      navigate('/home');
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Error deleting question:', error);
+      throw error;
+    }
+  };
+
+  /**
+   * Function to handle editing an answer.
+   */
+  const handleEditAnswer = async (aid: string, text: string) => {
+    try {
+      const updatedAnswer = await updateAnswer(aid, text, user.username);
+      setQuestion(prevQuestion =>
+        prevQuestion
+          ? {
+              ...prevQuestion,
+              answers: prevQuestion.answers.map(a => (String(a._id) === aid ? updatedAnswer : a)),
+            }
+          : prevQuestion,
+      );
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Error updating answer:', error);
+      throw error;
+    }
+  };
+
+  /**
+   * Function to handle deleting an answer.
+   */
+  const handleDeleteAnswer = async (aid: string) => {
+    try {
+      await deleteAnswer(aid, user.username);
+      setQuestion(prevQuestion =>
+        prevQuestion
+          ? {
+              ...prevQuestion,
+              answers: prevQuestion.answers.filter(a => String(a._id) !== aid),
+            }
+          : prevQuestion,
+      );
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Error deleting answer:', error);
+      throw error;
+    }
   };
 
   useEffect(() => {
@@ -78,6 +150,8 @@ const useAnswerPage = () => {
         // eslint-disable-next-line no-console
         console.log('Fetched question', res);
         setQuestion(res || null);
+        // check if user is original poster so they can edit/delete the question
+        setIsOriginalPoster(res?.askedBy === user.username);
       } catch (error) {
         const axiosError = error as AxiosError;
         // eslint-disable-next-line no-console
@@ -197,6 +271,11 @@ const useAnswerPage = () => {
     question,
     handleNewComment,
     handleNewAnswer,
+    handleEditQuestion,
+    handleDeleteQuestion,
+    handleEditAnswer,
+    handleDeleteAnswer,
+    isOriginalPoster,
   };
 };
 

@@ -232,8 +232,7 @@ const useDirectMessage = () => {
       socket.off('dmDeleted', handleDMDeleted);
       socket.emit('leaveChat', String(selectedChat?._id));
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user.username, socket]);
+  }, [selectedChat, user.username, socket]);
 
   return {
     selectedChat,
