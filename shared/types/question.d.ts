@@ -155,3 +155,21 @@ export interface DeleteQuestionRequest extends Request {
     username: string;
   };
 }
+
+/**
+ * Interface for the request when updating a question.
+ * - `qid`: The unique identifier of the question (params).
+ * - `title`: The updated title (body).
+ * - `text`: The updated text content (body).
+ * - `username`: The username of the user updating the question (body).
+ */
+export interface UpdateQuestionRequest extends Request {
+  params: {
+    qid: string;
+  };
+  body: {
+    title: string;
+    text: string;
+    username: string;
+  };
+}

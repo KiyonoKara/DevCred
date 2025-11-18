@@ -10,10 +10,12 @@ import {
   PopulatedDatabaseQuestion,
   CommunityQuestionsRequest,
   DeleteQuestionRequest,
+  UpdateQuestionRequest,
 } from '../types/types';
 import {
   addVoteToQuestion,
   deleteQuestionById,
+  updateQuestionById,
   fetchAndIncrementQuestionViewsById,
   filterQuestionsByAskedBy,
   filterQuestionsBySearch,
@@ -240,6 +242,12 @@ const questionController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Deletes a question by its unique ID if the requesting user is the original poster.
+   * @param req The DeleteQuestionRequest object containing the question ID as a parameter and the username as a query parameter.
+   * @param res The HTTP response object used to send back the result of the operation.
+   * @returns A Promise that resolves to void.
+   */
   const deleteQuestion = async (req: DeleteQuestionRequest, res: Response): Promise<void> => {
     const { qid } = req.params;
     const { username } = req.query;
@@ -269,13 +277,50 @@ const questionController = (socket: FakeSOSocket) => {
         throw new Error(deletionResult.error);
       }
 
-      // eslint-disable-next-line no-console
-      console.log(`[question.controller] Question ${qid} deleted by ${username}`);
       res.json({ success: true, deletedQuestionId: qid });
     } catch (err: unknown) {
-      // eslint-disable-next-line no-console
-      console.error(`[question.controller] Failed to delete question ${qid} for ${username}:`, err);
       res.status(500).send(`Error when deleting question: ${(err as Error).message}`);
+    }
+  };
+
+  /**
+   * Updates a question by its unique ID if the requesting user is the original poster.
+   * @param req The UpdateQuestionRequest object containing the question ID as a parameter and the updated question details in the body.
+   * @param res The HTTP response object used to send back the result of the operation.
+   * @returns A Promise that resolves to void.
+   */
+  const updateQuestion = async (req: UpdateQuestionRequest, res: Response): Promise<void> => {
+    const { qid } = req.params;
+    const { title, text, username } = req.body;
+
+    if (!qid || !title || !text || !username) {
+      res.status(400).send('Missing required fields');
+      return;
+    }
+
+    if (!ObjectId.isValid(qid)) {
+      res.status(400).send('Invalid ID format');
+      return;
+    }
+
+    try {
+      const updateResult = await updateQuestionById(qid, title, text, username);
+
+      if ('error' in updateResult) {
+        if (updateResult.error.includes('Unauthorized')) {
+          res.status(403).json({ error: updateResult.error });
+          return;
+        }
+        if (updateResult.error.includes('not found')) {
+          res.status(404).json({ error: updateResult.error });
+          return;
+        }
+        throw new Error(updateResult.error);
+      }
+
+      res.json(updateResult);
+    } catch (err: unknown) {
+      res.status(500).send(`Error when updating question: ${(err as Error).message}`);
     }
   };
 
@@ -287,6 +332,7 @@ const questionController = (socket: FakeSOSocket) => {
   router.post('/downvoteQuestion', downvoteQuestion);
   router.get('/getCommunityQuestions/:communityId', getCommunityQuestionsRoute);
   router.delete('/delete/:qid', deleteQuestion);
+  router.put('/update/:qid', updateQuestion);
 
   return router;
 };
