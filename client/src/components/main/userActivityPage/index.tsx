@@ -8,6 +8,8 @@ const UserActivityPage = () => {
     loading,
     error,
     activity,
+    searchQuery,
+    setSearchQuery,
     questionSort,
     answerSort,
     setQuestionSort,
@@ -72,6 +74,27 @@ const UserActivityPage = () => {
           <p className='summary-label'>Answers Posted</p>
         </div>
       </div>
+
+      {canViewDetails && (
+        <div className='user-activity-search'>
+          <input
+            type='text'
+            placeholder='Search questions and answers...'
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className='user-activity-search-input'
+          />
+          {searchQuery && (
+            <button
+              type='button'
+              className='user-activity-search-clear'
+              onClick={() => setSearchQuery('')}
+              aria-label='Clear search'>
+              ✕
+            </button>
+          )}
+        </div>
+      )}
 
       {!canViewDetails && (
         <div className='user-activity-notice'>
