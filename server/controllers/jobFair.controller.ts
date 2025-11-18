@@ -324,7 +324,7 @@ const jobFairController = (socket: FakeSOSocket) => {
 
       // Emit socket event for real-time chat updates to all users in the room
       // (clients will filter out their own messages to prevent duplicates)
-      socket.emit('jobFairChatMessage', {
+      socket.to(`jobFair_${jobFairId}`).emit('jobFairChatMessage', {
         jobFairId,
         message: {
           msg,
@@ -439,8 +439,8 @@ const jobFairController = (socket: FakeSOSocket) => {
         _id: result._id.toString(),
       };
 
-      // Emit socket event for real-time updates
-      socket.emit('codingSubmission', {
+      // Emit socket event for real-time updates to all users in the job fair room
+      socket.to(`jobFair_${jobFairId}`).emit('codingSubmission', {
         jobFairId,
         submission: {
           code,
