@@ -6,48 +6,55 @@
   margin: 2% 0 2% 2%;
 }
 
-/* Question edit/delete actions */
+/* Question title row with inline actions */
+.question-title-row {
+  display: none;
+}
+
+/* Question edit/delete actions - compact inline style */
 .question-actions {
   display: flex;
-  gap: 10px;
-  margin: 0 0 20px 120px;
-  padding: 10px;
-  background-color: #f9f9f9;
-  border-radius: 6px;
+  gap: 8px;
+  align-items: center;
+  margin-left: auto;
 }
 
 .edit-btn,
 .delete-btn {
-  padding: 8px 16px;
-  border: none;
+  padding: 6px 12px;
+  border: 1px solid transparent;
   border-radius: 4px;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  background-color: transparent;
+  white-space: nowrap;
 }
 
 .edit-btn {
+  color: #0066cc;
+  border-color: #0066cc;
+}
+
+.edit-btn:hover:not(:disabled) {
   background-color: #0066cc;
   color: white;
 }
 
-.edit-btn:hover:not(:disabled) {
-  background-color: #0052a3;
+.delete-btn {
+  color: #dc3545;
+  border-color: #dc3545;
 }
 
-.delete-btn {
+.delete-btn:hover:not(:disabled) {
   background-color: #dc3545;
   color: white;
 }
 
-.delete-btn:hover:not(:disabled) {
-  background-color: #c82333;
-}
-
 .edit-btn:disabled,
 .delete-btn:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 

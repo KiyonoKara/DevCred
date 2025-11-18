@@ -86,10 +86,7 @@ const AnswerView = ({
 
       {isAuthor && (
         <div className='answer-actions'>
-          <button
-            className='edit-btn-small'
-            onClick={() => setIsEditing(true)}
-            disabled={isDeleting}>
+          <button className='edit-btn' onClick={() => setIsEditing(true)} disabled={isDeleting}>
             Edit
           </button>
           <button className='delete-btn-small' onClick={handleDelete} disabled={isDeleting}>

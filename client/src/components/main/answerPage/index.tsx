@@ -53,24 +53,33 @@ const AnswerPage = () => {
   // eslint-disable-next-line no-console
   console.log('Rendering question', question.title);
 
+  const actionButtons = isOriginalPoster ? (
+    <div className='question-actions'>
+      <button
+        className='edit-btn'
+        onClick={() => setIsEditingQuestion(true)}
+        disabled={isDeleting}
+        title='Edit question'>
+        Edit
+      </button>
+      <button
+        className='delete-btn'
+        onClick={handleQuestionDelete}
+        disabled={isDeleting}
+        title='Delete question'>
+        {isDeleting ? 'Deleting...' : 'Delete'}
+      </button>
+    </div>
+  ) : undefined;
+
   return (
     <>
       <VoteComponent question={question} />
-      <AnswerHeader ansCount={question.answers.length} title={question.title} />
-
-      {isOriginalPoster && (
-        <div className='question-actions'>
-          <button
-            className='edit-btn'
-            onClick={() => setIsEditingQuestion(true)}
-            disabled={isDeleting}>
-            Edit
-          </button>
-          <button className='delete-btn' onClick={handleQuestionDelete} disabled={isDeleting}>
-            {isDeleting ? 'Deleting...' : 'Delete'}
-          </button>
-        </div>
-      )}
+      <AnswerHeader
+        ansCount={question.answers.length}
+        title={question.title}
+        actionButtons={actionButtons}
+      />
 
       <QuestionBody
         views={question.views.length}
