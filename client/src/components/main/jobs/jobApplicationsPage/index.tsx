@@ -14,25 +14,28 @@ const TalentApplicationView = () => {
       </div>
 
       <div className='job_application-list'>
-        {jobApplications.map(job_application => (
-          <div key={job_application._id.toString()} className='job_posting-card'>
-            <h2 className='job_application-name'>{job_application.jobPosting.title}</h2>
-            <p className='job_application-description'>{job_application.jobPosting.company}</p>
-            <p className='job_application-description'>
-              Application Submission Date: {job_application.applicationDate.toString()}
-            </p>
+        {jobApplications.map(
+          jobApplication =>
+            jobApplication.jobPosting && (
+              <div key={jobApplication._id.toString()} className='job_posting-card'>
+                <h2 className='job_application-name'>{jobApplication.jobPosting.title}</h2>
+                <p className='job_application-description'>{jobApplication.jobPosting.company}</p>
+                <p className='job_application-description'>
+                  Application Submission Date: {jobApplication.applicationDate.toString()}
+                </p>
 
-            {job_application.jobPosting.active ? (
-              <button
-                type='button'
-                onClick={() => handleViewJobPosting(job_application.jobPosting._id.toString())}>
-                View Job Posting
-              </button>
-            ) : (
-              <p>Job Posting Deactivated</p>
-            )}
-          </div>
-        ))}
+                {jobApplication.jobPosting.active ? (
+                  <button
+                    type='button'
+                    onClick={() => handleViewJobPosting(jobApplication.jobPosting._id.toString())}>
+                    View Job Posting
+                  </button>
+                ) : (
+                  <p>Job Posting Deactivated</p>
+                )}
+              </div>
+            ),
+        )}
       </div>
     </div>
   );
