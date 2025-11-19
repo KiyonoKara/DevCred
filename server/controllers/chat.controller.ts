@@ -169,7 +169,7 @@ const chatController = (socket: FakeSOSocket) => {
 
   /**
    * Retrieves a chat by its ID, optionally populating participants and messages.
-   * User cannot access a chat they have deleted (story 2.7).
+   * User cannot access a chat they have deleted
    * @param req The request object containing the chat ID.
    * @param res The response object to send the result.
    * @returns {Promise<void>} A promise that resolves when the chat is retrieved.
@@ -199,7 +199,7 @@ const chatController = (socket: FakeSOSocket) => {
 
   /**
    * Retrieves chats for a user based on their username.
-   * Filters out chats that have been deleted by this user (story 2.7 - local deletion).
+   * Filters out chats that have been deleted by this user
    * @param req The request object containing the username parameter in `req.params`.
    * @param res The response object to send the result, either the populated chats or an error message.
    * @returns {Promise<void>} A promise that resolves when the chats are successfully retrieved and populated.
@@ -279,7 +279,7 @@ const chatController = (socket: FakeSOSocket) => {
 
   /**
    * Deletes a DM for a specific user (marks as deleted by them).
-   * If both participants have deleted, removes the chat completely from database (story 2.7).
+   * If both participants have deleted, removes the chat completely from database
    * @param req The request object containing the chatId in params and username in body.
    * @param res The response object to send the result.
    * @returns {Promise<void>} A promise that resolves when the DM is deleted.

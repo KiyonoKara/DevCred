@@ -219,7 +219,7 @@ export interface ClientToServerEvents {
  * - `gameUpdate`: Server sends updated game state.
  * - `gameError`: Server sends error message related to game operation.
  * - `chatUpdate`: Server sends updated chat.
- * - `dmDeleted`: Server sends DM deletion notification (story 2.7).
+ * - `dmDeleted`: Server sends DM deletion request.
  * - `communityUpdate`: Server sends updated community.
  * - `collectionUpdate`: Server sends updated collection.
  * - `jobFairUpdate`: Server sends updated job fair.

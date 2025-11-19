@@ -484,7 +484,7 @@ paths:
     delete:
       tags:
         - Chats
-      summary: Delete a DM for a specific user (story 2.7 - local deletion). If both users delete, removes completely.
+      summary: Delete a DM for a specific user. If both users delete, removes completely.
       parameters:
         - in: path
           name: chatId

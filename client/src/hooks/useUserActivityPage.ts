@@ -117,7 +117,7 @@ const useUserActivityPage = () => {
           a.text.toLowerCase().includes(query) ||
           (a.question?.title && a.question.title.toLowerCase().includes(query)),
       );
-    };
+    }
 
     switch (answerSort) {
       case 'oldest':
@@ -177,6 +177,14 @@ const useUserActivityPage = () => {
       return;
     }
     navigate(`/user/${activity.profile.username}/settings`);
+  };
+
+  // Navigate to direct messaging with the user
+  const handleSendMessage = () => {
+    if (!activity?.profile.username) {
+      return;
+    }
+    navigate(`/messaging/direct-message?user=${activity.profile.username}`);
   };
 
   const handleDeleteQuestion = async (questionId: string) => {
@@ -255,6 +263,7 @@ const useUserActivityPage = () => {
     sortedQuestions: paginatedQuestions,
     sortedAnswers: paginatedAnswers,
     handleGoToSettings,
+    handleSendMessage,
     canEditProfile: activity?.isOwner ?? false,
     canViewDetails: activity?.canViewDetails ?? false,
     showAllQuestions,

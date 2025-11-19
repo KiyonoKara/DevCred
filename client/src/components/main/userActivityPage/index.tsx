@@ -17,6 +17,7 @@ const UserActivityPage = () => {
     sortedQuestions,
     sortedAnswers,
     handleGoToSettings,
+    handleSendMessage,
     canEditProfile,
     canViewDetails,
     handleDeleteQuestion,
@@ -57,11 +58,18 @@ const UserActivityPage = () => {
             {profile.biography?.trim() ? profile.biography : 'No biography available.'}
           </p>
         </div>
-        {canEditProfile && (
-          <button className='user-activity-settings-button' onClick={handleGoToSettings}>
-            Go to Settings
-          </button>
-        )}
+        <div className='user-activity-header-actions'>
+          {canEditProfile && (
+            <button className='user-activity-settings-button' onClick={handleGoToSettings}>
+              Go to Settings
+            </button>
+          )}
+          {!canEditProfile && (
+            <button className='user-activity-message-button' onClick={handleSendMessage}>
+              Send Message
+            </button>
+          )}
+        </div>
       </div>
 
       <div className='user-activity-summary'>
