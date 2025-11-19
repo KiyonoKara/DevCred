@@ -64,7 +64,7 @@ const QuestionView = ({ question }: QuestionProps) => {
           handleSaveClick(question);
         }}
         className='collections-btn'>
-        Edit My Collections
+        Save to My Collections
       </button>
 
       {isModalOpen && selectedQuestion && (

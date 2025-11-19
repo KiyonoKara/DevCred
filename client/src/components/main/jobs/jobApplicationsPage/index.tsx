@@ -14,28 +14,42 @@ const TalentApplicationView = () => {
       </div>
 
       <div className='job_application-list'>
-        {jobApplications.map(
-          jobApplication =>
-            jobApplication.jobPosting && (
-              <div key={jobApplication._id.toString()} className='job_posting-card'>
-                <h2 className='job_application-name'>{jobApplication.jobPosting.title}</h2>
-                <p className='job_application-description'>{jobApplication.jobPosting.company}</p>
-                <p className='job_application-description'>
-                  Application Submission Date: {jobApplication.applicationDate.toString()}
-                </p>
+        {jobApplications.map(job_application => {
+          const formattedSubmissionDate = (() => {
+            const date = new Date(job_application.applicationDate);
+            if (Number.isNaN(date.getTime())) {
+              return 'Unknown submission time';
+            }
 
-                {jobApplication.jobPosting.active ? (
-                  <button
-                    type='button'
-                    onClick={() => handleViewJobPosting(jobApplication.jobPosting._id.toString())}>
-                    View Job Posting
-                  </button>
-                ) : (
-                  <p>Job Posting Deactivated</p>
-                )}
-              </div>
-            ),
-        )}
+            return date.toLocaleString(undefined, {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            });
+          })();
+
+          return (
+            <div key={job_application._id.toString()} className='job_posting-card'>
+              <h2 className='job_application-name'>{job_application.jobPosting.title}</h2>
+              <p className='job_application-description'>{job_application.jobPosting.company}</p>
+              <p className='job_application-description'>
+                Application Submission Date: {formattedSubmissionDate}
+              </p>
+
+              {job_application.jobPosting.active ? (
+                <button
+                  type='button'
+                  onClick={() => handleViewJobPosting(job_application.jobPosting._id.toString())}>
+                  View Job Posting
+                </button>
+              ) : (
+                <p>Job Posting Deactivated</p>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

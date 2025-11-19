@@ -7,7 +7,8 @@ const getApplicationsByJobId = async (
   jobId: string,
   requestor: string,
 ): Promise<DatabaseJobApplication[]> => {
-  const res = await api.get(`${JOB_APPLICATION_API_URL}/job/${jobId}?requestor=${requestor}`);
+  const params = new URLSearchParams({ requestor });
+  const res = await api.get(`${JOB_APPLICATION_API_URL}/job/${jobId}?${params.toString()}`);
 
   if (res.status !== 200) {
     throw new Error('Error fetching applications by job id');
@@ -17,7 +18,8 @@ const getApplicationsByJobId = async (
 };
 
 const getApplicationStatus = async (jobId: string, requestor: string): Promise<boolean> => {
-  const res = await api.get(`${JOB_APPLICATION_API_URL}/${jobId}/status?username=${requestor}`);
+  const params = new URLSearchParams({ username: requestor });
+  const res = await api.get(`${JOB_APPLICATION_API_URL}/${jobId}/status?${params.toString()}`);
 
   if (res.status !== 200) {
     throw new Error('Error fetching application status by job id');

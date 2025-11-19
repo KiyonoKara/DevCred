@@ -12,6 +12,24 @@
   font-weight: 800;
 }
 
+#searchBar {
+  flex: 0 0 auto;
+  width: clamp(160px, 12vw, 200px);
+  max-width: 200px;
+  padding: 10px 14px;
+  border: 1px solid #bbbbbb;
+  border-radius: 6px;
+  font-size: 16px;
+  background-color: #ffffff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#searchBar:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+}
+
 .logout-button {
   padding: 12px;
   font-size: 16px;

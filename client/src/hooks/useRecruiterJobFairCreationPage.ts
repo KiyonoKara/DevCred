@@ -15,6 +15,7 @@ const useRecruiterJobFairCreationPage = () => {
   const [visibility, setVisibility] = useState<'public' | 'invite-only'>('public');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
+  const [codingTournamentEnabled, setCodingTournamentEnabled] = useState(true);
   const [invitedUsers, setInvitedUsers] = useState<string[]>([]);
   const [currentInviteInput, setCurrentInviteInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -39,6 +40,7 @@ const useRecruiterJobFairCreationPage = () => {
       return 'At least one user must be invited for invite-only job fairs';
     }
 
+    // Get dates
     const startDate = new Date(startTime);
     const endDate = new Date(endTime);
     const now = new Date();
@@ -106,6 +108,7 @@ const useRecruiterJobFairCreationPage = () => {
         startTime: toISO8601(startTime),
         endTime: toISO8601(endTime),
         hostUsername: currentUser.username,
+        codingTournamentEnabled,
         invitedUsers: visibility === 'invite-only' ? invitedUsers : undefined,
       };
 
@@ -128,6 +131,7 @@ const useRecruiterJobFairCreationPage = () => {
     visibility,
     startTime,
     endTime,
+    codingTournamentEnabled,
     currentUser.username,
     invitedUsers,
     navigate,
@@ -140,6 +144,7 @@ const useRecruiterJobFairCreationPage = () => {
     setVisibility('public');
     setStartTime('');
     setEndTime('');
+    setCodingTournamentEnabled(true);
     setInvitedUsers([]);
     setCurrentInviteInput('');
     setError(null);
@@ -157,6 +162,8 @@ const useRecruiterJobFairCreationPage = () => {
     setStartTime,
     endTime,
     setEndTime,
+    codingTournamentEnabled,
+    setCodingTournamentEnabled,
     invitedUsers,
     currentInviteInput,
     setCurrentInviteInput,

@@ -148,6 +148,20 @@ export interface JobFairChatMessagePayload {
 }
 
 /**
+ * Payload for a coding tournament submission event.
+ * - `jobFairId`: The ID of the job fair.
+ * - `submission`: The submission data including code and language.
+ */
+export interface CodingSubmissionPayload {
+  jobFairId: string;
+  submission: {
+    code: string;
+    language: string;
+    submittedAt: Date;
+    submittedBy: string;
+  };
+}
+/**
  * Interface representing the payload for a job application update event.
  * - `jobId`: The ID of the job posting.
  * - `type`: The type of update (`'applicationCreated'` or `'applicationDeleted'`).
@@ -229,6 +243,7 @@ export interface ServerToClientEvents {
   collectionUpdate: (community: CollectionUpdatePayload) => void;
   jobFairUpdate: (jobFair: JobFairUpdatePayload) => void;
   jobFairChatMessage: (message: JobFairChatMessagePayload) => void;
+  codingSubmission: (payload: CodingSubmissionPayload) => void;
   jobPostingUpdate: (jobPosting: JobPostingUpdatePayload) => void;
   jobApplicationUpdate: (update: JobApplicationUpdatePayload) => void;
   metricsUpdate: (update: UserMetricsUpdatePayload) => void;
