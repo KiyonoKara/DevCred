@@ -35,38 +35,40 @@ const Signup = () => {
           id='username-input'
         />
         <h4>I am a:</h4>
-        <button
-          type='button'
-          className='recruiter-button'
-          onClick={event => {
-            event.stopPropagation();
-            handleInputChange(
-              {
-                target: {
-                  value: 'recruiter',
-                },
-              } as ChangeEvent<HTMLInputElement>,
-              'userType',
-            );
-          }}>
-          Recruiter
-        </button>
-        <button
-          type='button'
-          className='talent-button'
-          onClick={event => {
-            event.stopPropagation();
-            handleInputChange(
-              {
-                target: {
-                  value: 'talent',
-                },
-              } as ChangeEvent<HTMLInputElement>,
-              'userType',
-            );
-          }}>
-          Applicant
-        </button>
+        <div className='user-type-buttons'>
+          <button
+            type='button'
+            className={`user-type-button recruiter-button ${userType === 'recruiter' ? 'selected' : ''}`}
+            onClick={event => {
+              event.stopPropagation();
+              handleInputChange(
+                {
+                  target: {
+                    value: 'recruiter',
+                  },
+                } as ChangeEvent<HTMLInputElement>,
+                'userType',
+              );
+            }}>
+            Recruiter
+          </button>
+          <button
+            type='button'
+            className={`user-type-button talent-button ${userType === 'talent' ? 'selected' : ''}`}
+            onClick={event => {
+              event.stopPropagation();
+              handleInputChange(
+                {
+                  target: {
+                    value: 'talent',
+                  },
+                } as ChangeEvent<HTMLInputElement>,
+                'userType',
+              );
+            }}>
+            Applicant
+          </button>
+        </div>
         <input
           type='hidden'
           name='role'
