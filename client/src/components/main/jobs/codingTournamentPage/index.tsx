@@ -23,6 +23,13 @@ const CodingTournamentPage = ({ jobFairId }: CodingTournamentPageProps) => {
     isHost,
     isRecruiter,
     handleSubmitCode,
+    handleAcceptSubmission,
+    acceptedSubmission,
+    setAcceptedSubmission,
+    dmMessage,
+    setDmMessage,
+    handleSendDMToApplicant,
+    isSendingDM,
   } = useCodingTournament(jobFairId, jobFair);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,7 +41,8 @@ const CodingTournamentPage = ({ jobFairId }: CodingTournamentPageProps) => {
 
   return (
     <div className='coding-tournament-page'>
-      <div className='tournament-container'>
+      <div className='tournament-layout'>
+        <div className='tournament-container'>
         {!isRecruiter && (
           <div className='code-submission-section'>
             <h3>Code Submission</h3>
@@ -94,7 +102,12 @@ const CodingTournamentPage = ({ jobFairId }: CodingTournamentPageProps) => {
                         {new Date(sub.submittedAt).toLocaleString()}
                       </span>
                     </div>
-                    {sub.grade && (
+                    {sub.grade === 100 && (
+                      <div className='submission-accepted'>
+                        Accepted
+                      </div>
+                    )}
+                    {sub.grade && sub.grade !== 100 && (
                       <div className='submission-grade'>
                         Grade: <span className='grade-value'>{sub.grade}</span>
                       </div>
@@ -115,9 +128,13 @@ const CodingTournamentPage = ({ jobFairId }: CodingTournamentPageProps) => {
                     </div>
                   )}
 
-                  {isHost && !sub.grade && (
+                  {isHost && sub.grade !== 100 && (
                     <div className='submission-actions'>
-                      <p className='grade-prompt'>Grade this submission</p>
+                      <button
+                        className='accept-submission-btn'
+                        onClick={() => handleAcceptSubmission(sub)}>
+                        Accept this submission
+                      </button>
                     </div>
                   )}
 
@@ -131,6 +148,51 @@ const CodingTournamentPage = ({ jobFairId }: CodingTournamentPageProps) => {
             </div>
           )}
         </div>
+        </div>
+
+        {acceptedSubmission && (
+          <div className='accept-submission-panel'>
+            <div className='panel-header'>
+              <h3>Contact Applicant</h3>
+              <button
+                className='close-panel-btn'
+                onClick={() => {
+                  setAcceptedSubmission(null);
+                  setDmMessage('');
+                }}>
+                ×
+              </button>
+            </div>
+            <div className='panel-content'>
+              <div className='applicant-info'>
+                <p>
+                  <strong>Applicant:</strong> {acceptedSubmission.submittedBy || 'Unknown'}
+                </p>
+                <p>
+                  <strong>Language:</strong> {acceptedSubmission.language || 'Unknown'}
+                </p>
+              </div>
+              <div className='dm-form'>
+                <label htmlFor='dm-message'>Message to Applicant:</label>
+                <textarea
+                  id='dm-message'
+                  className='dm-message-input'
+                  value={dmMessage}
+                  onChange={e => setDmMessage(e.target.value)}
+                  placeholder='Enter your message asking for their resume...'
+                  rows={6}
+                />
+                <button
+                  className='dm-send-btn'
+                  onClick={handleSendDMToApplicant}
+                  disabled={!dmMessage.trim() || isSendingDM}>
+                  {isSendingDM ? 'Sending...' : 'DM to this applicant'}
+                </button>
+              </div>
+              {error && <div className='panel-error'>{error}</div>}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

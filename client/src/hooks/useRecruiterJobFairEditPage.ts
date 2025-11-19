@@ -1,15 +1,18 @@
-import { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useCallback, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import jobFairService from '../services/jobFairService';
 import useUserContext from './useUserContext';
+import { DatabaseJobFair } from '../../shared/types/jobFair.d';
 
 /**
- * Custom hook for managing job fair creation by recruiters.
+ * Custom hook for managing job fair editing by recruiters.
  * Handles form state, validation, and submission.
  */
-const useRecruiterJobFairCreationPage = () => {
+const useRecruiterJobFairEditPage = () => {
   const navigate = useNavigate();
+  const { jobFairId } = useParams<{ jobFairId: string }>();
   const { user: currentUser } = useUserContext();
+  const [jobFair, setJobFair] = useState<DatabaseJobFair | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [visibility, setVisibility] = useState<'public' | 'invite-only'>('public');
@@ -22,6 +25,57 @@ const useRecruiterJobFairCreationPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [loadingJobFair, setLoadingJobFair] = useState(true);
+
+  // Load job fair data
+  useEffect(() => {
+    const loadJobFair = async () => {
+      if (!jobFairId) {
+        setError('Job fair ID is required');
+        setLoadingJobFair(false);
+        return;
+      }
+
+      try {
+        setLoadingJobFair(true);
+        const fetchedJobFair = await jobFairService.getJobFairById(jobFairId, currentUser.username);
+
+        if ('error' in fetchedJobFair) {
+          setError(fetchedJobFair.error);
+          setLoadingJobFair(false);
+          return;
+        }
+
+        // Check if user is the host
+        if (fetchedJobFair.hostUsername !== currentUser.username) {
+          setError('Only the host can edit this job fair');
+          setLoadingJobFair(false);
+          return;
+        }
+
+        setJobFair(fetchedJobFair);
+        setTitle(fetchedJobFair.title);
+        setDescription(fetchedJobFair.description);
+        setVisibility(fetchedJobFair.visibility);
+        
+        // Convert ISO dates to datetime-local format
+        const startDate = new Date(fetchedJobFair.startTime);
+        const endDate = new Date(fetchedJobFair.endTime);
+        setStartTime(startDate.toISOString().slice(0, 16));
+        setEndTime(endDate.toISOString().slice(0, 16));
+        
+        setCodingTournamentEnabled(fetchedJobFair.codingTournamentEnabled);
+        setOverviewMessage(fetchedJobFair.overviewMessage || '');
+        setInvitedUsers(fetchedJobFair.invitedUsers || []);
+      } catch (err) {
+        setError((err as Error).message || 'Failed to load job fair');
+      } finally {
+        setLoadingJobFair(false);
+      }
+    };
+
+    loadJobFair();
+  }, [jobFairId, currentUser.username]);
 
   // Validates job form inputs
   const validateForm = useCallback((): string | null => {
@@ -44,11 +98,6 @@ const useRecruiterJobFairCreationPage = () => {
     // Get dates
     const startDate = new Date(startTime);
     const endDate = new Date(endTime);
-    const now = new Date();
-
-    if (startDate <= now) {
-      return 'Start time must be in the future';
-    }
 
     if (endDate <= startDate) {
       return 'End time must be after start time';
@@ -79,8 +128,13 @@ const useRecruiterJobFairCreationPage = () => {
     setInvitedUsers(prev => prev.filter(u => u !== username));
   }, []);
 
-  // Handles form for creating a new job fair
-  const handleCreateJobFair = useCallback(async () => {
+  // Handles form for updating a job fair
+  const handleUpdateJobFair = useCallback(async () => {
+    if (!jobFairId) {
+      setError('Job fair ID is required');
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -101,33 +155,33 @@ const useRecruiterJobFairCreationPage = () => {
         return date.toISOString();
       };
 
-      // Create job fair
-      const jobFairData = {
+      // Update job fair
+      const updateData = {
         title,
         description,
         visibility,
         startTime: toISO8601(startTime),
         endTime: toISO8601(endTime),
-        hostUsername: currentUser.username,
         codingTournamentEnabled,
         overviewMessage: overviewMessage.trim() ? overviewMessage : undefined,
         invitedUsers: visibility === 'invite-only' ? invitedUsers : undefined,
       };
 
-      const createdJobFair = await jobFairService.createJobFair(jobFairData);
+      await jobFairService.updateJobFair(jobFairId, updateData, currentUser.username);
 
       setSuccess(true);
-      // Navigate to the created job fair detail page
+      // Navigate to the updated job fair detail page
       setTimeout(() => {
-        navigate(`/jobfairs/${createdJobFair._id.toString()}`);
+        navigate(`/jobfairs/${jobFairId}`);
       }, 1000);
     } catch (err) {
-      setError((err as Error).message || 'Failed to create job fair');
+      setError((err as Error).message || 'Failed to update job fair');
     } finally {
       setLoading(false);
     }
   }, [
     validateForm,
+    jobFairId,
     title,
     description,
     visibility,
@@ -140,22 +194,8 @@ const useRecruiterJobFairCreationPage = () => {
     navigate,
   ]);
 
-  // Resets the form to initial state
-  const handleResetForm = useCallback(() => {
-    setTitle('');
-    setDescription('');
-    setVisibility('public');
-    setStartTime('');
-    setEndTime('');
-    setCodingTournamentEnabled(true);
-    setOverviewMessage('');
-    setInvitedUsers([]);
-    setCurrentInviteInput('');
-    setError(null);
-    setSuccess(false);
-  }, []);
-
   return {
+    jobFair,
     title,
     setTitle,
     description,
@@ -174,13 +214,14 @@ const useRecruiterJobFairCreationPage = () => {
     currentInviteInput,
     setCurrentInviteInput,
     loading,
+    loadingJobFair,
     error,
     success,
     handleAddInvite,
     handleRemoveInvite,
-    handleCreateJobFair,
-    handleResetForm,
+    handleUpdateJobFair,
   };
 };
 
-export default useRecruiterJobFairCreationPage;
+export default useRecruiterJobFairEditPage;
+

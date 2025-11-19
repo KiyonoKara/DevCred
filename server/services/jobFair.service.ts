@@ -1,4 +1,5 @@
 import JobFairModel from '../models/jobFair.model';
+import UserModel from '../models/users.model';
 import { JobFair, JobFairResponse, DatabaseJobFair, Message } from '../types/types';
 import { saveMessage } from './message.service';
 
@@ -150,6 +151,7 @@ export const joinJobFair = async (
     if (!jobFair) {
       return { error: 'Job fair not found' };
     }
+
     // Check if job fair is accessible to the user
     const hasAccess =
       jobFair.visibility === 'public' ||
@@ -224,14 +226,20 @@ export const addJobFairMessage = async (
       return { error: 'Job fair not found' };
     }
 
-    // Check if the sender is a participant or host
-    const isAuthorized =
-      jobFair.participants.includes(messageData.msgFrom) ||
-      jobFair.hostUsername === messageData.msgFrom;
+    // Check if the sender is the host
+    if (jobFair.hostUsername === messageData.msgFrom) {
+      // Host can always send messages
+    } else {
+      // For non-hosts, check if they are a participant
+      if (!jobFair.participants.includes(messageData.msgFrom)) {
+        return { error: 'Only participants and hosts can send messages' };
+      }
 
-    // Whether sender is allowed to send the message
-    if (!isAuthorized) {
-      return { error: 'Only participants and hosts can send messages' };
+      // Check if the sender is a recruiter (non-host recruiters cannot send messages)
+      const user = await UserModel.findOne({ username: messageData.msgFrom }).select('userType');
+      if (user && user.userType === 'recruiter') {
+        return { error: 'Recruiters cannot send messages in job fairs hosted by other recruiters' };
+      }
     }
     // Save the message
     const savedMessage = await saveMessage({ ...messageData, type: 'direct' });
@@ -245,6 +253,72 @@ export const addJobFairMessage = async (
     return jobFair;
   } catch (error) {
     return { error: `Error adding job fair message: ${error}` };
+  }
+};
+
+/**
+ * Updates a job fair's information (host only).
+ * @param jobFairId - The ID of the job fair to update.
+ * @param hostUsername - The username of the host (for authorization).
+ * @param updateData - The data to update (title, description, startTime, endTime, visibility, codingTournamentEnabled, overviewMessage, invitedUsers).
+ * @returns {Promise<JobFairResponse>} - The updated job fair.
+ */
+export const updateJobFair = async (
+  jobFairId: string,
+  hostUsername: string,
+  updateData: Partial<{
+    title: string;
+    description: string;
+    startTime: Date;
+    endTime: Date;
+    visibility: 'public' | 'invite-only';
+    codingTournamentEnabled: boolean;
+    overviewMessage?: string;
+    invitedUsers: string[];
+  }>,
+): Promise<JobFairResponse> => {
+  try {
+    const jobFair = await JobFairModel.findById(jobFairId);
+
+    if (!jobFair) {
+      return { error: 'Job fair not found' };
+    }
+
+    if (jobFair.hostUsername !== hostUsername) {
+      return { error: 'Only the host can update the job fair' };
+    }
+
+    // Update allowed fields
+    if (updateData.title !== undefined) {
+      jobFair.title = updateData.title;
+    }
+    if (updateData.description !== undefined) {
+      jobFair.description = updateData.description;
+    }
+    if (updateData.startTime !== undefined) {
+      jobFair.startTime = updateData.startTime;
+    }
+    if (updateData.endTime !== undefined) {
+      jobFair.endTime = updateData.endTime;
+    }
+    if (updateData.visibility !== undefined) {
+      jobFair.visibility = updateData.visibility;
+    }
+    if (updateData.codingTournamentEnabled !== undefined) {
+      jobFair.codingTournamentEnabled = updateData.codingTournamentEnabled;
+    }
+    if (updateData.overviewMessage !== undefined) {
+      jobFair.overviewMessage = updateData.overviewMessage;
+    }
+    if (updateData.invitedUsers !== undefined) {
+      jobFair.invitedUsers = updateData.invitedUsers;
+    }
+
+    await jobFair.save();
+
+    return jobFair;
+  } catch (error) {
+    return { error: `Error updating job fair: ${error}` };
   }
 };
 

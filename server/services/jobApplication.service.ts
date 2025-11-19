@@ -46,6 +46,15 @@ export const createApplication = async (
   username: string,
 ): Promise<JobApplicationResponse> => {
   try {
+    // Check if user is a recruiter
+    const user = await UserModel.findOne({ username }).select('userType');
+    if (!user) {
+      return { error: 'User not found' };
+    }
+    if (user.userType === 'recruiter') {
+      return { error: 'Recruiters cannot apply to jobs' };
+    }
+
     const job = await JobPostingModel.findById(jobId);
     if (!job) {
       return { error: 'Job not found' };

@@ -11,11 +11,13 @@ import {
   getJobFairs,
   getJobFairById,
   updateJobFairStatus,
+  updateJobFair,
   joinJobFair,
   leaveJobFair,
   addJobFairMessage,
   deleteJobFair,
 } from '../services/jobFair.service';
+import UserModel from '../models/users.model';
 
 /**
  * Express controller for handling job fair-related requests.
@@ -40,6 +42,7 @@ const jobFairController = (socket: FakeSOSocket) => {
         endTime,
         invitedUsers,
         codingTournamentEnabled,
+        overviewMessage,
       } = req.body;
       // Get host username from user context
       const hostUsername = req.body.hostUsername || (req.headers.username as string);
@@ -56,6 +59,7 @@ const jobFairController = (socket: FakeSOSocket) => {
         startTime: startTime,
         endTime: endTime,
         codingTournamentEnabled: codingTournamentEnabled ?? true,
+        overviewMessage: overviewMessage,
         participants: [],
         invitedUsers: invitedUsers || [],
         chatMessages: [],
@@ -340,14 +344,108 @@ const jobFairController = (socket: FakeSOSocket) => {
   };
 
   /**
+   * Updates a job fair's information (host only).
+   * @param req The request object containing the job fair ID and update data.
+   * @param res The response object to send the result.
+   */
+  const updateJobFairRoute = async (
+    req: JobFairIdRequest & {
+      body: {
+        hostUsername?: string;
+        title?: string;
+        description?: string;
+        startTime?: Date;
+        endTime?: Date;
+        visibility?: 'public' | 'invite-only';
+        codingTournamentEnabled?: boolean;
+        overviewMessage?: string;
+        invitedUsers?: string[];
+      };
+    },
+    res: Response,
+  ) => {
+    try {
+      const { jobFairId } = req.params;
+      const hostUsername = req.body.hostUsername || (req.headers.username as string);
+
+      if (!hostUsername) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+
+      const {
+        title,
+        description,
+        startTime,
+        endTime,
+        visibility,
+        codingTournamentEnabled,
+        overviewMessage,
+        invitedUsers,
+      } = req.body;
+
+      const updateData: Partial<{
+        title: string;
+        description: string;
+        startTime: Date;
+        endTime: Date;
+        visibility: 'public' | 'invite-only';
+        codingTournamentEnabled: boolean;
+        overviewMessage?: string;
+        invitedUsers: string[];
+      }> = {};
+
+      if (title !== undefined) updateData.title = title;
+      if (description !== undefined) updateData.description = description;
+      if (startTime !== undefined) updateData.startTime = new Date(startTime);
+      if (endTime !== undefined) updateData.endTime = new Date(endTime);
+      if (visibility !== undefined) updateData.visibility = visibility;
+      if (codingTournamentEnabled !== undefined)
+        updateData.codingTournamentEnabled = codingTournamentEnabled;
+      if (overviewMessage !== undefined) updateData.overviewMessage = overviewMessage;
+      if (invitedUsers !== undefined) updateData.invitedUsers = invitedUsers;
+
+      const result = await updateJobFair(jobFairId, hostUsername, updateData);
+
+      if ('error' in result) {
+        if (result.error.includes('not found')) {
+          return res.status(404).json({ error: result.error });
+        }
+        if (result.error.includes('Only the host')) {
+          return res.status(403).json({ error: result.error });
+        }
+        throw new Error(result.error);
+      }
+
+      // Convert ObjectId to string for response
+      const responseData = {
+        ...JSON.parse(JSON.stringify(result)),
+        _id: result._id.toString(),
+      };
+
+      // Emit socket event to the job fair room
+      socket.to(`jobFair_${jobFairId}`).emit('jobFairUpdate', {
+        jobFair: responseData,
+        type: 'updated',
+      });
+
+      res.status(200).json(responseData);
+    } catch (error) {
+      res.status(500).send(`Error updating job fair: ${(error as Error).message}`);
+    }
+  };
+
+  /**
    * Deletes a job fair (host only).
    * @param req The request object containing the job fair ID.
    * @param res The response object to send the result.
    */
-  const deleteJobFairRoute = async (req: JobFairIdRequest, res: Response) => {
+  const deleteJobFairRoute = async (
+    req: JobFairIdRequest & { body: { hostUsername?: string } },
+    res: Response,
+  ) => {
     try {
       const { jobFairId } = req.params;
-      const hostUsername = req.headers.username as string;
+      const hostUsername = req.body.hostUsername || (req.headers.username as string);
 
       if (!hostUsername) {
         return res.status(401).json({ error: 'Authentication required' });
@@ -414,6 +512,15 @@ const jobFairController = (socket: FakeSOSocket) => {
         return res.status(401).json({ error: 'Authentication required' });
       }
 
+      // Check if user is a recruiter
+      const user = await UserModel.findOne({ username: submittedBy }).select('userType');
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      if (user.userType === 'recruiter') {
+        return res.status(403).json({ error: 'Recruiters cannot submit code in job fairs' });
+      }
+
       // Persist coding submission as a special message so it loads with chat history.
       // We prefix the payload to recover language and separate it from plain chat messages.
       const payloadMsg = `__CODE_SUBMISSION__${language}__\n${code}`;
@@ -461,6 +568,7 @@ const jobFairController = (socket: FakeSOSocket) => {
   router.get('/list', getJobFairsRoute);
   router.get('/:jobFairId', getJobFairByIdRoute);
   router.patch('/:jobFairId/status', updateJobFairStatusRoute);
+  router.put('/:jobFairId', updateJobFairRoute);
   router.post('/:jobFairId/join', joinJobFairRoute);
   router.post('/:jobFairId/leave', leaveJobFairRoute);
   router.post('/:jobFairId/message', addJobFairMessageRoute);

@@ -175,12 +175,51 @@ const submitCodingChallenge = async (
 };
 
 /**
+ * Updates a job fair (only by host).
+ * @param jobFairId The ID of the job fair to update
+ * @param updateData The data to update
+ * @param hostUsername The username of the host updating the job fair
+ * @returns The updated DatabaseJobFair object
+ */
+const updateJobFair = async (
+  jobFairId: string,
+  updateData: {
+    title?: string;
+    description?: string;
+    startTime?: Date | string;
+    endTime?: Date | string;
+    visibility?: 'public' | 'invite-only';
+    codingTournamentEnabled?: boolean;
+    overviewMessage?: string;
+    invitedUsers?: string[];
+  },
+  hostUsername: string,
+): Promise<DatabaseJobFair> => {
+  const res = await api.put(`${JOB_FAIR_API_URL}/${jobFairId}`, {
+    ...updateData,
+    hostUsername,
+  });
+
+  if (res.status !== 200) {
+    throw new Error('Error updating job fair.');
+  }
+
+  return res.data;
+};
+
+/**
  * Deletes a job fair (only by host).
  * @param jobFairId The ID of the job fair to delete
+ * @param hostUsername The username of the host deleting the job fair
  * @returns The deleted DatabaseJobFair object
  */
-const deleteJobFair = async (jobFairId: string): Promise<DatabaseJobFair> => {
-  const res = await api.delete(`${JOB_FAIR_API_URL}/${jobFairId}`);
+const deleteJobFair = async (
+  jobFairId: string,
+  hostUsername: string,
+): Promise<DatabaseJobFair> => {
+  const res = await api.delete(`${JOB_FAIR_API_URL}/${jobFairId}`, {
+    data: { hostUsername },
+  });
 
   if (res.status !== 200) {
     throw new Error('Error deleting job fair.');
@@ -194,6 +233,7 @@ export default {
   getJobFairById,
   createJobFair,
   updateJobFairStatus,
+  updateJobFair,
   joinJobFair,
   leaveJobFair,
   addJobFairMessage,

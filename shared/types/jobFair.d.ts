@@ -24,6 +24,7 @@ export interface JobFair {
   startTime: Date;
   endTime: Date;
   codingTournamentEnabled: boolean;
+  overviewMessage?: string;
   participants: string[];
   invitedUsers: string[];
   chatMessages: ObjectId[];
@@ -52,6 +53,7 @@ export interface CreateJobFairRequest extends Request {
     endTime: Date;
     hostUsername: string;
     codingTournamentEnabled?: boolean;
+    overviewMessage?: string;
     invitedUsers?: string[];
   };
 }

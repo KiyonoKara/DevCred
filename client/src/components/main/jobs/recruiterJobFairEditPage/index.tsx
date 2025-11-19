@@ -1,10 +1,11 @@
-import useRecruiterJobFairCreationPage from '../../../../hooks/useRecruiterJobFairCreationPage';
-import './index.css';
+import useRecruiterJobFairEditPage from '../../../../hooks/useRecruiterJobFairEditPage';
+import '../recruiterJobFairCreationPage/index.css';
 
-// RecruiterJobFairCreationPage component allows recruiters to create new job fairs
+// RecruiterJobFairEditPage component allows recruiters to edit existing job fairs
 // Includes form for details, date scheduling, and inviting users.
-const RecruiterJobFairCreationPage = () => {
+const RecruiterJobFairEditPage = () => {
   const {
+    jobFair,
     title,
     setTitle,
     description,
@@ -23,28 +24,55 @@ const RecruiterJobFairCreationPage = () => {
     currentInviteInput,
     setCurrentInviteInput,
     loading,
+    loadingJobFair,
     error,
+    success,
     handleAddInvite,
     handleRemoveInvite,
-    handleCreateJobFair,
-    handleResetForm,
-  } = useRecruiterJobFairCreationPage();
+    handleUpdateJobFair,
+  } = useRecruiterJobFairEditPage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await handleCreateJobFair();
+    await handleUpdateJobFair();
   };
+
+  if (loadingJobFair) {
+    return (
+      <div className='recruiter-creation-page'>
+        <div className='creation-container'>
+          <div className='creation-header'>
+            <h1>Loading...</h1>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!jobFair) {
+    return (
+      <div className='recruiter-creation-page'>
+        <div className='creation-container'>
+          <div className='creation-header'>
+            <h1>Job Fair Not Found</h1>
+            <p>{error || 'The job fair you are trying to edit does not exist or you do not have permission to edit it.'}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='recruiter-creation-page'>
       <div className='creation-container'>
         <div className='creation-header'>
-          <h1>Create a New Job Fair</h1>
-          <p>Schedule a job fair event to connect with talented developers</p>
+          <h1>Edit Job Fair</h1>
+          <p>Update the job fair information</p>
         </div>
 
         <form onSubmit={handleSubmit} className='creation-form'>
           {error && <div className='form-error'>{error}</div>}
+          {success && <div className='form-success'>Job fair updated successfully! Redirecting...</div>}
 
           <div className='form-section'>
             <h2>Job Fair Details</h2>
@@ -199,11 +227,8 @@ const RecruiterJobFairCreationPage = () => {
           )}
 
           <div className='form-actions'>
-            <button type='button' onClick={handleResetForm} className='btn-secondary'>
-              Clear Form
-            </button>
             <button type='submit' className='btn-primary' disabled={loading}>
-              {loading ? 'Creating...' : 'Create Job Fair'}
+              {loading ? 'Updating...' : 'Update Job Fair'}
             </button>
           </div>
         </form>
@@ -212,4 +237,5 @@ const RecruiterJobFairCreationPage = () => {
   );
 };
 
-export default RecruiterJobFairCreationPage;
+export default RecruiterJobFairEditPage;
+
