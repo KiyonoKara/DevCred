@@ -22,12 +22,12 @@ const useNotifications = () => {
   const [error, setError] = useState<string | null>(null);
   const [showNotification, setShowNotification] = useState<DatabaseNotification | null>(null);
   const notificationsRef = useRef<DatabaseNotification[]>([]);
-  
+
   // Track currently viewing content (not historical - only while actively viewing)
   const currentlyViewingChatRef = useRef<string | null>(null);
   const currentlyViewingQuestionRef = useRef<string | null>(null);
   const currentlyViewingJobFairRef = useRef<string | null>(null);
-  
+
   // Track notifications received while viewing (to filter them out permanently)
   const notificationsReceivedWhileViewingRef = useRef<Set<string>>(new Set());
 
@@ -45,7 +45,7 @@ const useNotifications = () => {
     // Track currently viewing chat
     const chatId = currentSearchParams.get('chatId');
     const previousChatId = currentlyViewingChatRef.current;
-    
+
     if (chatId && chatId !== previousChatId) {
       // User entered a chat
       currentlyViewingChatRef.current = chatId;
@@ -71,9 +71,10 @@ const useNotifications = () => {
 
     // Track currently viewing question
     const questionIndex = pathParts.indexOf('question');
-    const questionId = questionIndex !== -1 && pathParts[questionIndex + 1] ? pathParts[questionIndex + 1] : null;
+    const questionId =
+      questionIndex !== -1 && pathParts[questionIndex + 1] ? pathParts[questionIndex + 1] : null;
     const previousQuestionId = currentlyViewingQuestionRef.current;
-    
+
     if (questionId && questionId !== previousQuestionId) {
       // User entered a question page
       currentlyViewingQuestionRef.current = questionId;
@@ -99,9 +100,10 @@ const useNotifications = () => {
 
     // Track currently viewing job fair
     const jobFairIndex = pathParts.indexOf('jobfairs');
-    const jobFairId = jobFairIndex !== -1 && pathParts[jobFairIndex + 1] ? pathParts[jobFairIndex + 1] : null;
+    const jobFairId =
+      jobFairIndex !== -1 && pathParts[jobFairIndex + 1] ? pathParts[jobFairIndex + 1] : null;
     const previousJobFairId = currentlyViewingJobFairRef.current;
-    
+
     if (jobFairId && jobFairId !== previousJobFairId) {
       // User entered a job fair page
       currentlyViewingJobFairRef.current = jobFairId;
@@ -160,10 +162,9 @@ const useNotifications = () => {
       const pathname = window.location.pathname;
       const pathParts = pathname.split('/').filter(Boolean);
       const jobFairIndex = pathParts.indexOf('jobfairs');
-      const currentJobFairId = jobFairIndex !== -1 && pathParts[jobFairIndex + 1] 
-        ? pathParts[jobFairIndex + 1] 
-        : null;
-      
+      const currentJobFairId =
+        jobFairIndex !== -1 && pathParts[jobFairIndex + 1] ? pathParts[jobFairIndex + 1] : null;
+
       if (currentJobFairId && relatedIdStr === String(currentJobFairId)) {
         // Mark this notification as received while viewing
         notificationsReceivedWhileViewingRef.current.add(notification._id.toString());
@@ -176,10 +177,9 @@ const useNotifications = () => {
       const pathname = window.location.pathname;
       const pathParts = pathname.split('/').filter(Boolean);
       const questionIndex = pathParts.indexOf('question');
-      const currentQuestionId = questionIndex !== -1 && pathParts[questionIndex + 1]
-        ? pathParts[questionIndex + 1]
-        : null;
-      
+      const currentQuestionId =
+        questionIndex !== -1 && pathParts[questionIndex + 1] ? pathParts[questionIndex + 1] : null;
+
       if (currentQuestionId && relatedIdStr === String(currentQuestionId)) {
         // Mark this notification as received while viewing
         notificationsReceivedWhileViewingRef.current.add(notification._id.toString());
@@ -206,7 +206,7 @@ const useNotifications = () => {
 
         setNotifications(prev => [notification, ...prev]);
         setUnreadCount(prev => prev + 1);
-        
+
         // Show pop-up notification banner if user has notifications enabled
         if (user.notificationPreferences?.enabled && !user.notificationPreferences?.summarized) {
           // Check if the notification type is enabled
@@ -242,11 +242,11 @@ const useNotifications = () => {
       setLoading(true);
       setError(null);
       const notifs = await getNotifications(false);
-      
+
       // Filter notifications based on current page context - don't show notifications for content user is viewing
       const filteredNotifs = notifs.filter(n => shouldShowNotification(n));
       setNotifications(filteredNotifs);
-      
+
       // Calculate unread count from filtered notifications
       const unreadNotifs = filteredNotifs.filter(n => !n.read);
       setUnreadCount(unreadNotifs.length);
@@ -293,7 +293,7 @@ const useNotifications = () => {
         if (newUnread.length > 0) {
           // Filter out notifications that shouldn't be shown based on current context and viewed history
           const filteredNewUnread = newUnread.filter(shouldShowNotification);
-          
+
           // Calculate unread count excluding notifications for current page and viewed content
           const allUnread = notifs.filter(shouldShowNotification);
           const filteredCount = allUnread.length;
@@ -301,17 +301,25 @@ const useNotifications = () => {
           // Update notifications list - only add filtered notifications
           setNotifications(prev => {
             const existingIds = new Set(prev.map(n => n._id.toString()));
-            const newNotifications = filteredNewUnread.filter(n => !existingIds.has(n._id.toString()));
+            const newNotifications = filteredNewUnread.filter(
+              n => !existingIds.has(n._id.toString()),
+            );
             return [...newNotifications, ...prev];
           });
 
           // Show the first filtered new notification as a banner
-          if (filteredNewUnread.length > 0 && filteredNewUnread[0] && user.notificationPreferences?.enabled) {
+          if (
+            filteredNewUnread.length > 0 &&
+            filteredNewUnread[0] &&
+            user.notificationPreferences?.enabled
+          ) {
             // Check if the notification type is enabled
             const typeEnabled =
               (filteredNewUnread[0].type === 'dm' && user.notificationPreferences.dmEnabled) ||
-              (filteredNewUnread[0].type === 'jobFair' && user.notificationPreferences.jobFairEnabled) ||
-              (filteredNewUnread[0].type === 'community' && user.notificationPreferences.communityEnabled);
+              (filteredNewUnread[0].type === 'jobFair' &&
+                user.notificationPreferences.jobFairEnabled) ||
+              (filteredNewUnread[0].type === 'community' &&
+                user.notificationPreferences.communityEnabled);
 
             if (typeEnabled) {
               setShowNotification(filteredNewUnread[0]);
@@ -327,35 +335,41 @@ const useNotifications = () => {
           // Recalculate unread count and filter notifications list based on current context and viewed history
           const allUnread = notifs.filter(shouldShowNotification);
           setUnreadCount(allUnread.length);
-          
+
           // Also filter the existing notifications list to remove any that shouldn't be shown
           setNotifications(prev => prev.filter(shouldShowNotification));
         }
       } catch (err) {
         // Silently fail polling errors
-        console.error('Error polling notifications:', err);
+        // console.error('Error polling notifications:', err);
       }
-    }, 1000); // Poll every second
+      // Poll every second
+    }, 1000);
 
     return () => clearInterval(pollInterval);
   }, [user, shouldShowNotification]);
 
   // Mark notification as read
-  const handleMarkAsRead = useCallback(async (notificationId: string) => {
-    try {
-      await markNotificationAsRead(notificationId);
-      setNotifications(prev => {
-        const updated = prev.map(n => (n._id.toString() === notificationId ? { ...n, read: true } : n));
-        // Recalculate unread count excluding notifications for current page
-        const unreadNotifs = updated.filter(n => !n.read);
-        const filteredUnread = unreadNotifs.filter(n => shouldShowNotification(n));
-        setUnreadCount(filteredUnread.length);
-        return updated;
-      });
-    } catch (err) {
-      setError((err as Error).message || 'Failed to mark notification as read');
-    }
-  }, [shouldShowNotification]);
+  const handleMarkAsRead = useCallback(
+    async (notificationId: string) => {
+      try {
+        await markNotificationAsRead(notificationId);
+        setNotifications(prev => {
+          const updated = prev.map(n =>
+            n._id.toString() === notificationId ? { ...n, read: true } : n,
+          );
+          // Recalculate unread count excluding notifications for current page
+          const unreadNotifs = updated.filter(n => !n.read);
+          const filteredUnread = unreadNotifs.filter(n => shouldShowNotification(n));
+          setUnreadCount(filteredUnread.length);
+          return updated;
+        });
+      } catch (err) {
+        setError((err as Error).message || 'Failed to mark notification as read');
+      }
+    },
+    [shouldShowNotification],
+  );
 
   // Mark all as read
   const handleMarkAllAsRead = useCallback(async () => {
@@ -400,4 +414,3 @@ const useNotifications = () => {
 };
 
 export default useNotifications;
-

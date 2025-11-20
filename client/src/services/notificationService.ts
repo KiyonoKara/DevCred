@@ -8,7 +8,9 @@ const NOTIFICATION_API_URL = '/api/notification';
  * @param unreadOnly - If true, only return unread notifications.
  * @returns List of notifications.
  */
-export const getNotifications = async (unreadOnly: boolean = false): Promise<DatabaseNotification[]> => {
+export const getNotifications = async (
+  unreadOnly: boolean = false,
+): Promise<DatabaseNotification[]> => {
   const res = await api.get(NOTIFICATION_API_URL, {
     params: { unreadOnly },
   });
@@ -39,7 +41,9 @@ export const getUnreadNotificationCount = async (): Promise<number> => {
  * @param notificationId - The ID of the notification to mark as read.
  * @returns The updated notification.
  */
-export const markNotificationAsRead = async (notificationId: string): Promise<DatabaseNotification> => {
+export const markNotificationAsRead = async (
+  notificationId: string,
+): Promise<DatabaseNotification> => {
   const res = await api.patch(`${NOTIFICATION_API_URL}/${notificationId}/read`);
 
   if (res.status !== 200) {
@@ -76,4 +80,3 @@ export const clearAllNotifications = async (): Promise<{ success: boolean }> => 
 
   return res.data;
 };
-

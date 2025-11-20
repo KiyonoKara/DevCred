@@ -74,4 +74,3 @@ const NotificationBanner = ({ notification, onDismiss }: NotificationBannerProps
 };
 
 export default NotificationBanner;
-

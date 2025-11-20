@@ -113,7 +113,10 @@ const FakeStackOverflow = ({ socket }: { socket: FakeSOSocket | null }) => {
             <Route path='/jobfairs' element={<JobFairListPage />} />
             <Route path='/jobfairs/:jobFairId' element={<JobFairDetailPage />} />
             <Route path='/recruiters/jobfairs/new' element={<RecruiterJobFairCreationPage />} />
-            <Route path='/recruiters/jobfairs/:jobFairId/edit' element={<RecruiterJobFairEditPage />} />
+            <Route
+              path='/recruiters/jobfairs/:jobFairId/edit'
+              element={<RecruiterJobFairEditPage />}
+            />
             <Route path='/notifications' element={<NotificationPage />} />
           </Route>
         }

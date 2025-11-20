@@ -160,7 +160,7 @@ const useProfileSettings = () => {
   ) => {
     setNotificationSettings(prev => {
       const updated = { ...prev, [key]: value };
-      
+
       // If enabling summarized, disable individual checkboxes
       if (key === 'summarized' && value === true) {
         updated.dmEnabled = false;
@@ -168,7 +168,10 @@ const useProfileSettings = () => {
         updated.communityEnabled = false;
       }
       // If enabling individual checkbox, disable summarized
-      if ((key === 'dmEnabled' || key === 'jobFairEnabled' || key === 'communityEnabled') && value === true) {
+      if (
+        (key === 'dmEnabled' || key === 'jobFairEnabled' || key === 'communityEnabled') &&
+        value === true
+      ) {
         updated.summarized = false;
       }
       // If disabling notifications, disable everything
@@ -178,7 +181,7 @@ const useProfileSettings = () => {
         updated.jobFairEnabled = false;
         updated.communityEnabled = false;
       }
-      
+
       return updated;
     });
   };

@@ -135,9 +135,7 @@ const RecruiterJobFairCreationPage = () => {
             </div>
 
             <div className='form-group'>
-              <label htmlFor='overview-message'>
-                Overview Message
-              </label>
+              <label htmlFor='overview-message'>Overview Message</label>
               <textarea
                 id='overview-message'
                 value={overviewMessage}

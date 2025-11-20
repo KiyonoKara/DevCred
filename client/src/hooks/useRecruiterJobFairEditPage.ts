@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import jobFairService from '../services/jobFairService';
 import useUserContext from './useUserContext';
-import { DatabaseJobFair } from '../../shared/types/jobFair.d';
+import { DatabaseJobFair } from '@fake-stack-overflow/shared/types/jobFair';
 
 /**
  * Custom hook for managing job fair editing by recruiters.
@@ -38,10 +38,10 @@ const useRecruiterJobFairEditPage = () => {
 
       try {
         setLoadingJobFair(true);
-        const fetchedJobFair = await jobFairService.getJobFairById(jobFairId, currentUser.username);
+        const fetchedJobFair = await jobFairService.getJobFairById(jobFairId);
 
         if ('error' in fetchedJobFair) {
-          setError(fetchedJobFair.error);
+          setError((fetchedJobFair as { error: string }).error);
           setLoadingJobFair(false);
           return;
         }
@@ -57,13 +57,13 @@ const useRecruiterJobFairEditPage = () => {
         setTitle(fetchedJobFair.title);
         setDescription(fetchedJobFair.description);
         setVisibility(fetchedJobFair.visibility);
-        
+
         // Convert ISO dates to datetime-local format
         const startDate = new Date(fetchedJobFair.startTime);
         const endDate = new Date(fetchedJobFair.endTime);
         setStartTime(startDate.toISOString().slice(0, 16));
         setEndTime(endDate.toISOString().slice(0, 16));
-        
+
         setCodingTournamentEnabled(fetchedJobFair.codingTournamentEnabled);
         setOverviewMessage(fetchedJobFair.overviewMessage || '');
         setInvitedUsers(fetchedJobFair.invitedUsers || []);
@@ -224,4 +224,3 @@ const useRecruiterJobFairEditPage = () => {
 };
 
 export default useRecruiterJobFairEditPage;
-

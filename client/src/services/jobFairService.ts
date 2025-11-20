@@ -213,10 +213,7 @@ const updateJobFair = async (
  * @param hostUsername The username of the host deleting the job fair
  * @returns The deleted DatabaseJobFair object
  */
-const deleteJobFair = async (
-  jobFairId: string,
-  hostUsername: string,
-): Promise<DatabaseJobFair> => {
+const deleteJobFair = async (jobFairId: string, hostUsername: string): Promise<DatabaseJobFair> => {
   const res = await api.delete(`${JOB_FAIR_API_URL}/${jobFairId}`, {
     data: { hostUsername },
   });

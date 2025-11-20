@@ -18,7 +18,7 @@ const NotificationPage = () => {
     handleClearAll,
   } = useNotifications();
 
-  const handleNotificationClick = (notification: typeof notifications[0]) => {
+  const handleNotificationClick = (notification: (typeof notifications)[0]) => {
     // Mark as read if unread
     if (!notification.read) {
       handleMarkAsRead(notification._id.toString());
@@ -48,7 +48,9 @@ const NotificationPage = () => {
   };
 
   const handleClearAllWithConfirm = () => {
-    if (window.confirm('Are you sure you want to clear all notifications? This cannot be undone.')) {
+    if (
+      window.confirm('Are you sure you want to clear all notifications? This cannot be undone.')
+    ) {
       handleClearAll();
     }
   };
@@ -109,4 +111,3 @@ const NotificationPage = () => {
 };
 
 export default NotificationPage;
-

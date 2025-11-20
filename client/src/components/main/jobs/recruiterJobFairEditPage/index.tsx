@@ -55,7 +55,10 @@ const RecruiterJobFairEditPage = () => {
         <div className='creation-container'>
           <div className='creation-header'>
             <h1>Job Fair Not Found</h1>
-            <p>{error || 'The job fair you are trying to edit does not exist or you do not have permission to edit it.'}</p>
+            <p>
+              {error ||
+                'The job fair you are trying to edit does not exist or you do not have permission to edit it.'}
+            </p>
           </div>
         </div>
       </div>
@@ -72,7 +75,9 @@ const RecruiterJobFairEditPage = () => {
 
         <form onSubmit={handleSubmit} className='creation-form'>
           {error && <div className='form-error'>{error}</div>}
-          {success && <div className='form-success'>Job fair updated successfully! Redirecting...</div>}
+          {success && (
+            <div className='form-success'>Job fair updated successfully! Redirecting...</div>
+          )}
 
           <div className='form-section'>
             <h2>Job Fair Details</h2>
@@ -163,9 +168,7 @@ const RecruiterJobFairEditPage = () => {
             </div>
 
             <div className='form-group'>
-              <label htmlFor='overview-message'>
-                Overview Message
-              </label>
+              <label htmlFor='overview-message'>Overview Message</label>
               <textarea
                 id='overview-message'
                 value={overviewMessage}
@@ -238,4 +241,3 @@ const RecruiterJobFairEditPage = () => {
 };
 
 export default RecruiterJobFairEditPage;
-

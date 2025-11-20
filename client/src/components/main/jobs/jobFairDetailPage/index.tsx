@@ -74,9 +74,11 @@ const JobFairDetailPage = () => {
   }
 
   // Check if job fair was edited (updatedAt !== createdAt)
-  const wasEdited = jobFair.updatedAt && jobFair.createdAt && 
+  const wasEdited =
+    jobFair.updatedAt &&
+    jobFair.createdAt &&
     new Date(jobFair.updatedAt).getTime() !== new Date(jobFair.createdAt).getTime();
-  
+
   // Format date as mm/dd/yy
   const formatDate = (date: Date | string): string => {
     const d = new Date(date);
@@ -89,9 +91,7 @@ const JobFairDetailPage = () => {
   return (
     <div className='job-fair-detail-page'>
       {!isHost && wasEdited && (
-        <div className='job-fair-last-edited'>
-          Last edited: {formatDate(jobFair.updatedAt)}
-        </div>
+        <div className='job-fair-last-edited'>Last edited: {formatDate(jobFair.updatedAt)}</div>
       )}
       <div className='job-fair-detail-header'>
         <div className='job-fair-detail-title-section'>
@@ -248,14 +248,11 @@ const JobFairDetailPage = () => {
               />
             </div>
           )}
-          {activeTab === 'tournament' &&
-            jobFairId &&
-            jobFair.codingTournamentEnabled &&
-            isHost && (
-              <div>
-                <CodingTournamentPage jobFairId={jobFairId} />
-              </div>
-            )}
+          {activeTab === 'tournament' && jobFairId && jobFair.codingTournamentEnabled && isHost && (
+            <div>
+              <CodingTournamentPage jobFairId={jobFairId} />
+            </div>
+          )}
         </div>
       </div>
     </div>
