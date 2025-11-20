@@ -13,7 +13,7 @@ jest.mock('../../models/tags.model');
 jest.mock('../../models/comments.model');
 
 describe('populateDocument', () => {
-  afterEach(() => {
+  beforeEach(() => {
     jest.clearAllMocks();
   });
 
@@ -24,13 +24,15 @@ describe('populateDocument', () => {
       answers: ['answerId'],
       comments: ['commentId'],
     };
+    const mockPopulate = jest.fn().mockResolvedValue(mockQuestion);
     (QuestionModel.findOne as jest.Mock).mockReturnValue({
-      populate: jest.fn().mockResolvedValue(mockQuestion),
+      populate: mockPopulate,
     });
 
     const result = await populateDocument('questionId', 'question');
 
     expect(QuestionModel.findOne).toHaveBeenCalledWith({ _id: 'questionId' });
+    expect(mockPopulate).toHaveBeenCalled();
     expect(result).toEqual(mockQuestion);
   });
 
