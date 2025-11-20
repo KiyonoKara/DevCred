@@ -71,12 +71,14 @@ const userController = (socket: FakeSOSocket) => {
       const user = await loginUser(loginCredentials);
 
       if ('error' in user) {
-        throw Error(user.error);
+        res.status(401).json({ error: user.error });
+        return;
       }
 
       res.status(200).json(user);
     } catch (error) {
-      res.status(500).send('Login failed');
+      console.error('Login error:', error);
+      res.status(500).json({ error: `Login failed: ${(error as Error).message}` });
     }
   };
 
@@ -232,6 +234,36 @@ const userController = (socket: FakeSOSocket) => {
   };
 
   /**
+   * Handles updating a user's notification preferences.
+   * @param req The request containing username and notification preferences in the body.
+   * @param res The response, either returning the updated user or an error.
+   * @returns A promise resolving to void.
+   */
+  const updateNotificationPreferences = async (req: Request, res: Response): Promise<void> => {
+    const { username, notificationPreferences } = req.body;
+
+    try {
+      const updatedUser = await updateUser(username, {
+        notificationPreferences,
+      });
+
+      if ('error' in updatedUser) {
+        throw new Error(updatedUser.error);
+      }
+
+      // Emit socket event for real-time updates
+      socket.emit('userUpdate', {
+        user: updatedUser,
+        type: 'updated',
+      });
+
+      res.status(200).json(updatedUser);
+    } catch (error) {
+      res.status(500).send(`Error when updating notification preferences: ${error}`);
+    }
+  };
+
+  /**
    * Retrieves aggregated activity information for a user, respecting profile visibility settings.
    * @param req The request containing the username as a route parameter and viewer as optional query param.
    * @param res The response returning activity data or an error.
@@ -265,6 +297,7 @@ const userController = (socket: FakeSOSocket) => {
   router.delete('/deleteUser/:username', deleteUser);
   router.patch('/updateBiography', updateBiography);
   router.patch('/updatePrivacySettings', updatePrivacySettings);
+  router.patch('/updateNotificationPreferences', updateNotificationPreferences);
   return router;
 };
 

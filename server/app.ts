@@ -24,6 +24,7 @@ import jobApplicationController from './controllers/jobApplication.controller';
 import jobFairController from './controllers/jobFair.controller';
 import jobPostingController from './controllers/jobPosting.controller';
 import messageController from './controllers/message.controller';
+import notificationController from './controllers/notification.controller';
 import questionController from './controllers/question.controller';
 import resumeController from './controllers/resume.controller';
 import tagController from './controllers/tag.controller';
@@ -58,13 +59,76 @@ function startServer() {
   });
 }
 
-socket.on('connection', socket => {
-  console.log('A user connected ->', socket.id);
+socket.on('connection', (conn: any) => {
+  console.log('A user connected ->', conn.id);
 
-  socket.on('disconnect', () => {
+  // Handle user room joining for notifications
+  conn.on('joinUserRoom', (username: string) => {
+    conn.join(`user_${username}`);
+    console.log(`User ${username} joined their notification room`);
+  });
+
+  conn.on('leaveUserRoom', (username: string) => {
+    conn.leave(`user_${username}`);
+    console.log(`User ${username} left their notification room`);
+  });
+
+  // Handle chat room joining/leaving for real-time messages
+  conn.on('joinChat', (chatID: string) => {
+    conn.join(chatID);
+    console.log(`User ${conn.id} joined chat room: ${chatID}`);
+  });
+
+  conn.on('leaveChat', (chatID: string | undefined) => {
+    if (chatID) {
+      conn.leave(chatID);
+      console.log(`User ${conn.id} left chat room: ${chatID}`);
+    }
+  });
+
+  conn.on('disconnect', () => {
     console.log('User disconnected');
   });
 });
+
+// Schedule summarized notifications
+// Check every minute if it's time to send summaries
+setInterval(async () => {
+  try {
+    const UserModel = (await import('./models/users.model')).default;
+    const { generateSummaryNotification } = await import('./services/notificationSummary.service');
+    
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    const currentTime = `${String(currentHour).padStart(2, '0')}:${String(currentMinute).padStart(2, '0')}`;
+
+    // Find all users with summarized notifications enabled
+    const users = await UserModel.find({
+      'notificationPreferences.enabled': true,
+      'notificationPreferences.summarized': true,
+    }).select('username notificationPreferences');
+
+    for (const user of users) {
+      const summaryTime = user.notificationPreferences?.summaryTime || '09:00';
+      
+      // Check if current time matches user's summary time (within 1 minute window)
+      if (summaryTime === currentTime) {
+        try {
+          const summary = await generateSummaryNotification(user.username);
+          if (!('error' in summary)) {
+            // Emit notification via socket
+            socket.to(`user_${user.username}`).emit('notification', summary);
+          }
+        } catch (error) {
+          console.error(`Error generating summary for ${user.username}:`, error);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error in notification summary scheduler:', error);
+  }
+}, 60000); // Check every minute
 
 process.on('SIGINT', async () => {
   await mongoose.disconnect();
@@ -130,6 +194,7 @@ app.use('/api/jobfair', jobFairController(socket));
 app.use('/api/jobposting', jobPostingController(socket));
 app.use('/api/jobapplication', jobApplicationController(socket));
 app.use('/api/metrics', userMetricsController(socket));
+app.use('/api/notification', notificationController(socket));
 
 const openApiDocument = yaml.parse(fs.readFileSync('./openapi.yaml', 'utf8'));
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiDocument));

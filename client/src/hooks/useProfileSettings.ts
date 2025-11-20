@@ -6,6 +6,7 @@ import {
   resetPassword,
   updateBiography,
   updatePrivacySettings,
+  updateNotificationPreferences,
 } from '../services/userService';
 import { SafeDatabaseUser } from '../types/types';
 import useUserContext from './useUserContext';
@@ -38,6 +39,23 @@ const useProfileSettings = () => {
   });
   const [privacySaving, setPrivacySaving] = useState(false);
 
+  const [notificationSettings, setNotificationSettings] = useState<{
+    enabled: boolean;
+    summarized: boolean;
+    summaryTime: string;
+    dmEnabled: boolean;
+    jobFairEnabled: boolean;
+    communityEnabled: boolean;
+  }>({
+    enabled: true,
+    summarized: false,
+    summaryTime: '09:00',
+    dmEnabled: true,
+    jobFairEnabled: true,
+    communityEnabled: true,
+  });
+  const [notificationSaving, setNotificationSaving] = useState(false);
+
   // For delete-user confirmation modal
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
@@ -69,6 +87,14 @@ const useProfileSettings = () => {
         setPrivacySettings({
           profileVisibility: data.profileVisibility || 'public-full',
           dmEnabled: data.dmEnabled ?? true,
+        });
+        setNotificationSettings({
+          enabled: data.notificationPreferences?.enabled ?? true,
+          summarized: data.notificationPreferences?.summarized ?? false,
+          summaryTime: data.notificationPreferences?.summaryTime || '09:00',
+          dmEnabled: data.notificationPreferences?.dmEnabled ?? true,
+          jobFairEnabled: data.notificationPreferences?.jobFairEnabled ?? true,
+          communityEnabled: data.notificationPreferences?.communityEnabled ?? true,
         });
       } catch (error) {
         setErrorMessage('Error fetching user profile');
@@ -114,6 +140,66 @@ const useProfileSettings = () => {
       setSuccessMessage(null);
     } finally {
       setPrivacySaving(false);
+    }
+  };
+
+  /**
+   * Updates the notification settings state when inputs change.
+   */
+  const handleNotificationSettingChange = <
+    K extends
+      | 'enabled'
+      | 'summarized'
+      | 'summaryTime'
+      | 'dmEnabled'
+      | 'jobFairEnabled'
+      | 'communityEnabled',
+  >(
+    key: K,
+    value: (typeof notificationSettings)[K],
+  ) => {
+    setNotificationSettings(prev => {
+      const updated = { ...prev, [key]: value };
+      
+      // If enabling summarized, disable individual checkboxes
+      if (key === 'summarized' && value === true) {
+        updated.dmEnabled = false;
+        updated.jobFairEnabled = false;
+        updated.communityEnabled = false;
+      }
+      // If enabling individual checkbox, disable summarized
+      if ((key === 'dmEnabled' || key === 'jobFairEnabled' || key === 'communityEnabled') && value === true) {
+        updated.summarized = false;
+      }
+      // If disabling notifications, disable everything
+      if (key === 'enabled' && value === false) {
+        updated.summarized = false;
+        updated.dmEnabled = false;
+        updated.jobFairEnabled = false;
+        updated.communityEnabled = false;
+      }
+      
+      return updated;
+    });
+  };
+
+  /**
+   * Persists the notification preferences for the user.
+   */
+  const handleSaveNotificationPreferences = async () => {
+    if (!username) return;
+    try {
+      setNotificationSaving(true);
+      const updatedUser = await updateNotificationPreferences(username, notificationSettings);
+
+      setUserData(updatedUser);
+      setSuccessMessage('Notification preferences updated.');
+      setErrorMessage(null);
+    } catch (error) {
+      setErrorMessage('Failed to update notification preferences.');
+      setSuccessMessage(null);
+    } finally {
+      setNotificationSaving(false);
     }
   };
 
@@ -293,6 +379,10 @@ const useProfileSettings = () => {
     privacySaving,
     handlePrivacySettingChange,
     handleSavePrivacySettings,
+    notificationSettings,
+    notificationSaving,
+    handleNotificationSettingChange,
+    handleSaveNotificationPreferences,
     resumes,
     resumesLoading,
     resumeActionLoading,

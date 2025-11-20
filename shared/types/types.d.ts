@@ -8,6 +8,7 @@ export * from './jobApplication';
 export * from './jobFair';
 export * from './jobPosting';
 export * from './message';
+export * from './notification';
 export * from './question';
 export * from './socket';
 export * from './tag';

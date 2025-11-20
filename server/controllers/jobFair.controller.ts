@@ -17,6 +17,7 @@ import {
   addJobFairMessage,
   deleteJobFair,
 } from '../services/jobFair.service';
+import { createNotification } from '../services/notification.service';
 import UserModel from '../models/users.model';
 
 /**
@@ -197,6 +198,42 @@ const jobFairController = (socket: FakeSOSocket) => {
         jobFair: responseData,
         type: 'statusChanged',
       });
+
+      // Create and emit notifications for job fair status changes
+      if (status === 'live' || status === 'ended') {
+        const notificationTitle =
+          status === 'live' ? 'Job Fair is Now Live!' : 'Job Fair has Ended';
+        const notificationMessage =
+          status === 'live'
+            ? `The job fair "${result.title}" is now live!`
+            : `The job fair "${result.title}" has ended.`;
+
+        // Notify all participants
+        for (const participant of result.participants) {
+          const participantUser = await UserModel.findOne({ username: participant }).select(
+            'notificationPreferences',
+          );
+          if (
+            participantUser &&
+            participantUser.notificationPreferences?.enabled &&
+            participantUser.notificationPreferences?.jobFairEnabled
+          ) {
+            const notification = await createNotification({
+              recipient: participant,
+              type: 'jobFair',
+              title: notificationTitle,
+              message: notificationMessage,
+              read: false,
+              relatedId: jobFairId,
+            });
+
+            if (!('error' in notification)) {
+              // Emit real-time notification
+              socket.to(`user_${participant}`).emit('notification', notification);
+            }
+          }
+        }
+      }
 
       res.status(200).json(responseData);
     } catch (error) {

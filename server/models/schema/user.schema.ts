@@ -52,6 +52,32 @@ const userSchema: Schema = new Schema(
       enum: ['recruiter', 'talent'],
       default: 'talent',
     },
+    notificationPreferences: {
+      enabled: {
+        type: Boolean,
+        default: true,
+      },
+      summarized: {
+        type: Boolean,
+        default: false,
+      },
+      summaryTime: {
+        type: String,
+        default: '09:00', // Default 9 AM
+      },
+      dmEnabled: {
+        type: Boolean,
+        default: true,
+      },
+      jobFairEnabled: {
+        type: Boolean,
+        default: true,
+      },
+      communityEnabled: {
+        type: Boolean,
+        default: true,
+      },
+    },
   },
   { collection: 'User' },
 );

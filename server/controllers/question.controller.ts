@@ -25,6 +25,9 @@ import {
 } from '../services/question.service';
 import { processTags } from '../services/tag.service';
 import { populateDocument } from '../utils/database.util';
+import { createNotification } from '../services/notification.service';
+import { getCommunity } from '../services/community.service';
+import UserModel from '../models/users.model';
 
 const questionController = (socket: FakeSOSocket) => {
   const router = express.Router();
@@ -109,12 +112,12 @@ const questionController = (socket: FakeSOSocket) => {
    * @returns A Promise that resolves to void.
    */
   const addQuestion = async (req: AddQuestionRequest, res: Response): Promise<void> => {
-    const question: Question = req.body;
+    const questionData: Question = req.body;
 
     try {
       const questionswithtags = {
-        ...question,
-        tags: await processTags(question.tags),
+        ...questionData,
+        tags: await processTags(questionData.tags),
       };
 
       if (questionswithtags.tags.length === 0) {
@@ -134,8 +137,46 @@ const questionController = (socket: FakeSOSocket) => {
         throw new Error(populatedQuestion.error);
       }
 
-      socket.emit('questionUpdate', populatedQuestion as PopulatedDatabaseQuestion);
-      res.json(populatedQuestion);
+      const question = populatedQuestion as PopulatedDatabaseQuestion;
+      socket.emit('questionUpdate', question);
+
+      // Create and emit notifications for community questions
+      if (question.community && question.community._id) {
+        const community = await getCommunity(
+          question.community._id.toString(),
+        );
+        if (!('error' in community) && community.participants) {
+          // Notify all community participants except the question author
+          for (const participant of community.participants) {
+            if (participant !== question.askedBy) {
+              const participantUser = await UserModel.findOne({ username: participant }).select(
+                'notificationPreferences',
+              );
+              if (
+                participantUser &&
+                participantUser.notificationPreferences?.enabled &&
+                participantUser.notificationPreferences?.communityEnabled
+              ) {
+                const notification = await createNotification({
+                  recipient: participant,
+                  type: 'community',
+                  title: 'New Question in Community',
+                  message: `A new question "${question.title.substring(0, 50)}${question.title.length > 50 ? '...' : ''}" was posted in ${community.name}`,
+                  read: false,
+                  relatedId: question._id.toString(),
+                });
+
+                if (!('error' in notification)) {
+                  // Emit real-time notification
+                  socket.to(`user_${participant}`).emit('notification', notification);
+                }
+              }
+            }
+          }
+        }
+      }
+
+      res.json(question);
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).send(`Error when saving question: ${err.message}`);

@@ -22,6 +22,8 @@ import {
   CanDeleteDMRequest,
 } from '../types/types';
 import { saveMessage } from '../services/message.service';
+import { createNotification } from '../services/notification.service';
+import UserModel from '../models/users.model';
 
 /*
  * This controller handles chat-related routes.
@@ -161,6 +163,34 @@ const chatController = (socket: FakeSOSocket) => {
       socket
         .to(chatId)
         .emit('chatUpdate', { chat: populatedChat2 as PopulatedDatabaseChat, type: 'newMessage' });
+
+      // Create and emit notification for DM message
+      const recipient = chat.participants.find(p => p !== msgFrom);
+      if (recipient) {
+        const recipientUser = await UserModel.findOne({ username: recipient }).select(
+          'notificationPreferences',
+        );
+        if (
+          recipientUser &&
+          recipientUser.notificationPreferences?.enabled &&
+          recipientUser.notificationPreferences?.dmEnabled
+        ) {
+          const notification = await createNotification({
+            recipient,
+            type: 'dm',
+            title: 'New Direct Message',
+            message: `${msgFrom} sent you a message: ${msg.substring(0, 50)}${msg.length > 50 ? '...' : ''}`,
+            read: false,
+            relatedId: chatId,
+          });
+
+          if (!('error' in notification)) {
+            // Emit real-time notification
+            socket.to(`user_${recipient}`).emit('notification', notification);
+          }
+        }
+      }
+
       res.json(populatedChat2);
     } catch (err: unknown) {
       res.status(500).send(`Error adding a message to chat: ${(err as Error).message}`);
@@ -265,17 +295,7 @@ const chatController = (socket: FakeSOSocket) => {
     }
   };
 
-  socket.on('connection', conn => {
-    conn.on('joinChat', (chatID: string) => {
-      conn.join(chatID);
-    });
-
-    conn.on('leaveChat', (chatID: string | undefined) => {
-      if (chatID) {
-        conn.leave(chatID);
-      }
-    });
-  });
+  // Socket handlers for joinChat/leaveChat are now in app.ts
 
   /**
    * Deletes a DM for a specific user (marks as deleted by them).

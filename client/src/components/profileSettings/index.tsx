@@ -33,6 +33,10 @@ const ProfileSettings: React.FC = () => {
     privacySaving,
     handlePrivacySettingChange,
     handleSavePrivacySettings,
+    notificationSettings,
+    notificationSaving,
+    handleNotificationSettingChange,
+    handleSaveNotificationPreferences,
     resumes,
     resumesLoading,
     resumeActionLoading,
@@ -160,6 +164,101 @@ const ProfileSettings: React.FC = () => {
 
             {canEditProfile && (
               <>
+                <h4>Notification Settings</h4>
+                <div className='notification-section'>
+                  <label className='notification-toggle'>
+                    <input
+                      type='checkbox'
+                      checked={notificationSettings.enabled}
+                      onChange={e => handleNotificationSettingChange('enabled', e.target.checked)}
+                    />
+                    <span>Enable notifications</span>
+                  </label>
+
+                  {notificationSettings.enabled && (
+                    <>
+                      <div className='notification-mode-selection'>
+                        <label className='notification-option'>
+                          <input
+                            type='radio'
+                            name='notificationMode'
+                            checked={!notificationSettings.summarized}
+                            onChange={() => handleNotificationSettingChange('summarized', false)}
+                          />
+                          <span>Real-time notifications</span>
+                        </label>
+                        <label className='notification-option'>
+                          <input
+                            type='radio'
+                            name='notificationMode'
+                            checked={notificationSettings.summarized}
+                            onChange={() => handleNotificationSettingChange('summarized', true)}
+                          />
+                          <span>Summarized notifications</span>
+                        </label>
+                      </div>
+
+                      {notificationSettings.summarized && (
+                        <div className='summary-time-setting'>
+                          <label>
+                            Summary time:
+                            <input
+                              type='time'
+                              value={notificationSettings.summaryTime}
+                              onChange={e =>
+                                handleNotificationSettingChange('summaryTime', e.target.value)
+                              }
+                              className='time-input'
+                            />
+                          </label>
+                        </div>
+                      )}
+
+                      {!notificationSettings.summarized && (
+                        <div className='notification-checkboxes'>
+                          <label className='notification-checkbox'>
+                            <input
+                              type='checkbox'
+                              checked={notificationSettings.dmEnabled}
+                              onChange={e =>
+                                handleNotificationSettingChange('dmEnabled', e.target.checked)
+                              }
+                            />
+                            <span>DM messages</span>
+                          </label>
+                          <label className='notification-checkbox'>
+                            <input
+                              type='checkbox'
+                              checked={notificationSettings.jobFairEnabled}
+                              onChange={e =>
+                                handleNotificationSettingChange('jobFairEnabled', e.target.checked)
+                              }
+                            />
+                            <span>Job fair updates</span>
+                          </label>
+                          <label className='notification-checkbox'>
+                            <input
+                              type='checkbox'
+                              checked={notificationSettings.communityEnabled}
+                              onChange={e =>
+                                handleNotificationSettingChange('communityEnabled', e.target.checked)
+                              }
+                            />
+                            <span>Community updates</span>
+                          </label>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  <button
+                    className='button button-primary'
+                    onClick={handleSaveNotificationPreferences}
+                    disabled={notificationSaving}>
+                    {notificationSaving ? 'Saving...' : 'Save Notification Preferences'}
+                  </button>
+                </div>
+
                 <h4>Privacy Settings</h4>
                 <div className='privacy-section'>
                   <div className='privacy-options'>
