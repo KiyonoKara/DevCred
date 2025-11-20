@@ -147,6 +147,34 @@ const updatePrivacySettings = async (
   return res.data;
 };
 
+/**
+ * Updates the user's notification preferences.
+ * @param username The unique username of the user
+ * @param notificationPreferences The notification preferences to update
+ * @returns A promise resolving to the updated user
+ * @throws Error if the request fails
+ */
+const updateNotificationPreferences = async (
+  username: string,
+  notificationPreferences: {
+    enabled?: boolean;
+    summarized?: boolean;
+    summaryTime?: string;
+    dmEnabled?: boolean;
+    jobFairEnabled?: boolean;
+    communityEnabled?: boolean;
+  },
+): Promise<SafeDatabaseUser> => {
+  const res = await api.patch(`${USER_API_URL}/updateNotificationPreferences`, {
+    username,
+    notificationPreferences,
+  });
+  if (res.status !== 200) {
+    throw new Error('Error when updating notification preferences');
+  }
+  return res.data;
+};
+
 export interface UserActivityQuestionSummary {
   id: string;
   title: string;
@@ -212,5 +240,6 @@ export {
   resetPassword,
   updateBiography,
   updatePrivacySettings,
+  updateNotificationPreferences,
   getUserActivity,
 };

@@ -11,8 +11,10 @@ const JobFairListPage = () => {
     isRecruiter,
     statusFilter,
     visibilityFilter,
+    myOrganizationOnly,
     setStatusFilter,
     setVisibilityFilter,
+    setMyOrganizationOnly,
     handleViewJobFair,
     handleCreateJobFair,
   } = useJobFairListPage();
@@ -68,6 +70,21 @@ const JobFairListPage = () => {
             <option value='invite-only'>Invite-Only</option>
           </select>
         </div>
+
+        {isRecruiter && (
+          <div className='filter-group filter-checkbox-group'>
+            <label htmlFor='my-organization-filter' className='checkbox-label'>
+              <input
+                id='my-organization-filter'
+                type='checkbox'
+                checked={myOrganizationOnly}
+                onChange={e => setMyOrganizationOnly(e.target.checked)}
+                className='filter-checkbox'
+              />
+              <span>Published by my organization</span>
+            </label>
+          </div>
+        )}
       </div>
 
       {jobFairs.length === 0 ? (

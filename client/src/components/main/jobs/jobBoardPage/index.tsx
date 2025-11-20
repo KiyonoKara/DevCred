@@ -2,7 +2,7 @@ import useJobBoardPage from '../../../../hooks/useJobBoardPage';
 import './index.css';
 
 /**
- * RecruiterJobPostings component displays a list of job_postings for a specific user.
+ * JobBoard component displays a list of job postings for applicants.
  */
 const JobBoard = () => {
   const { jobPostings, handleViewJobPosting } = useJobBoardPage();

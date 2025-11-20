@@ -1,6 +1,7 @@
 import { PopulatedDatabaseAnswer } from './answer';
 import { PopulatedDatabaseChat } from './chat';
 import { DatabaseMessage } from './message';
+import { DatabaseNotification } from './notification';
 import { PopulatedDatabaseQuestion } from './question';
 import { SafeDatabaseUser } from './user';
 import { BaseMove, GameInstance, GameInstanceID, GameMove, GameState } from './game';
@@ -196,6 +197,8 @@ export interface DMDeletedPayload {
  * - `leaveGame`: Client can leave a game.
  * - `joinChat`: Client can join a chat.
  * - `leaveChat`: Client can leave a chat.
+ * - `joinUserRoom`: Client can join their user-specific notification room.
+ * - `leaveUserRoom`: Client can leave their user-specific notification room.
  */
 export interface ClientToServerEvents {
   makeMove: (move: GameMovePayload) => void;
@@ -205,6 +208,8 @@ export interface ClientToServerEvents {
   leaveChat: (chatID: string | undefined) => void;
   joinJobFair: (jobFairId: string) => void;
   leaveJobFair: (jobFairId: string) => void;
+  joinUserRoom: (username: string) => void;
+  leaveUserRoom: (username: string) => void;
 }
 
 /**
@@ -219,19 +224,21 @@ export interface ClientToServerEvents {
  * - `gameUpdate`: Server sends updated game state.
  * - `gameError`: Server sends error message related to game operation.
  * - `chatUpdate`: Server sends updated chat.
- * - `dmDeleted`: Server sends DM deletion notification (story 2.7).
+ * - `dmDeleted`: Server sends DM deletion request.
  * - `communityUpdate`: Server sends updated community.
  * - `collectionUpdate`: Server sends updated collection.
  * - `jobFairUpdate`: Server sends updated job fair.
  * - `jobFairChatMessage`: Server sends new message in job fair chat.
  * - `jobPostingUpdate`: Server sends updated job posting.
  * - `jobApplicationUpdate`: Server sends job application update.
+ * - `notification`: Server sends a new notification to a user.
  */
 export interface ServerToClientEvents {
   questionUpdate: (question: PopulatedDatabaseQuestion) => void;
   answerUpdate: (result: AnswerUpdatePayload) => void;
   viewsUpdate: (question: PopulatedDatabaseQuestion) => void;
   voteUpdate: (vote: VoteUpdatePayload) => void;
+  notification: (notification: DatabaseNotification) => void;
   commentUpdate: (comment: CommentUpdatePayload) => void;
   messageUpdate: (message: MessageUpdatePayload) => void;
   userUpdate: (user: UserUpdatePayload) => void;

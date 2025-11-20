@@ -8,6 +8,8 @@ const UserActivityPage = () => {
     loading,
     error,
     activity,
+    searchQuery,
+    setSearchQuery,
     questionSort,
     answerSort,
     setQuestionSort,
@@ -15,6 +17,7 @@ const UserActivityPage = () => {
     sortedQuestions,
     sortedAnswers,
     handleGoToSettings,
+    handleSendMessage,
     canEditProfile,
     canViewDetails,
     handleDeleteQuestion,
@@ -55,11 +58,18 @@ const UserActivityPage = () => {
             {profile.biography?.trim() ? profile.biography : 'No biography available.'}
           </p>
         </div>
-        {canEditProfile && (
-          <button className='user-activity-settings-button' onClick={handleGoToSettings}>
-            Go to Settings
-          </button>
-        )}
+        <div className='user-activity-header-actions'>
+          {canEditProfile && (
+            <button className='user-activity-settings-button' onClick={handleGoToSettings}>
+              Go to Settings
+            </button>
+          )}
+          {!canEditProfile && (
+            <button className='user-activity-message-button' onClick={handleSendMessage}>
+              Send Message
+            </button>
+          )}
+        </div>
       </div>
 
       <div className='user-activity-summary'>
@@ -72,6 +82,27 @@ const UserActivityPage = () => {
           <p className='summary-label'>Answers Posted</p>
         </div>
       </div>
+
+      {canViewDetails && (
+        <div className='user-activity-search'>
+          <input
+            type='text'
+            placeholder='Search questions and answers...'
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className='user-activity-search-input'
+          />
+          {searchQuery && (
+            <button
+              type='button'
+              className='user-activity-search-clear'
+              onClick={() => setSearchQuery('')}
+              aria-label='Clear search'>
+              ✕
+            </button>
+          )}
+        </div>
+      )}
 
       {!canViewDetails && (
         <div className='user-activity-notice'>

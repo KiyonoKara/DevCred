@@ -20,6 +20,7 @@ const useJobFairListPage = () => {
   const [visibilityFilter, setVisibilityFilter] = useState<'public' | 'invite-only' | 'all'>(
     'public',
   );
+  const [myOrganizationOnly, setMyOrganizationOnly] = useState<boolean>(false);
   const { user: currentUser } = useUserContext();
   // Check if user is a recruiter or not
   const isRecruiter = currentUser.userType === 'recruiter';
@@ -71,8 +72,20 @@ const useJobFairListPage = () => {
       filtered = filtered.filter(fair => fair.visibility === visibilityFilter);
     }
 
+    // Filter by host username if "my organization only" is checked
+    if (myOrganizationOnly && isRecruiter) {
+      filtered = filtered.filter(fair => fair.hostUsername === currentUser.username);
+    }
+
     setFilteredJobFairs(filtered);
-  }, [jobFairs, statusFilter, visibilityFilter]);
+  }, [
+    jobFairs,
+    statusFilter,
+    visibilityFilter,
+    myOrganizationOnly,
+    isRecruiter,
+    currentUser.username,
+  ]);
 
   useEffect(() => {
     fetchJobFairs();
@@ -89,8 +102,10 @@ const useJobFairListPage = () => {
     isRecruiter,
     statusFilter,
     visibilityFilter,
+    myOrganizationOnly,
     setStatusFilter,
     setVisibilityFilter,
+    setMyOrganizationOnly,
     handleViewJobFair,
     handleCreateJobFair,
     refreshJobFairs: fetchJobFairs,

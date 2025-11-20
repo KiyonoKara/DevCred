@@ -82,7 +82,9 @@ const DirectMessage = () => {
         )}
       </div>
 
-      <div className='direct-message-container'>
+      <div
+        className='direct-message-container'
+        data-active-chat-id={selectedChat ? String(selectedChat._id) : ''}>
         <div className='chats-list'>
           <h3>Your Conversations ({chats.length})</h3>
           {chats.length === 0 ? (

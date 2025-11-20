@@ -484,7 +484,7 @@ paths:
     delete:
       tags:
         - Chats
-      summary: Delete a DM for a specific user (story 2.7 - local deletion). If both users delete, removes completely.
+      summary: Delete a DM for a specific user. If both users delete, removes completely.
       parameters:
         - in: path
           name: chatId
@@ -1147,6 +1147,18 @@ paths:
             type: string
             format: object-id
           description: The ID of the job fair to delete
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - hostUsername
+              properties:
+                hostUsername:
+                  type: string
+                  description: The username of the job fair host
       responses:
         '200':
           description: Job fair successfully deleted.
@@ -1866,6 +1878,15 @@ paths:
                 $ref: '#/components/schemas/User'
         '400':
           $ref: '#/components/responses/ValidationError'
+        '401':
+          description: Authentication failed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
         '500':
           $ref: '#/components/responses/ErrorResponse'
 

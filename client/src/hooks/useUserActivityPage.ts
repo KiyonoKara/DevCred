@@ -43,6 +43,8 @@ const useUserActivityPage = () => {
   const [questionSort, setQuestionSort] = useState<QuestionSortOption>('newest');
   const [answerSort, setAnswerSort] = useState<AnswerSortOption>('newest');
 
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
   const [showAllQuestions, setShowAllQuestions] = useState(false);
   const [showAllAnswers, setShowAllAnswers] = useState(false);
   const [questionPage, setQuestionPage] = useState(1);
@@ -77,7 +79,17 @@ const useUserActivityPage = () => {
       return [];
     }
 
-    const list = [...activity.questions];
+    let list = [...activity.questions];
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      list = list.filter(
+        q =>
+          q.title.toLowerCase().includes(query) ||
+          q.tags.some(tag => tag.name.toLowerCase().includes(query)),
+      );
+    }
 
     switch (questionSort) {
       case 'oldest':
@@ -88,14 +100,24 @@ const useUserActivityPage = () => {
       default:
         return list.sort((a, b) => sortByDateDesc(a, b));
     }
-  }, [activity?.questions, questionSort]);
+  }, [activity?.questions, questionSort, searchQuery]);
 
   const sortedAnswers: UserActivityAnswerSummary[] = useMemo(() => {
     if (!activity?.answers) {
       return [];
     }
 
-    const list = [...activity.answers];
+    let list = [...activity.answers];
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      list = list.filter(
+        a =>
+          a.text.toLowerCase().includes(query) ||
+          (a.question?.title && a.question.title.toLowerCase().includes(query)),
+      );
+    }
 
     switch (answerSort) {
       case 'oldest':
@@ -104,7 +126,7 @@ const useUserActivityPage = () => {
       default:
         return list.sort((a, b) => sortByDateDesc(a, b));
     }
-  }, [activity?.answers, answerSort]);
+  }, [activity?.answers, answerSort, searchQuery]);
 
   useEffect(() => {
     setQuestionPage(1);
@@ -155,6 +177,14 @@ const useUserActivityPage = () => {
       return;
     }
     navigate(`/user/${activity.profile.username}/settings`);
+  };
+
+  // Navigate to direct messaging with the user
+  const handleSendMessage = () => {
+    if (!activity?.profile.username) {
+      return;
+    }
+    navigate(`/messaging/direct-message?user=${activity.profile.username}`);
   };
 
   const handleDeleteQuestion = async (questionId: string) => {
@@ -224,6 +254,8 @@ const useUserActivityPage = () => {
     loading,
     error,
     activity,
+    searchQuery,
+    setSearchQuery,
     questionSort,
     answerSort,
     setQuestionSort,
@@ -231,6 +263,7 @@ const useUserActivityPage = () => {
     sortedQuestions: paginatedQuestions,
     sortedAnswers: paginatedAnswers,
     handleGoToSettings,
+    handleSendMessage,
     canEditProfile: activity?.isOwner ?? false,
     canViewDetails: activity?.canViewDetails ?? false,
     showAllQuestions,

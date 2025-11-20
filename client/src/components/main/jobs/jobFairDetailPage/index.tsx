@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import useJobFairPage from '../../../../hooks/useJobFairPage';
+import useUserContext from '../../../../hooks/useUserContext';
 import jobFairService from '../../../../services/jobFairService';
 import JobFairChatPage from '../jobFairChatPage/index';
 import CodingTournamentPage from '../codingTournamentPage/index';
@@ -10,6 +11,7 @@ import './index.css';
 const JobFairDetailPage = () => {
   const { jobFairId } = useParams<{ jobFairId: string }>();
   const navigate = useNavigate();
+  const { user: currentUser } = useUserContext();
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const {
@@ -38,7 +40,7 @@ const JobFairDetailPage = () => {
     try {
       setIsDeleting(true);
       setDeleteError(null);
-      await jobFairService.deleteJobFair(jobFairId);
+      await jobFairService.deleteJobFair(jobFairId, currentUser.username);
       // Redirect to job fairs list after successful deletion
       navigate('/jobfairs');
     } catch (err) {
@@ -71,8 +73,26 @@ const JobFairDetailPage = () => {
     );
   }
 
+  // Check if job fair was edited (updatedAt !== createdAt)
+  const wasEdited =
+    jobFair.updatedAt &&
+    jobFair.createdAt &&
+    new Date(jobFair.updatedAt).getTime() !== new Date(jobFair.createdAt).getTime();
+
+  // Format date as mm/dd/yy
+  const formatDate = (date: Date | string): string => {
+    const d = new Date(date);
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const year = String(d.getFullYear()).slice(-2);
+    return `${month}/${day}/${year}`;
+  };
+
   return (
     <div className='job-fair-detail-page'>
+      {!isHost && wasEdited && (
+        <div className='job-fair-last-edited'>Last edited: {formatDate(jobFair.updatedAt)}</div>
+      )}
       <div className='job-fair-detail-header'>
         <div className='job-fair-detail-title-section'>
           <h1 className='job-fair-detail-title'>{jobFair.title}</h1>
@@ -82,6 +102,11 @@ const JobFairDetailPage = () => {
         <div className='job-fair-detail-actions'>
           {isHost ? (
             <>
+              <button
+                className='action-btn btn-secondary'
+                onClick={() => navigate(`/recruiters/jobfairs/${jobFairId}/edit`)}>
+                Edit this job fair
+              </button>
               {jobFair.status === 'upcoming' && (
                 <>
                   <button className='action-btn btn-primary' onClick={handleStartJobFair}>
@@ -193,7 +218,7 @@ const JobFairDetailPage = () => {
                 onClick={() => setActiveTab('chat')}>
                 💬 Live Chat
               </button>
-              {jobFair.codingTournamentEnabled && (
+              {jobFair.codingTournamentEnabled && isHost && (
                 <button
                   className={`tab-btn ${activeTab === 'tournament' ? 'active' : ''}`}
                   onClick={() => setActiveTab('tournament')}>
@@ -207,15 +232,23 @@ const JobFairDetailPage = () => {
         <div className='tabs-content'>
           {activeTab === 'overview' && (
             <div className='overview-content'>
-              <p>Join the event above to participate in live chat and coding tournaments!</p>
+              {jobFair.overviewMessage ? (
+                <p className='overview-message-text'>{jobFair.overviewMessage}</p>
+              ) : (
+                <p>Join the event above to participate in live chat and coding tournaments!</p>
+              )}
             </div>
           )}
           {activeTab === 'chat' && jobFairId && (
             <div>
-              <JobFairChatPage jobFairId={jobFairId} jobFairStatus={jobFair.status} />
+              <JobFairChatPage
+                jobFairId={jobFairId}
+                jobFairStatus={jobFair.status}
+                isReadOnly={currentUser.userType === 'recruiter' && !isHost}
+              />
             </div>
           )}
-          {activeTab === 'tournament' && jobFairId && jobFair.codingTournamentEnabled && (
+          {activeTab === 'tournament' && jobFairId && jobFair.codingTournamentEnabled && isHost && (
             <div>
               <CodingTournamentPage jobFairId={jobFairId} />
             </div>

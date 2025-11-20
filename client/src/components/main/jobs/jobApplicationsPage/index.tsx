@@ -2,7 +2,7 @@ import useTalentApplicationsViewerPage from '../../../../hooks/useTalentApplicat
 import './index.css';
 
 /**
- * RecruiterJobPostings component displays a list of job_postings for a specific user.
+ * TalentApplicationView component displays a list of job applications made by the talent.
  */
 const TalentApplicationView = () => {
   const { jobApplications, handleViewJobPosting } = useTalentApplicationsViewerPage();

@@ -8,15 +8,20 @@ import './index.css';
 interface JobFairChatPageProps {
   jobFairId: string;
   jobFairStatus?: 'upcoming' | 'live' | 'ended';
+  isReadOnly?: boolean;
 }
 
 // JobFairChatPage component for live chat for all job fair participants
-const JobFairChatPage = ({ jobFairId, jobFairStatus = 'live' }: JobFairChatPageProps) => {
+const JobFairChatPage = ({
+  jobFairId,
+  jobFairStatus = 'live',
+  isReadOnly = false,
+}: JobFairChatPageProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { messages, inputMessage, setInputMessage, error, handleSendMessage } =
     useJobFairChatPage(jobFairId);
 
-  const isChatDisabled = jobFairStatus !== 'live';
+  const isChatDisabled = jobFairStatus !== 'live' || isReadOnly;
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -60,7 +65,13 @@ const JobFairChatPage = ({ jobFairId, jobFairStatus = 'live' }: JobFairChatPageP
             type='text'
             value={inputMessage}
             onChange={e => setInputMessage(e.target.value)}
-            placeholder={isChatDisabled ? 'Chat is disabled' : 'Type a message...'}
+            placeholder={
+              isReadOnly
+                ? 'You can view messages but cannot send (recruiters are read-only)'
+                : isChatDisabled
+                  ? 'Chat is disabled'
+                  : 'Type a message...'
+            }
             className='message-input'
             disabled={isChatDisabled}
           />

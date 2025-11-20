@@ -17,7 +17,7 @@ const ChatsListCard = ({
   isSelected,
 }: {
   chat: PopulatedDatabaseChat;
-  handleChatSelect: (chatID: ObjectId | undefined) => void;
+  handleChatSelect: (chatID: ObjectId) => void;
   handleDeleteDM: (chatID: ObjectId) => void;
   isSelected: boolean;
 }) => (

@@ -12,6 +12,8 @@ import { Schema } from 'mongoose';
  * - `status`: Current status of the job fair ('upcoming', 'live', 'ended').
  * - `startTime`: When the job fair is scheduled to start.
  * - `endTime`: When the job fair is scheduled to end.
+ * - `codingTournamentEnabled`: Whether the coding tournament feature is enabled for this job fair.
+ * - `overviewMessage`: Optional overview message displayed in the overview tab (only when coding tournament is enabled).
  * - `participants`: List of users' usernames who have joined the fair.
  * - `invitedUsers`: List of users' usernames who are invited (for invite-only fairs).
  * - `chatMessages`: Array of message IDs for the job fair chat.
@@ -51,6 +53,15 @@ const jobFairSchema = new Schema(
     endTime: {
       type: Date,
       required: true,
+    },
+    codingTournamentEnabled: {
+      type: Boolean,
+      default: true,
+      required: true,
+    },
+    overviewMessage: {
+      type: String,
+      required: false,
     },
     participants: [
       {

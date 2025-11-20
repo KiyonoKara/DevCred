@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import useHeader from '../../hooks/useHeader';
 import './index.css';
 import useUserContext from '../../hooks/useUserContext';
+import useNotifications from '../../hooks/useNotifications';
 
 /**
  * Header component that renders the main title and a search bar.
@@ -12,6 +13,7 @@ import useUserContext from '../../hooks/useUserContext';
 const Header = () => {
   const { val, handleInputChange, handleKeyDown, handleSignOut } = useHeader();
   const { user: currentUser } = useUserContext();
+  const { unreadCount } = useNotifications();
   const navigate = useNavigate();
   const isRecruiter = currentUser.userType === 'recruiter';
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -74,6 +76,13 @@ const Header = () => {
         </div>
       )}
 
+      <button
+        className='notification-button'
+        onClick={() => navigate('/notifications')}
+        title='Notifications'>
+        Notification
+        {unreadCount > 0 && <span className='notification-badge'>{unreadCount}</span>}
+      </button>
       <button onClick={handleSignOut} className='logout-button'>
         Log out
       </button>

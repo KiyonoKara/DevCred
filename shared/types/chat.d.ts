@@ -112,7 +112,7 @@ export interface GetChatByParticipantsRequest extends Request {
 }
 
 /**
- * Express request for deleting a DM (story 2.7).
+ * Express request for deleting a DM.
  * - `params`: Contains the `chatId` of the chat to delete for the current user.
  * - `body`: Contains the `username` of the user deleting the chat.
  */

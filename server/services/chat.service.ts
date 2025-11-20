@@ -135,7 +135,7 @@ export const addParticipantToChat = async (
 };
 
 /**
- * Marks a chat as deleted by a specific user (for story 2.7 - local deletion).
+ * Marks a chat as deleted by a specific user.
  * Records the deletion timestamp so old messages can be hidden from re-engaged user.
  * @param chatId - The ID of the chat to mark as deleted for the user.
  * @param username - The username of the user deleting the chat.
@@ -192,7 +192,7 @@ export const resetDeletionTracking = async (chatId: string): Promise<ChatRespons
 };
 
 /**
- * Completely removes a chat from the database (story 2.7 - when both users delete).
+ * Completely removes a chat from the database when both users delete
  * Also deletes all messages associated with the chat.
  * @param chatId - The ID of the chat to delete completely.
  * @returns {Promise<{ success: boolean } | { error: string }>} - Success or error message.

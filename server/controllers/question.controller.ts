@@ -10,10 +10,12 @@ import {
   PopulatedDatabaseQuestion,
   CommunityQuestionsRequest,
   DeleteQuestionRequest,
+  UpdateQuestionRequest,
 } from '../types/types';
 import {
   addVoteToQuestion,
   deleteQuestionById,
+  updateQuestionById,
   fetchAndIncrementQuestionViewsById,
   filterQuestionsByAskedBy,
   filterQuestionsBySearch,
@@ -23,6 +25,9 @@ import {
 } from '../services/question.service';
 import { processTags } from '../services/tag.service';
 import { populateDocument } from '../utils/database.util';
+import { createNotification } from '../services/notification.service';
+import { getCommunity } from '../services/community.service';
+import UserModel from '../models/users.model';
 
 const questionController = (socket: FakeSOSocket) => {
   const router = express.Router();
@@ -107,12 +112,12 @@ const questionController = (socket: FakeSOSocket) => {
    * @returns A Promise that resolves to void.
    */
   const addQuestion = async (req: AddQuestionRequest, res: Response): Promise<void> => {
-    const question: Question = req.body;
+    const questionData: Question = req.body;
 
     try {
       const questionswithtags = {
-        ...question,
-        tags: await processTags(question.tags),
+        ...questionData,
+        tags: await processTags(questionData.tags),
       };
 
       if (questionswithtags.tags.length === 0) {
@@ -132,8 +137,44 @@ const questionController = (socket: FakeSOSocket) => {
         throw new Error(populatedQuestion.error);
       }
 
-      socket.emit('questionUpdate', populatedQuestion as PopulatedDatabaseQuestion);
-      res.json(populatedQuestion);
+      const question = populatedQuestion as PopulatedDatabaseQuestion;
+      socket.emit('questionUpdate', question);
+
+      // Create and emit notifications for community questions
+      if (question.community && question.community._id) {
+        const community = await getCommunity(question.community._id.toString());
+        if (!('error' in community) && community.participants) {
+          // Notify all community participants except the question author
+          for (const participant of community.participants) {
+            if (participant !== question.askedBy) {
+              const participantUser = await UserModel.findOne({ username: participant }).select(
+                'notificationPreferences',
+              );
+              if (
+                participantUser &&
+                participantUser.notificationPreferences?.enabled &&
+                participantUser.notificationPreferences?.communityEnabled
+              ) {
+                const notification = await createNotification({
+                  recipient: participant,
+                  type: 'community',
+                  title: 'New Question in Community',
+                  message: `A new question "${question.title.substring(0, 50)}${question.title.length > 50 ? '...' : ''}" was posted in ${community.name}`,
+                  read: false,
+                  relatedId: question._id.toString(),
+                });
+
+                if (!('error' in notification)) {
+                  // Emit real-time notification
+                  socket.to(`user_${participant}`).emit('notification', notification);
+                }
+              }
+            }
+          }
+        }
+      }
+
+      res.json(question);
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).send(`Error when saving question: ${err.message}`);
@@ -240,6 +281,12 @@ const questionController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Deletes a question by its unique ID if the requesting user is the original poster.
+   * @param req The DeleteQuestionRequest object containing the question ID as a parameter and the username as a query parameter.
+   * @param res The HTTP response object used to send back the result of the operation.
+   * @returns A Promise that resolves to void.
+   */
   const deleteQuestion = async (req: DeleteQuestionRequest, res: Response): Promise<void> => {
     const { qid } = req.params;
     const { username } = req.query;
@@ -269,13 +316,50 @@ const questionController = (socket: FakeSOSocket) => {
         throw new Error(deletionResult.error);
       }
 
-      // eslint-disable-next-line no-console
-      console.log(`[question.controller] Question ${qid} deleted by ${username}`);
       res.json({ success: true, deletedQuestionId: qid });
     } catch (err: unknown) {
-      // eslint-disable-next-line no-console
-      console.error(`[question.controller] Failed to delete question ${qid} for ${username}:`, err);
       res.status(500).send(`Error when deleting question: ${(err as Error).message}`);
+    }
+  };
+
+  /**
+   * Updates a question by its unique ID if the requesting user is the original poster.
+   * @param req The UpdateQuestionRequest object containing the question ID as a parameter and the updated question details in the body.
+   * @param res The HTTP response object used to send back the result of the operation.
+   * @returns A Promise that resolves to void.
+   */
+  const updateQuestion = async (req: UpdateQuestionRequest, res: Response): Promise<void> => {
+    const { qid } = req.params;
+    const { title, text, username } = req.body;
+
+    if (!qid || !title || !text || !username) {
+      res.status(400).send('Missing required fields');
+      return;
+    }
+
+    if (!ObjectId.isValid(qid)) {
+      res.status(400).send('Invalid ID format');
+      return;
+    }
+
+    try {
+      const updateResult = await updateQuestionById(qid, title, text, username);
+
+      if ('error' in updateResult) {
+        if (updateResult.error.includes('Unauthorized')) {
+          res.status(403).json({ error: updateResult.error });
+          return;
+        }
+        if (updateResult.error.includes('not found')) {
+          res.status(404).json({ error: updateResult.error });
+          return;
+        }
+        throw new Error(updateResult.error);
+      }
+
+      res.json(updateResult);
+    } catch (err: unknown) {
+      res.status(500).send(`Error when updating question: ${(err as Error).message}`);
     }
   };
 
@@ -287,6 +371,7 @@ const questionController = (socket: FakeSOSocket) => {
   router.post('/downvoteQuestion', downvoteQuestion);
   router.get('/getCommunityQuestions/:communityId', getCommunityQuestionsRoute);
   router.delete('/delete/:qid', deleteQuestion);
+  router.put('/update/:qid', updateQuestion);
 
   return router;
 };

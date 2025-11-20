@@ -24,19 +24,30 @@ import {
  */
 export const saveUser = async (user: User): Promise<UserResponse> => {
   try {
-    const result: DatabaseUser = await UserModel.create(user);
+    const result = await UserModel.create(user);
 
     if (!result) {
       throw Error('Failed to create user');
     }
 
-    // Remove password field from returned object
+    // Convert to plain object and remove password field
+    const resultObj = (result as any).toObject ? (result as any).toObject() : result;
     const safeUser: SafeDatabaseUser = {
-      _id: result._id,
-      username: result.username,
-      dateJoined: result.dateJoined,
-      biography: result.biography,
-      userType: result.userType,
+      _id: resultObj._id,
+      username: resultObj.username,
+      dateJoined: resultObj.dateJoined,
+      biography: resultObj.biography,
+      userType: resultObj.userType,
+      profileVisibility: resultObj.profileVisibility,
+      dmEnabled: resultObj.dmEnabled,
+      notificationPreferences: resultObj.notificationPreferences || {
+        enabled: true,
+        summarized: false,
+        summaryTime: '09:00',
+        dmEnabled: true,
+        jobFairEnabled: true,
+        communityEnabled: true,
+      },
     };
 
     return safeUser;
@@ -53,13 +64,41 @@ export const saveUser = async (user: User): Promise<UserResponse> => {
  */
 export const getUserByUsername = async (username: string): Promise<UserResponse> => {
   try {
-    const user: SafeDatabaseUser | null = await UserModel.findOne({ username }).select('-password');
+    const user: any = await UserModel.findOne({ username })
+      .select('-password')
+      .lean();
 
     if (!user) {
       throw Error('User not found');
     }
 
-    return user;
+    // Ensure notificationPreferences exists with defaults if missing
+    if (!user.notificationPreferences) {
+      user.notificationPreferences = {
+        enabled: true,
+        summarized: false,
+        summaryTime: '09:00',
+        dmEnabled: true,
+        jobFairEnabled: true,
+        communityEnabled: true,
+      };
+    }
+
+    // Ensure all required fields have defaults
+    const safeUser: SafeDatabaseUser = {
+      _id: user._id,
+      username: user.username,
+      dateJoined: user.dateJoined,
+      biography: user.biography || '',
+      userType: user.userType || 'talent',
+      profileVisibility: user.profileVisibility || 'public-full',
+      dmEnabled: user.dmEnabled !== undefined ? user.dmEnabled : true,
+      notificationPreferences: user.notificationPreferences,
+      activityHistory: user.activityHistory || [],
+      activeResumeId: user.activeResumeId,
+    };
+
+    return safeUser;
   } catch (error) {
     return { error: `Error occurred when finding user: ${error}` };
   }
@@ -73,11 +112,26 @@ export const getUserByUsername = async (username: string): Promise<UserResponse>
  */
 export const getUsersList = async (): Promise<UsersResponse> => {
   try {
-    const users: SafeDatabaseUser[] = await UserModel.find().select('-password');
+    const users: SafeDatabaseUser[] = await UserModel.find().select('-password').lean();
 
     if (!users) {
       throw Error('Users could not be retrieved');
     }
+
+    // Ensure notificationPreferences exists with defaults if missing for all users
+    users.forEach(user => {
+      const userObj = user as any;
+      if (!userObj.notificationPreferences) {
+        userObj.notificationPreferences = {
+          enabled: true,
+          summarized: false,
+          summaryTime: '09:00',
+          dmEnabled: true,
+          jobFairEnabled: true,
+          communityEnabled: true,
+        };
+      }
+    });
 
     return users;
   } catch (error) {
@@ -95,15 +149,41 @@ export const loginUser = async (loginCredentials: UserCredentials): Promise<User
   const { username, password } = loginCredentials;
 
   try {
-    const user: SafeDatabaseUser | null = await UserModel.findOne({ username, password }).select(
-      '-password',
-    );
+    const user: any = await UserModel.findOne({ username, password })
+      .select('-password')
+      .lean();
 
     if (!user) {
       throw Error('Authentication failed');
     }
 
-    return user;
+    // Ensure notificationPreferences exists with defaults if missing
+    if (!user.notificationPreferences) {
+      user.notificationPreferences = {
+        enabled: true,
+        summarized: false,
+        summaryTime: '09:00',
+        dmEnabled: true,
+        jobFairEnabled: true,
+        communityEnabled: true,
+      };
+    }
+
+    // Ensure all required fields have defaults
+    const safeUser: SafeDatabaseUser = {
+      _id: user._id,
+      username: user.username,
+      dateJoined: user.dateJoined,
+      biography: user.biography || '',
+      userType: user.userType || 'talent',
+      profileVisibility: user.profileVisibility || 'public-full',
+      dmEnabled: user.dmEnabled !== undefined ? user.dmEnabled : true,
+      notificationPreferences: user.notificationPreferences,
+      activityHistory: user.activityHistory || [],
+      activeResumeId: user.activeResumeId,
+    };
+
+    return safeUser;
   } catch (error) {
     return { error: `Error occurred when authenticating user: ${error}` };
   }
@@ -147,13 +227,28 @@ export const updateUser = async (
       { username },
       { $set: updates },
       { new: true },
-    ).select('-password');
+    )
+      .select('-password')
+      .lean();
 
     if (!updatedUser) {
       throw Error('Error updating user');
     }
 
-    return updatedUser;
+    // Convert to plain object and ensure notificationPreferences exists with defaults if missing
+    const userObj = updatedUser as any;
+    if (!userObj.notificationPreferences) {
+      userObj.notificationPreferences = {
+        enabled: true,
+        summarized: false,
+        summaryTime: '09:00',
+        dmEnabled: true,
+        jobFairEnabled: true,
+        communityEnabled: true,
+      };
+    }
+
+    return userObj as SafeDatabaseUser;
   } catch (error) {
     return { error: `Error occurred when updating user: ${error}` };
   }

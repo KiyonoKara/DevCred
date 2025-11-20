@@ -1,5 +1,6 @@
 import { Request } from 'express';
 import { ObjectId } from 'mongodb';
+import { NotificationPreferences } from './notification.d';
 
 /**
  * Represents user credentials for authentication.
@@ -34,6 +35,7 @@ export interface User extends UserCredentials {
   showActivityHistory?: boolean;
   activityHistory?: string[];
   activeResumeId?: string;
+  notificationPreferences?: NotificationPreferences;
 }
 
 /**
