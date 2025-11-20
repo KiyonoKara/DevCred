@@ -1,3 +1,4 @@
+
 import { createCommunity, verifyCommunityDetailsDisplayed, verifyCommunityDetailsNotDisplayed, goToCommunities, viewCommunityCard, loginUser, setupTest, teardownTest } from '../support/helpers';
 
 const C1_NAME = "React Enthusiasts";

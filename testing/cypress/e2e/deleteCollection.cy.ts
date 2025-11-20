@@ -1,3 +1,4 @@
+
 import {deleteCollection, goToMyCollections, loginUser, setupTest, teardownTest, verifyCollectionExists } from '../support/helpers';
 
 describe("Cypress Tests to verify deleting a collections", () => {

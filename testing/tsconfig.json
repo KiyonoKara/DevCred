@@ -3,7 +3,7 @@
     "target": "es6",
     "module": "commonjs",
     "lib": ["es6", "dom"],
-    "types": ["cypress"],
+    "types": ["cypress", "node"],
     "esModuleInterop": true,
     "skipLibCheck": true
   },
