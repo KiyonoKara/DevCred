@@ -1,17 +1,16 @@
-import UserModel from '../models/users.model';
-import QuestionModel from '../models/questions.model';
 import AnswerModel from '../models/answers.model';
+import QuestionModel from '../models/questions.model';
 import TagModel from '../models/tags.model';
+import UserModel from '../models/users.model';
 import {
-  DatabaseUser,
+  DatabaseAnswer,
+  DatabaseQuestion,
+  DatabaseTag,
   SafeDatabaseUser,
   User,
   UserCredentials,
   UserResponse,
   UsersResponse,
-  DatabaseQuestion,
-  DatabaseAnswer,
-  DatabaseTag,
 } from '../types/types';
 
 // TODO: Add in recruiter validation checks + Ability to sign up as recruiter
@@ -31,16 +30,15 @@ export const saveUser = async (user: User): Promise<UserResponse> => {
     }
 
     // Convert to plain object and remove password field
-    const resultObj = (result as any).toObject ? (result as any).toObject() : result;
     const safeUser: SafeDatabaseUser = {
-      _id: resultObj._id,
-      username: resultObj.username,
-      dateJoined: resultObj.dateJoined,
-      biography: resultObj.biography,
-      userType: resultObj.userType,
-      profileVisibility: resultObj.profileVisibility,
-      dmEnabled: resultObj.dmEnabled,
-      notificationPreferences: resultObj.notificationPreferences || {
+      _id: result._id,
+      username: result.username,
+      dateJoined: result.dateJoined,
+      biography: result.biography,
+      userType: result.userType,
+      profileVisibility: result.profileVisibility,
+      dmEnabled: result.dmEnabled,
+      notificationPreferences: result.notificationPreferences || {
         enabled: true,
         summarized: false,
         summaryTime: '09:00',
@@ -64,9 +62,7 @@ export const saveUser = async (user: User): Promise<UserResponse> => {
  */
 export const getUserByUsername = async (username: string): Promise<UserResponse> => {
   try {
-    const user: any = await UserModel.findOne({ username })
-      .select('-password')
-      .lean();
+    const user = await UserModel.findOne({ username }).select('-password').lean();
 
     if (!user) {
       throw Error('User not found');
@@ -120,9 +116,8 @@ export const getUsersList = async (): Promise<UsersResponse> => {
 
     // Ensure notificationPreferences exists with defaults if missing for all users
     users.forEach(user => {
-      const userObj = user as any;
-      if (!userObj.notificationPreferences) {
-        userObj.notificationPreferences = {
+      if (!user.notificationPreferences) {
+        user.notificationPreferences = {
           enabled: true,
           summarized: false,
           summaryTime: '09:00',
@@ -149,9 +144,7 @@ export const loginUser = async (loginCredentials: UserCredentials): Promise<User
   const { username, password } = loginCredentials;
 
   try {
-    const user: any = await UserModel.findOne({ username, password })
-      .select('-password')
-      .lean();
+    const user = await UserModel.findOne({ username, password }).select('-password').lean();
 
     if (!user) {
       throw Error('Authentication failed');
@@ -236,9 +229,8 @@ export const updateUser = async (
     }
 
     // Convert to plain object and ensure notificationPreferences exists with defaults if missing
-    const userObj = updatedUser as any;
-    if (!userObj.notificationPreferences) {
-      userObj.notificationPreferences = {
+    if (!updatedUser.notificationPreferences) {
+      updatedUser.notificationPreferences = {
         enabled: true,
         summarized: false,
         summaryTime: '09:00',
@@ -248,7 +240,7 @@ export const updateUser = async (
       };
     }
 
-    return userObj as SafeDatabaseUser;
+    return updatedUser as SafeDatabaseUser;
   } catch (error) {
     return { error: `Error occurred when updating user: ${error}` };
   }

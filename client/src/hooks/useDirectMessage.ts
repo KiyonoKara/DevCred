@@ -125,16 +125,18 @@ const useDirectMessage = () => {
     }
   };
 
-  const handleChatSelect = async (chatID: ObjectId | undefined) => {
-    if (!chatID) {
-      setError('Invalid chat ID');
-      return;
-    }
-
-    const chat = await getChatById(chatID);
-    setSelectedChat(chat);
-    handleJoinChat(chatID);
-  };
+  const handleChatSelect = useCallback(
+    async (chatID: ObjectId | undefined) => {
+      if (!chatID) {
+        setError('Invalid chat ID');
+        return;
+      }
+      const chat = await getChatById(chatID);
+      setSelectedChat(chat);
+      handleJoinChat(chatID);
+    },
+    [handleJoinChat],
+  );
 
   const handleUserSelect = (selectedUser: SafeDatabaseUser) => {
     setChatToCreate(selectedUser.username);
