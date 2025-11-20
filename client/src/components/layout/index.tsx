@@ -1,7 +1,7 @@
-import './index.css';
 import { Outlet } from 'react-router-dom';
-import SideBarNav from '../main/sideBarNav';
 import Header from '../header';
+import SideBarNav from '../main/sideBarNav';
+import './index.css';
 import NotificationBanner from '../main/notificationBanner';
 import useNotifications from '../../hooks/useNotifications';
 

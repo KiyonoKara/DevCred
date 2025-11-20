@@ -2,7 +2,7 @@ import useTalentJobPostingViewerPage from '../../../../hooks/useTalentJobPosting
 import './index.css';
 
 /**
- * ApplicantJobPostingsViewer component displays a specific job posting.
+ * ApplicantJobPostingsViewer component displays details for a specific job posting, allowing users to apply and recruiter to view.
  */
 const ApplicantJobPostingsViewer = () => {
   const { userType, jobPosting, applicationStatus, handleApplyToPosition } =
