@@ -1,45 +1,54 @@
+import mongoose, { Query } from 'mongoose';
 import { populateDocument } from '../../utils/database.util';
 import QuestionModel from '../../models/questions.model';
 import AnswerModel from '../../models/answers.model';
 import ChatModel from '../../models/chat.model';
 import UserModel from '../../models/users.model';
-
-jest.mock('../../models/questions.model');
-jest.mock('../../models/answers.model');
-jest.mock('../../models/chat.model');
-jest.mock('../../models/messages.model');
-jest.mock('../../models/users.model');
-jest.mock('../../models/tags.model');
-jest.mock('../../models/comments.model');
+import {
+  PopulatedDatabaseQuestion,
+  PopulatedDatabaseAnswer,
+  PopulatedDatabaseChat,
+} from '../../types/types';
 
 describe('populateDocument', () => {
-  afterEach(() => {
+  beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('should fetch and populate a question document', async () => {
-    const mockQuestion = {
-      _id: 'questionId',
-      tags: ['tagId'],
-      answers: ['answerId'],
-      comments: ['commentId'],
+    const mockQuestion: PopulatedDatabaseQuestion = {
+      _id: new mongoose.Types.ObjectId(),
+      title: 'Test Question',
+      text: 'Test text',
+      tags: [],
+      answers: [],
+      comments: [],
+      askedBy: 'user1',
+      askDateTime: new Date(),
+      views: [],
+      upVotes: [],
+      downVotes: [],
+      community: null,
     };
-    (QuestionModel.findOne as jest.Mock).mockReturnValue({
+
+    jest.spyOn(QuestionModel, 'findOne').mockReturnValue({
       populate: jest.fn().mockResolvedValue(mockQuestion),
-    });
+    } as unknown as Query<PopulatedDatabaseQuestion, typeof QuestionModel>);
 
-    const result = await populateDocument('questionId', 'question');
+    const result = await populateDocument(mockQuestion._id.toString(), 'question');
 
-    expect(QuestionModel.findOne).toHaveBeenCalledWith({ _id: 'questionId' });
+    expect(QuestionModel.findOne).toHaveBeenCalledWith({ _id: mockQuestion._id.toString() });
     expect(result).toEqual(mockQuestion);
   });
 
   it('should return an error message if question document is not found', async () => {
-    (QuestionModel.findOne as jest.Mock).mockReturnValue({
-      populate: jest.fn().mockResolvedValue(null),
-    });
+    const questionId = new mongoose.Types.ObjectId();
 
-    const questionID = 'invalidQuestionId';
+    jest.spyOn(QuestionModel, 'findOne').mockReturnValue({
+      populate: jest.fn().mockResolvedValue(null),
+    } as unknown as Query<PopulatedDatabaseQuestion, typeof QuestionModel>);
+
+    const questionID = questionId.toString();
     const result = await populateDocument(questionID, 'question');
 
     expect(result).toEqual({
@@ -50,11 +59,12 @@ describe('populateDocument', () => {
   });
 
   it('should return an error message if fetching a question document throws an error', async () => {
-    (QuestionModel.findOne as jest.Mock).mockImplementation(() => {
+    const questionId = new mongoose.Types.ObjectId();
+    jest.spyOn(QuestionModel, 'findOne').mockImplementation(() => {
       throw new Error('Database error');
     });
 
-    const result = await populateDocument('questionId', 'question');
+    const result = await populateDocument(questionId.toString(), 'question');
 
     expect(result).toEqual({
       error: 'Error when fetching and populating a document: Database error',
@@ -62,26 +72,33 @@ describe('populateDocument', () => {
   });
 
   it('should fetch and populate an answer document', async () => {
-    const mockAnswer = {
-      _id: 'answerId',
-      comments: ['commentId'],
+    const answerId = new mongoose.Types.ObjectId();
+    const mockAnswer: PopulatedDatabaseAnswer = {
+      _id: answerId,
+      text: 'Test answer',
+      ansBy: 'user1',
+      ansDateTime: new Date(),
+      comments: [],
     };
-    (AnswerModel.findOne as jest.Mock).mockReturnValue({
+
+    jest.spyOn(AnswerModel, 'findOne').mockReturnValue({
       populate: jest.fn().mockResolvedValue(mockAnswer),
-    });
+    } as unknown as Query<PopulatedDatabaseAnswer, typeof AnswerModel>);
 
-    const result = await populateDocument('answerId', 'answer');
+    const result = await populateDocument(answerId.toString(), 'answer');
 
-    expect(AnswerModel.findOne).toHaveBeenCalledWith({ _id: 'answerId' });
+    expect(AnswerModel.findOne).toHaveBeenCalledWith({ _id: answerId.toString() });
     expect(result).toEqual(mockAnswer);
   });
 
   it('should return an error message if answer document is not found', async () => {
-    (AnswerModel.findOne as jest.Mock).mockReturnValue({
-      populate: jest.fn().mockResolvedValue(null),
-    });
+    const answerId = new mongoose.Types.ObjectId();
 
-    const answerID = 'invalidAnswerId';
+    jest.spyOn(AnswerModel, 'findOne').mockReturnValue({
+      populate: jest.fn().mockResolvedValue(null),
+    } as unknown as Query<PopulatedDatabaseAnswer, typeof AnswerModel>);
+
+    const answerID = answerId.toString();
     const result = await populateDocument(answerID, 'answer');
 
     expect(result).toEqual({
@@ -92,11 +109,12 @@ describe('populateDocument', () => {
   });
 
   it('should return an error message if fetching an answer document throws an error', async () => {
-    (AnswerModel.findOne as jest.Mock).mockImplementation(() => {
+    const answerId = new mongoose.Types.ObjectId();
+    jest.spyOn(AnswerModel, 'findOne').mockImplementation(() => {
       throw new Error('Database error');
     });
 
-    const result = await populateDocument('answerId', 'answer');
+    const result = await populateDocument(answerId.toString(), 'answer');
 
     expect(result).toEqual({
       error: 'Error when fetching and populating a document: Database error',
@@ -104,53 +122,60 @@ describe('populateDocument', () => {
   });
 
   it('should fetch and populate a chat document', async () => {
+    const chatId = new mongoose.Types.ObjectId();
+    const messageId = new mongoose.Types.ObjectId();
+    const userId = new mongoose.Types.ObjectId();
+    const msgDateTime = new Date();
     const mockChat = {
-      _id: 'chatId',
+      _id: chatId,
       messages: [
         {
-          _id: 'messageId',
+          _id: messageId,
           msg: 'Hello',
           msgFrom: 'user1',
-          msgDateTime: new Date(),
+          msgDateTime: msgDateTime,
           type: 'text',
         },
       ],
+      deletedBy: [],
       toObject: jest.fn().mockReturnValue({
-        _id: 'chatId',
+        _id: chatId,
         messages: [
           {
-            _id: 'messageId',
+            _id: messageId,
             msg: 'Hello',
             msgFrom: 'user1',
-            msgDateTime: new Date(),
+            msgDateTime: msgDateTime,
             type: 'text',
           },
         ],
+        deletedBy: [],
       }),
     };
     const mockUser = {
-      _id: 'userId',
+      _id: userId,
       username: 'user1',
     };
-    (ChatModel.findOne as jest.Mock).mockReturnValue({
+
+    jest.spyOn(ChatModel, 'findOne').mockReturnValue({
       populate: jest.fn().mockResolvedValue(mockChat),
-    });
-    (UserModel.findOne as jest.Mock).mockResolvedValue(mockUser);
+    } as unknown as Query<PopulatedDatabaseChat, typeof ChatModel>);
+    jest.spyOn(UserModel, 'findOne').mockResolvedValue(mockUser as any);
 
-    const result = await populateDocument('chatId', 'chat');
+    const result = await populateDocument(chatId.toString(), 'chat');
 
-    expect(ChatModel.findOne).toHaveBeenCalledWith({ _id: 'chatId' });
+    expect(ChatModel.findOne).toHaveBeenCalledWith({ _id: chatId.toString() });
     expect(result).toEqual({
       ...mockChat.toObject(),
       messages: [
         {
-          _id: 'messageId',
+          _id: messageId,
           msg: 'Hello',
           msgFrom: 'user1',
-          msgDateTime: mockChat.messages[0].msgDateTime,
+          msgDateTime: msgDateTime,
           type: 'text',
           user: {
-            _id: 'userId',
+            _id: userId,
             username: 'user1',
           },
         },
@@ -159,11 +184,13 @@ describe('populateDocument', () => {
   });
 
   it('should return an error message if chat document is not found', async () => {
-    (ChatModel.findOne as jest.Mock).mockReturnValue({
-      populate: jest.fn().mockResolvedValue(null),
-    });
+    const chatId = new mongoose.Types.ObjectId();
 
-    const result = await populateDocument('invalidChatId', 'chat');
+    jest.spyOn(ChatModel, 'findOne').mockReturnValue({
+      populate: jest.fn().mockResolvedValue(null),
+    } as unknown as Query<PopulatedDatabaseChat, typeof ChatModel>);
+
+    const result = await populateDocument(chatId.toString(), 'chat');
 
     expect(result).toEqual({
       error: 'Error when fetching and populating a document: Chat not found',
@@ -171,11 +198,12 @@ describe('populateDocument', () => {
   });
 
   it('should return an error message if fetching a chat document throws an error', async () => {
-    (ChatModel.findOne as jest.Mock).mockImplementation(() => {
+    const chatId = new mongoose.Types.ObjectId();
+    jest.spyOn(ChatModel, 'findOne').mockImplementation(() => {
       throw new Error('Database error');
     });
 
-    const result = await populateDocument('chatId', 'chat');
+    const result = await populateDocument(chatId.toString(), 'chat');
 
     expect(result).toEqual({
       error: 'Error when fetching and populating a document: Database error',
@@ -183,8 +211,9 @@ describe('populateDocument', () => {
   });
 
   it('should return an error message if type is invalid', async () => {
+    const someId = new mongoose.Types.ObjectId();
     const invalidType = 'invalidType' as 'question' | 'answer' | 'chat';
-    const result = await populateDocument('someId', invalidType);
+    const result = await populateDocument(someId.toString(), invalidType);
     expect(result).toEqual({
       error: 'Error when fetching and populating a document: Invalid type provided.',
     });

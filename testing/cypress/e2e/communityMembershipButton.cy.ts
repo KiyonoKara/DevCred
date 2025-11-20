@@ -1,3 +1,4 @@
+
 import { setupTest, teardownTest, loginUser, goToCommunities, createCommunity, viewCommunityCard } from "../support/helpers";
 
 describe("CommunityMembershipButton", () => {

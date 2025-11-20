@@ -1,16 +1,16 @@
-import AnswerModel from '../models/answers.model';
-import QuestionModel from '../models/questions.model';
-import TagModel from '../models/tags.model';
 import UserModel from '../models/users.model';
+import QuestionModel from '../models/questions.model';
+import AnswerModel from '../models/answers.model';
+import TagModel from '../models/tags.model';
 import {
-  DatabaseAnswer,
-  DatabaseQuestion,
-  DatabaseTag,
   SafeDatabaseUser,
   User,
   UserCredentials,
   UserResponse,
   UsersResponse,
+  DatabaseQuestion,
+  DatabaseAnswer,
+  DatabaseTag,
 } from '../types/types';
 
 // TODO: Add in recruiter validation checks + Ability to sign up as recruiter
@@ -30,15 +30,16 @@ export const saveUser = async (user: User): Promise<UserResponse> => {
     }
 
     // Convert to plain object and remove password field
+    const resultObj = result.toObject ? result.toObject() : result;
     const safeUser: SafeDatabaseUser = {
-      _id: result._id,
-      username: result.username,
-      dateJoined: result.dateJoined,
-      biography: result.biography,
-      userType: result.userType,
-      profileVisibility: result.profileVisibility,
-      dmEnabled: result.dmEnabled,
-      notificationPreferences: result.notificationPreferences || {
+      _id: resultObj._id,
+      username: resultObj.username,
+      dateJoined: resultObj.dateJoined,
+      biography: resultObj.biography,
+      userType: resultObj.userType,
+      profileVisibility: resultObj.profileVisibility,
+      dmEnabled: resultObj.dmEnabled,
+      notificationPreferences: resultObj.notificationPreferences || {
         enabled: true,
         summarized: false,
         summaryTime: '09:00',
@@ -116,8 +117,9 @@ export const getUsersList = async (): Promise<UsersResponse> => {
 
     // Ensure notificationPreferences exists with defaults if missing for all users
     users.forEach(user => {
-      if (!user.notificationPreferences) {
-        user.notificationPreferences = {
+      const userObj = user as SafeDatabaseUser & { notificationPreferences?: unknown };
+      if (!userObj.notificationPreferences) {
+        userObj.notificationPreferences = {
           enabled: true,
           summarized: false,
           summaryTime: '09:00',
@@ -229,8 +231,9 @@ export const updateUser = async (
     }
 
     // Convert to plain object and ensure notificationPreferences exists with defaults if missing
-    if (!updatedUser.notificationPreferences) {
-      updatedUser.notificationPreferences = {
+    const userObj = updatedUser as SafeDatabaseUser & { notificationPreferences?: unknown };
+    if (!userObj.notificationPreferences) {
+      userObj.notificationPreferences = {
         enabled: true,
         summarized: false,
         summaryTime: '09:00',
@@ -240,7 +243,7 @@ export const updateUser = async (
       };
     }
 
-    return updatedUser as SafeDatabaseUser;
+    return userObj as SafeDatabaseUser;
   } catch (error) {
     return { error: `Error occurred when updating user: ${error}` };
   }

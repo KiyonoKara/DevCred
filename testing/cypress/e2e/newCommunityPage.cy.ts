@@ -1,3 +1,4 @@
+
 import { setupTest, teardownTest, loginUser, goToCommunities, verifyCommunityDetailsDisplayed } from "../support/helpers";
 
 describe("NewCommunityPage", () => {

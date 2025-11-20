@@ -1,3 +1,4 @@
+
 import {goToMyCollections, loginUser, setupTest, teardownTest, verifyCollectionExists } from '../support/helpers';
 
 describe("Cypress Tests to verify viewing all collections", () => {

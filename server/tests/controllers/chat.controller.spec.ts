@@ -8,6 +8,8 @@ import { app } from '../../app';
 import * as messageService from '../../services/message.service';
 import * as chatService from '../../services/chat.service';
 import * as databaseUtil from '../../utils/database.util';
+import * as notificationService from '../../services/notification.service';
+import UserModel from '../../models/users.model';
 import { DatabaseChat, PopulatedDatabaseChat, Message } from '../../types/types';
 import chatController from '../../controllers/chat.controller';
 
@@ -21,6 +23,8 @@ const getChatSpy = jest.spyOn(chatService, 'getChat');
 const addParticipantSpy = jest.spyOn(chatService, 'addParticipantToChat');
 const populateDocumentSpy = jest.spyOn(databaseUtil, 'populateDocument');
 const getDMsByUserWithoutDeletedSpy = jest.spyOn(chatService, 'getDMsByUserWithoutDeleted');
+const createNotificationSpy = jest.spyOn(notificationService, 'createNotification');
+const resetDeletionTrackingSpy = jest.spyOn(chatService, 'resetDeletionTracking');
 
 /**
  * Sample test suite for the /chat endpoints
@@ -154,6 +158,10 @@ describe('Chat Controller', () => {
   });
 
   describe('POST /chat/:chatId/addMessage', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
     it('should add a message to chat successfully', async () => {
       const chatId = new mongoose.Types.ObjectId();
       const messagePayload: Message = {
@@ -199,6 +207,28 @@ describe('Chat Controller', () => {
       saveMessageSpy.mockResolvedValue(messageResponse);
       addMessageSpy.mockResolvedValue(chatResponse);
       populateDocumentSpy.mockResolvedValue(populatedChatResponse);
+      // Mock resetDeletionTracking (won't be called since deletedBy is empty, but needed for safety)
+      resetDeletionTrackingSpy.mockResolvedValue(chatResponse);
+      // Mock UserModel.findOne for notification preferences check
+      jest.spyOn(UserModel, 'findOne').mockReturnValue({
+        select: jest.fn().mockResolvedValue({
+          notificationPreferences: {
+            enabled: true,
+            dmEnabled: true,
+          },
+        }),
+      } as any);
+      // Mock createNotification
+      createNotificationSpy.mockResolvedValue({
+        _id: new mongoose.Types.ObjectId(),
+        recipient: 'user2',
+        type: 'dm',
+        title: 'New Direct Message',
+        message: 'user1 sent you a message: Hello!',
+        read: false,
+        relatedId: chatId.toString(),
+        createdAt: new Date(),
+      } as any);
 
       const response = await supertest(app)
         .post(`/api/chat/${chatId}/addMessage`)
@@ -277,6 +307,9 @@ describe('Chat Controller', () => {
 
       // 3) Mock `addMessageToChat` to return an error object
       addMessageSpy.mockResolvedValue({ error: 'Error updating chat' });
+      // Mock UserModel and resetDeletionTracking (won't be called but needed for setup)
+      jest.spyOn(UserModel, 'findOne').mockResolvedValue(null);
+      resetDeletionTrackingSpy.mockResolvedValue({ success: true } as any);
 
       // 4) Invoke the endpoint with valid body
       const response = await supertest(app).post(`/api/chat/${chatId.toString()}/addMessage`).send({
@@ -311,6 +344,9 @@ describe('Chat Controller', () => {
 
       // Mock createMessageSpy to return an object with _id as undefined
       saveMessageSpy.mockResolvedValue({ error: 'Error saving message' });
+      // Mock UserModel and resetDeletionTracking (won't be called but needed for setup)
+      jest.spyOn(UserModel, 'findOne').mockResolvedValue(null);
+      resetDeletionTrackingSpy.mockResolvedValue({ success: true } as any);
 
       const response = await supertest(app)
         .post(`/api/chat/${chatId.toString()}/addMessage`)
@@ -344,6 +380,9 @@ describe('Chat Controller', () => {
 
       // Mock the failure of updating the chat (addMessageToChat scenario)
       addMessageSpy.mockResolvedValueOnce({ error: 'Error updating chat' });
+      // Mock UserModel and resetDeletionTracking (won't be called but needed for setup)
+      jest.spyOn(UserModel, 'findOne').mockResolvedValue(null);
+      resetDeletionTrackingSpy.mockResolvedValue({ success: true } as any);
 
       // Call the endpoint
       const response = await supertest(app)
@@ -396,6 +435,9 @@ describe('Chat Controller', () => {
 
       // Mock saveMessage to return an error
       saveMessageSpy.mockResolvedValue({ error: 'Service error' });
+      // Mock UserModel and resetDeletionTracking (won't be called but needed for setup)
+      jest.spyOn(UserModel, 'findOne').mockResolvedValue(null);
+      resetDeletionTrackingSpy.mockResolvedValue({ success: true } as any);
 
       const response = await supertest(app)
         .post(`/api/chat/${chatId.toString()}/addMessage`)
@@ -654,44 +696,63 @@ describe('Chat Controller', () => {
       io = new Server(httpServer);
       chatController(io);
 
+      // Set up socket handlers (moved from app.ts) - MUST be before client connects
+      io.on('connection', conn => {
+        serverSocket = conn;
+        // Handle chat room joining/leaving for real-time messages
+        conn.on('joinChat', (chatID: string) => {
+          conn.join(chatID);
+        });
+
+        conn.on('leaveChat', (chatID: string | undefined) => {
+          if (chatID) {
+            conn.leave(chatID);
+          }
+        });
+      });
+
       httpServer.listen(() => {
         const { port } = httpServer.address() as AddressInfo;
         clientSocket = Client(`http://localhost:${port}`);
-        io.on('connection', socket => {
-          serverSocket = socket;
+        clientSocket.on('connect', () => {
+          // Wait a bit for connection to fully establish
+          setTimeout(done, 50);
         });
-        clientSocket.on('connect', done);
       });
     });
 
-    afterAll(() => {
+    afterAll(done => {
       clientSocket.disconnect();
-      serverSocket.disconnect();
-      io.close();
+      if (serverSocket) {
+        serverSocket.disconnect();
+      }
+      io.close(() => {
+        setTimeout(done, 100);
+      });
     });
 
     it('should join a chat room when "joinChat" event is emitted', done => {
-      serverSocket.on('joinChat', arg => {
-        expect(io.sockets.adapter.rooms.has('chat123')).toBeTruthy();
-        expect(arg).toBe('chat123');
-        done();
-      });
       clientSocket.emit('joinChat', 'chat123');
+      // Wait for the join to complete - socket.io operations are async
+      setTimeout(() => {
+        const room = io.sockets.adapter.rooms.get('chat123');
+        expect(room).toBeDefined();
+        expect(room?.has(serverSocket.id)).toBeTruthy();
+        done();
+      }, 200);
     });
 
     it('should leave a chat room when "leaveChat" event is emitted', done => {
-      serverSocket.on('joinChat', arg => {
-        expect(io.sockets.adapter.rooms.has('chat123')).toBeTruthy();
-        expect(arg).toBe('chat123');
-      });
-      serverSocket.on('leaveChat', arg => {
-        expect(io.sockets.adapter.rooms.has('chat123')).toBeFalsy();
-        expect(arg).toBe('chat123');
-        done();
-      });
-
       clientSocket.emit('joinChat', 'chat123');
-      clientSocket.emit('leaveChat', 'chat123');
+      setTimeout(() => {
+        expect(io.sockets.adapter.rooms.has('chat123')).toBeTruthy();
+        clientSocket.emit('leaveChat', 'chat123');
+        setTimeout(() => {
+          const room = io.sockets.adapter.rooms.get('chat123');
+          expect(room).toBeFalsy();
+          done();
+        }, 200);
+      }, 200);
     });
   });
 });

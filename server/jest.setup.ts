@@ -1,5 +1,7 @@
 /* eslint no-console: "off" */
 
+import { cleanupNotificationScheduler } from './app';
+
 let logs: string[] = [];
 let logSpy: jest.SpyInstance;
 
@@ -36,4 +38,9 @@ afterEach(() => {
 
   // Additional cleanup
   jest.clearAllMocks();
+});
+
+afterAll(() => {
+  // Cleanup notification scheduler after all tests
+  cleanupNotificationScheduler();
 });

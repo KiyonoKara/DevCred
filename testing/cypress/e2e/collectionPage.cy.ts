@@ -1,3 +1,4 @@
+
 import {goToCollection, goToMyCollections, loginUser, setupTest, teardownTest, verifyCollectionExists, verifyCollectionPageDetails } from '../support/helpers';
 
 describe("Cypress Tests to verify viewing of a specific collection page", () => {
