@@ -199,7 +199,9 @@ describe('Test userController', () => {
         password: mockUser.password,
       };
 
-      loginUserSpy.mockResolvedValueOnce({ error: 'Error occurred when authenticating user: Database connection failed' });
+      loginUserSpy.mockResolvedValueOnce({
+        error: 'Error occurred when authenticating user: Database connection failed',
+      });
 
       const response = await supertest(app).post('/api/user/login').send(mockReqBody);
 

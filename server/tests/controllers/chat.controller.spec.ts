@@ -724,7 +724,7 @@ describe('Chat Controller', () => {
     afterAll(done => {
       clientSocket.disconnect();
       if (serverSocket) {
-      serverSocket.disconnect();
+        serverSocket.disconnect();
       }
       io.close(() => {
         setTimeout(done, 100);
@@ -750,7 +750,7 @@ describe('Chat Controller', () => {
         setTimeout(() => {
           const room = io.sockets.adapter.rooms.get('chat123');
           expect(room).toBeFalsy();
-        done();
+          done();
         }, 200);
       }, 200);
     });
