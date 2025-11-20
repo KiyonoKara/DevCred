@@ -484,7 +484,9 @@ paths:
     delete:
       tags:
         - Chats
-      summary: Delete a DM for a specific user (story 2.7 - local deletion). If both users delete, removes completely.
+      summary:
+        Delete a DM for a specific user (story 2.7 - local deletion). If both users delete, removes
+        completely.
       parameters:
         - in: path
           name: chatId
@@ -507,7 +509,8 @@ paths:
                 - username
       responses:
         '200':
-          description: DM successfully deleted for the user or completely removed if both users deleted.
+          description:
+            DM successfully deleted for the user or completely removed if both users deleted.
           content:
             application/json:
               schema:
@@ -1702,7 +1705,35 @@ paths:
           $ref: '#/components/responses/ValidationError'
         '500':
           $ref: '#/components/responses/ErrorResponse'
-
+  /recruiter/{username}:
+    get:
+      tags:
+        - Job Postings
+      summary: Fetches job posting by specified recruiter
+      parameters:
+        - in: path
+          required: true
+          name: username
+          schema:
+            type: string
+          description: username of recruiter to get job postings for
+        - in: query
+          required: true
+          name: requestorUsername
+          schema:
+            type: string
+          description: username of person fetching job postings by recruiter username.
+      responses:
+        '200':
+          description: Successfully retrieved job postings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JobPosting'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
   /jobposting/{jobId}:
     get:
       tags:
@@ -1931,7 +1962,8 @@ paths:
           schema:
             type: string
           required: false
-          description: The username of the viewer requesting the data (used for privacy enforcement).
+          description:
+            The username of the viewer requesting the data (used for privacy enforcement).
       responses:
         '200':
           description: Successfully retrieved user activity details.

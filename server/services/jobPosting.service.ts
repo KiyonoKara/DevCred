@@ -276,6 +276,12 @@ export const getJobPostingById = async (
   }
 };
 
+/**
+ * Returns all job postings made by a recruiter
+ * @param recruiterUsername username of recruiter to get postings for
+ * @param requestingUsername username of user requesting postings
+ * @returns job postings created by the recruiter if the requestor is valid
+ */
 export const getJobPostingByRecruiter = async (
   recruiterUsername: string,
   requestingUsername: string,

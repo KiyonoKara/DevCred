@@ -5,14 +5,14 @@ import { DatabaseJobPosting } from '../types/types';
 import useUserContext from './useUserContext';
 
 /**
- * Custom hook to manage the state and logic for the "All Collections" page, including fetching collections,
- * creating a new collection, and navigating to collection details.
+ * Custom hook to manage the state and logic for the "RecruitersJobPosting" page, including fetching a recruiter's job postings
+ * and navigation details
  *
  * @returns an object containing the following:
- * - `usernameBeingViewed`: The username of the user whose collections are being viewed.
- * - `collections`: The list of collections for the user.
- * - `handleCreateCollection`: A function to navigate to the create collection page.
- * - `handleViewCollection`: A function to navigate to the collection details page.
+ * - `usernameBeingViewed`: The username of the recruiter whose collections are being viewed.
+ * - `jobPostings`: The list of job postings by the recruiter
+ * - `handleCreateJobPosting`: A function to navigate to the create job posting page.
+ * - `handleViewJobPosting`: A function to navigate to the job posting details page.
  */
 const useRecruitersJobPostingPage = () => {
   const { user: currentUser } = useUserContext();

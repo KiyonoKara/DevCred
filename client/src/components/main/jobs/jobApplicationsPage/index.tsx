@@ -1,8 +1,9 @@
 import useTalentApplicationsViewerPage from '../../../../hooks/useTalentApplicationsViewerPage';
+import formattedDate from '../../../helpers/formattingHelpers';
 import './index.css';
 
 /**
- * RecruiterJobPostings component displays a list of job_postings for a specific user.
+ * TalentApplicationView component displays all the applications submitted by a user for non-deleted jobs.
  */
 const TalentApplicationView = () => {
   const { jobApplications, handleViewJobPosting } = useTalentApplicationsViewerPage();
@@ -15,39 +16,26 @@ const TalentApplicationView = () => {
 
       <div className='job_application-list'>
         {jobApplications.map(job_application => {
-          const formattedSubmissionDate = (() => {
-            const date = new Date(job_application.applicationDate);
-            if (Number.isNaN(date.getTime())) {
-              return 'Unknown submission time';
-            }
-
-            return date.toLocaleString(undefined, {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-            });
-          })();
-
           return (
-            <div key={job_application._id.toString()} className='job_posting-card'>
-              <h2 className='job_application-name'>{job_application.jobPosting.title}</h2>
-              <p className='job_application-description'>{job_application.jobPosting.company}</p>
-              <p className='job_application-description'>
-                Application Submission Date: {formattedSubmissionDate}
-              </p>
+            job_application.jobPosting && (
+              <div key={job_application._id.toString()} className='job_posting-card'>
+                <h2 className='job_application-name'>{job_application.jobPosting.title}</h2>
+                <p className='job_application-description'>{job_application.jobPosting.company}</p>
+                <p className='job_application-description'>
+                  Application Submission Date: {formattedDate(job_application.applicationDate)}
+                </p>
 
-              {job_application.jobPosting.active ? (
-                <button
-                  type='button'
-                  onClick={() => handleViewJobPosting(job_application.jobPosting._id.toString())}>
-                  View Job Posting
-                </button>
-              ) : (
-                <p>Job Posting Deactivated</p>
-              )}
-            </div>
+                {job_application.jobPosting.active ? (
+                  <button
+                    type='button'
+                    onClick={() => handleViewJobPosting(job_application.jobPosting._id.toString())}>
+                    View Job Posting
+                  </button>
+                ) : (
+                  <p>Job Posting Deactivated</p>
+                )}
+              </div>
+            )
           );
         })}
       </div>

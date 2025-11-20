@@ -6,14 +6,14 @@ import { getJobPostingByJobId } from '../services/jobPostingService';
 import useUserContext from './useUserContext';
 
 /**
- * Custom hook to manage the state and logic for the "All Collections" page, including fetching collections,
- * creating a new collection, and navigating to collection details.
+ * Custom hook to manage the state and logic for the "TalentJobPostingViewer" page, including fetching job details,
+ * and controlling application capabilities depending on user type.
  *
  * @returns an object containing the following:
- * - `usernameBeingViewed`: The username of the user whose collections are being viewed.
- * - `collections`: The list of collections for the user.
- * - `handleCreateCollection`: A function to navigate to the create collection page.
- * - `handleViewCollection`: A function to navigate to the collection details page.
+ * - `userType`: 'talent' or 'recruiter' user type for logged in user
+ * - `jobPosting`: The job posting being used.
+ * - `applicationStatus`: If the user has applied to the job posting already or not.
+ * - `handleApplyToPosition`: Handler to apply to position for talent user types who have not already applied to position.
  */
 const useTalentJobPostingViewerPage = () => {
   const { user: currentUser } = useUserContext();
@@ -26,6 +26,7 @@ const useTalentJobPostingViewerPage = () => {
       await applyToJobPosting(jobId, currentUser.username);
       setApplicationStatus(await getApplicationStatus(jobId, currentUser.username));
     }
+    alert('Position applied to and DM with Recruiter created!');
   };
 
   useEffect(() => {

@@ -2,7 +2,7 @@ import useRecruitersJobPostingViewerPage from '../../../../hooks/useRecruitersJo
 import './index.css';
 
 /**
- * RecruiterJobPostings component displays a list of job_postings for a specific user.
+ * RecruiterJobPostingsViewer component displays the details related to a specific job posting and allows recruiter to change active status or delete the posting.
  */
 const RecruiterJobPostingsViewer = () => {
   const { jobApplications, jobPosting, handleToggleActiveStatus, handleDeleteJobPosting } =

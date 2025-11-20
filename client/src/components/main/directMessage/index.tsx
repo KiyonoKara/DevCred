@@ -1,9 +1,9 @@
-import './index.css';
 import { ObjectId } from 'mongodb';
 import useDirectMessage from '../../../hooks/useDirectMessage';
-import ChatsListCard from './chatsListCard';
-import UsersListPage from '../usersListPage';
 import MessageCard from '../messageCard';
+import UsersListPage from '../usersListPage';
+import ChatsListCard from './chatsListCard';
+import './index.css';
 
 /**
  * DirectMessage component renders a page for direct messaging between users.
@@ -26,6 +26,7 @@ const DirectMessage = () => {
     handleCreateChat,
     handleDeleteDM,
     canSendDMToUser,
+    handleDownloadResume,
     error,
     isLoading,
     targetUserDMEnabled,
@@ -117,9 +118,18 @@ const DirectMessage = () => {
                 {selectedChat.messages.length === 0 ? (
                   <p className='no-messages'>No messages yet. Start the conversation!</p>
                 ) : (
-                  selectedChat.messages.map(message => (
-                    <MessageCard key={String(message._id)} message={message} />
-                  ))
+                  selectedChat.messages.map(message =>
+                    message.type === 'resume' ? (
+                      <button
+                        type='button'
+                        className='unstyled-button'
+                        onClick={() => handleDownloadResume(message)}>
+                        <MessageCard key={String(message._id)} message={message} />{' '}
+                      </button>
+                    ) : (
+                      <MessageCard key={String(message._id)} message={message} />
+                    ),
+                  )
                 )}
               </div>
 

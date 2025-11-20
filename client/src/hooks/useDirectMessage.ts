@@ -1,21 +1,24 @@
 import { ObjectId } from 'mongodb';
 import { useEffect, useState } from 'react';
 import {
-  ChatUpdatePayload,
-  Message,
-  PopulatedDatabaseChat,
-  SafeDatabaseUser,
-  DMDeletedPayload,
-} from '../types/types';
-import useUserContext from './useUserContext';
-import {
   createChat,
+  deleteDMForUser,
   getChatById,
   getChatsByUser,
   sendMessage,
-  deleteDMForUser,
 } from '../services/chatService';
+import { getUserResumes } from '../services/resumeService';
 import { getUserByUsername } from '../services/userService';
+import {
+  ChatUpdatePayload,
+  DMDeletedPayload,
+  Message,
+  PopulatedDatabaseChat,
+  SafeDatabaseResume,
+  SafeDatabaseUser,
+} from '../types/types';
+import useResumeManager from './useResumeManager';
+import useUserContext from './useUserContext';
 
 /**
  * useDirectMessage is a custom hook that provides state and functions for direct messaging between users.
@@ -38,6 +41,8 @@ const useDirectMessage = () => {
   const handleJoinChat = (chatID: ObjectId) => {
     socket.emit('joinChat', String(chatID));
   };
+
+  const { downloadResume } = useResumeManager(user.username);
 
   /**
    * Checks if a user can receive direct messages (story 2.3).
@@ -98,6 +103,20 @@ const useDirectMessage = () => {
       }
     } else {
       setError('Message cannot be empty');
+    }
+  };
+
+  const handleDownloadResume = async (message: Message) => {
+    const resumes: SafeDatabaseResume[] = await getUserResumes(message.msgFrom);
+    const activeResumes = resumes.filter(resume => resume.isActive);
+    if (activeResumes.length === 0) {
+      alert('User missing active resume to download.');
+      return;
+    }
+
+    const result = await downloadResume(activeResumes[0]._id.toString(), activeResumes[0].fileName);
+    if (!result.success) {
+      alert('Issue downloading resume. Please reach out to applicant.');
     }
   };
 
@@ -248,6 +267,7 @@ const useDirectMessage = () => {
     handleUserSelect,
     handleCreateChat,
     handleDeleteDM,
+    handleDownloadResume,
     error,
     isLoading,
     targetUserDMEnabled,

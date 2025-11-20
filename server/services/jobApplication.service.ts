@@ -1,7 +1,13 @@
 import JobApplicationModel from '../models/jobApplication.model';
 import JobPostingModel from '../models/jobPosting.model';
 import UserModel from '../models/users.model';
-import { JobApplicationResponse, PopulatedJobApplicationListResponse } from '../types/types';
+import {
+  ChatResponse,
+  JobApplicationResponse,
+  PopulatedJobApplicationListResponse,
+} from '../types/types';
+import { addMessageToChat, getChatsByParticipants, saveChat } from './chat.service';
+import { saveMessage } from './message.service';
 
 /**
  * Gets the count of applications for a specific job posting.
@@ -58,7 +64,52 @@ export const createApplication = async (
       applicationDate: new Date(),
     });
 
-    // TODO: Add DM Logic
+    const introductionMessage = await saveMessage({
+      msg: `Hello! My username is ${username}, and I am interested in the position ${job.title} at ${job.company}.\n Please find my resume sent in this chat. I look forward to hearing from you regarding application updates!\nBest,\n${username}`,
+      msgFrom: username,
+      msgDateTime: new Date(),
+      type: 'application',
+    });
+    const resumeMessage = await saveMessage({
+      msg: `Click Here to Download Applicant Resume`,
+      msgFrom: username,
+      msgDateTime: new Date(),
+      type: 'resume',
+    });
+
+    if ('error' in introductionMessage) {
+      throw new Error(introductionMessage.error);
+    }
+    if ('error' in resumeMessage) {
+      throw new Error(resumeMessage.error);
+    }
+
+    const chats = await getChatsByParticipants([job.recruiter, username]);
+
+    if (!chats) {
+      throw new Error('Could not start application DM for user');
+    }
+
+    let soloChat: ChatResponse | null = null;
+    for (const chat of chats) {
+      if (chat.participants.length == 2) {
+        soloChat = chat;
+      }
+    }
+
+    if (!soloChat) {
+      soloChat = await saveChat({
+        participants: [job.recruiter, username],
+        messages: [introductionMessage, resumeMessage],
+      });
+
+      if ('error' in soloChat) {
+        throw new Error(soloChat.error);
+      }
+    } else {
+      await addMessageToChat(soloChat._id.toString(), introductionMessage._id.toString());
+      await addMessageToChat(soloChat._id.toString(), resumeMessage._id.toString());
+    }
 
     return newApplication;
   } catch (err) {
