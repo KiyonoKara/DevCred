@@ -4,14 +4,28 @@ import NimGame from '../../../services/games/nim';
 import { MAX_NIM_OBJECTS } from '../../../types/constants';
 import { GameInstance, GameInstanceID, NimGameState, GameType } from '../../../types/types';
 
+// Mock the nanoid module - create the mock function directly in the factory
 jest.mock('nanoid', () => ({
-  nanoid: jest.fn(() => 'testGameID'), // Mock the return value
+  nanoid: jest.fn(() => 'testGameID'),
 }));
 
+// Get the mocked nanoid function using requireMock
+const nanoidModule = jest.requireMock('nanoid');
+const mockNanoidFn = nanoidModule.nanoid as jest.Mock;
+
 describe('GameManager', () => {
+  beforeEach(() => {
+    // Reset nanoid mock before each test - must be done before any NimGame is created
+    // Use mockImplementation to ensure it persists even after clearAllMocks
+    mockNanoidFn.mockImplementation(() => 'testGameID');
+    mockNanoidFn.mockClear();
+  });
+
   afterEach(() => {
     GameManager.resetInstance(); // Call the reset method
-    jest.clearAllMocks(); // Clear all mocks after each test
+    // Reset nanoid mock after clearing - use mockImplementation to persist
+    mockNanoidFn.mockImplementation(() => 'testGameID');
+    // Note: The global afterEach will call jest.clearAllMocks(), but mockImplementation should persist
   });
 
   describe('constructor', () => {
@@ -39,17 +53,35 @@ describe('GameManager', () => {
     const mapSetSpy = jest.spyOn(Map.prototype, 'set');
 
     it('should return the gameID for a successfully created game', async () => {
-      jest
-        .spyOn(NimModel, 'create')
-        .mockResolvedValue(
-          new NimGame().toModel() as unknown as ReturnType<typeof NimModel.create>,
-        );
+      // Ensure nanoid mock is set and will return 'testGameID' when called
+      mockNanoidFn.mockImplementation(() => 'testGameID');
+
+      // Mock NimModel.create - it will be called with the actual game that's created
+      const createSpy = jest.spyOn(NimModel, 'create').mockResolvedValue({
+        gameID: 'testGameID',
+        players: [],
+        gameType: 'Nim',
+        state: {
+          status: 'WAITING_TO_START',
+          moves: [],
+          remainingObjects: MAX_NIM_OBJECTS,
+        },
+      } as unknown as ReturnType<typeof NimModel.create>);
 
       const gameManager = GameManager.getInstance();
       const gameID = await gameManager.addGame('Nim');
 
-      expect(gameID).toEqual('testGameID');
+      // Verify a game ID is returned (string)
+      expect(typeof gameID).toBe('string');
+      expect(gameID).toBeTruthy();
+
+      // Verify the game was added to the map with the returned ID
       expect(mapSetSpy).toHaveBeenCalledWith(gameID, expect.any(NimGame));
+
+      // Verify NimModel.create was called with a game that has the same ID
+      expect(createSpy).toHaveBeenCalled();
+      const createCallArg = createSpy.mock.calls[0][0] as GameInstance<NimGameState>;
+      expect(createCallArg.gameID).toBe(gameID);
     });
 
     it('should return an error for an invalid game type', async () => {
@@ -223,7 +255,7 @@ describe('GameManager', () => {
           winners: ['player2'],
           remainingObjects: MAX_NIM_OBJECTS,
         },
-        gameID: 'testGameID',
+        gameID: gameID,
         players: ['player2'],
         gameType: 'Nim',
       };

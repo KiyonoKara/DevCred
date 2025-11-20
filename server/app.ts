@@ -93,43 +93,55 @@ socket.on('connection', conn => {
 
 // Schedule summarized notifications
 // Check every minute if it's time to send summaries
-setInterval(async () => {
-  try {
-    const UserModel = (await import('./models/users.model')).default;
-    const generateSummaryNotification = (await import('./services/notificationSummary.service'))
-      .default;
+// Only run in non-test environments
+let notificationSummaryInterval: NodeJS.Timeout | null = null;
+if (process.env.NODE_ENV !== 'test' && !process.env.JEST_WORKER_ID) {
+  notificationSummaryInterval = setInterval(async () => {
+    try {
+      const UserModel = (await import('./models/users.model')).default;
+      const generateSummaryNotification = (await import('./services/notificationSummary.service'))
+        .default;
 
-    const now = new Date();
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
-    const currentTime = `${String(currentHour).padStart(2, '0')}:${String(currentMinute).padStart(2, '0')}`;
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+      const currentTime = `${String(currentHour).padStart(2, '0')}:${String(currentMinute).padStart(2, '0')}`;
 
-    // Find all users with summarized notifications enabled
-    const users = await UserModel.find({
-      'notificationPreferences.enabled': true,
-      'notificationPreferences.summarized': true,
-    }).select('username notificationPreferences');
+      // Find all users with summarized notifications enabled
+      const users = await UserModel.find({
+        'notificationPreferences.enabled': true,
+        'notificationPreferences.summarized': true,
+      }).select('username notificationPreferences');
 
-    for (const user of users) {
-      const summaryTime = user.notificationPreferences?.summaryTime || '09:00';
+      for (const user of users) {
+        const summaryTime = user.notificationPreferences?.summaryTime || '09:00';
 
-      // Check if current time matches user's summary time (within 1 minute window)
-      if (summaryTime === currentTime) {
-        try {
-          const summary = await generateSummaryNotification(user.username);
-          if (!('error' in summary)) {
-            // Emit notification via socket
-            socket.to(`user_${user.username}`).emit('notification', summary);
+        // Check if current time matches user's summary time (within 1 minute window)
+        if (summaryTime === currentTime) {
+          try {
+            const summary = await generateSummaryNotification(user.username);
+            if (!('error' in summary)) {
+              // Emit notification via socket
+              socket.to(`user_${user.username}`).emit('notification', summary);
+            }
+          } catch (error) {
+            console.error(`Error generating summary for ${user.username}:`, error);
           }
-        } catch (error) {
-          console.error(`Error generating summary for ${user.username}:`, error);
         }
       }
+    } catch (error) {
+      console.error('Error in notification summary scheduler:', error);
     }
-  } catch (error) {
-    console.error('Error in notification summary scheduler:', error);
+  }, 60000); // Check every minute
+}
+
+// Export cleanup function for tests
+export const cleanupNotificationScheduler = () => {
+  if (notificationSummaryInterval) {
+    clearInterval(notificationSummaryInterval);
+    notificationSummaryInterval = null;
   }
-}, 60000); // Check every minute
+};
 
 process.on('SIGINT', async () => {
   await mongoose.disconnect();

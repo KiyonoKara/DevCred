@@ -75,7 +75,7 @@ const userController = (socket: FakeSOSocket) => {
         // Authentication failures contain "Authentication failed" in the error message
         // Database errors contain "Error occurred when authenticating user" but not "Authentication failed"
         if (user.error.includes('Authentication failed')) {
-          res.status(401).json({ error: user.error });
+        res.status(401).json({ error: user.error });
         } else {
           res.status(500).json({ error: user.error });
         }

@@ -3,7 +3,6 @@ import QuestionModel from '../models/questions.model';
 import AnswerModel from '../models/answers.model';
 import TagModel from '../models/tags.model';
 import {
-  DatabaseUser,
   SafeDatabaseUser,
   User,
   UserCredentials,
@@ -31,7 +30,7 @@ export const saveUser = async (user: User): Promise<UserResponse> => {
     }
 
     // Convert to plain object and remove password field
-    const resultObj = (result as any).toObject ? (result as any).toObject() : result;
+    const resultObj = result.toObject ? result.toObject() : result;
     const safeUser: SafeDatabaseUser = {
       _id: resultObj._id,
       username: resultObj.username,
@@ -64,9 +63,7 @@ export const saveUser = async (user: User): Promise<UserResponse> => {
  */
 export const getUserByUsername = async (username: string): Promise<UserResponse> => {
   try {
-    const user: any = await UserModel.findOne({ username })
-      .select('-password')
-      .lean();
+    const user = await UserModel.findOne({ username }).select('-password').lean();
 
     if (!user) {
       throw Error('User not found');
@@ -120,7 +117,7 @@ export const getUsersList = async (): Promise<UsersResponse> => {
 
     // Ensure notificationPreferences exists with defaults if missing for all users
     users.forEach(user => {
-      const userObj = user as any;
+      const userObj = user as SafeDatabaseUser & { notificationPreferences?: unknown };
       if (!userObj.notificationPreferences) {
         userObj.notificationPreferences = {
           enabled: true,
@@ -149,9 +146,7 @@ export const loginUser = async (loginCredentials: UserCredentials): Promise<User
   const { username, password } = loginCredentials;
 
   try {
-    const user: any = await UserModel.findOne({ username, password })
-      .select('-password')
-      .lean();
+    const user = await UserModel.findOne({ username, password }).select('-password').lean();
 
     if (!user) {
       throw Error('Authentication failed');
@@ -236,7 +231,7 @@ export const updateUser = async (
     }
 
     // Convert to plain object and ensure notificationPreferences exists with defaults if missing
-    const userObj = updatedUser as any;
+    const userObj = updatedUser as SafeDatabaseUser & { notificationPreferences?: unknown };
     if (!userObj.notificationPreferences) {
       userObj.notificationPreferences = {
         enabled: true,

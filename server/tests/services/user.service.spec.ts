@@ -218,12 +218,9 @@ describe('deleteUserByUsername', () => {
   });
 
   it('should return the deleted user when deleted succesfully', async () => {
-    jest.spyOn(UserModel, 'findOneAndDelete').mockImplementation((filter?: any) => {
-      expect(filter.username).toBeDefined();
-      const query: any = {};
-      query.select = jest.fn().mockReturnValue(Promise.resolve(safeUser));
-      return query;
-    });
+    jest.spyOn(UserModel, 'findOneAndDelete').mockReturnValue({
+      select: jest.fn().mockResolvedValue(safeUser),
+    } as unknown as Query<SafeDatabaseUser, typeof UserModel>);
 
     const deletedUser = (await deleteUserByUsername(user.username)) as SafeDatabaseUser;
 
@@ -240,9 +237,7 @@ describe('deleteUserByUsername', () => {
   });
 
   it('should return error when findOneAndDelete returns null with select', async () => {
-    jest.spyOn(UserModel, 'findOneAndDelete').mockReturnValue({
-      select: jest.fn().mockResolvedValue(null),
-    } as unknown as Query<SafeDatabaseUser, typeof UserModel>);
+    jest.spyOn(UserModel, 'findOneAndDelete').mockResolvedValue(null);
 
     const deletedError = await deleteUserByUsername(user.username);
 
@@ -282,12 +277,11 @@ describe('updateUser', () => {
   });
 
   it('should return the updated user when updated succesfully', async () => {
-    jest.spyOn(UserModel, 'findOneAndUpdate').mockImplementation((filter?: any) => {
-      expect(filter.username).toBeDefined();
-      const query: any = {};
-      query.select = jest.fn().mockReturnValue(Promise.resolve(safeUpdatedUser));
-      return query;
-    });
+    jest.spyOn(UserModel, 'findOneAndUpdate').mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue(safeUpdatedUser),
+      }),
+    } as unknown as Query<SafeDatabaseUser, typeof UserModel>);
 
     const result = (await updateUser(user.username, updates)) as SafeDatabaseUser;
 
@@ -307,7 +301,9 @@ describe('updateUser', () => {
 
   it('should return error when findOneAndUpdate returns null with select', async () => {
     jest.spyOn(UserModel, 'findOneAndUpdate').mockReturnValue({
-      select: jest.fn().mockResolvedValue(null),
+      select: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue(null),
+      }),
     } as unknown as Query<SafeDatabaseUser, typeof UserModel>);
 
     const updatedError = await updateUser(user.username, updates);
