@@ -2,7 +2,7 @@ import useRecruitersNewJobPostingPage from '../../../../hooks/useRecruitersNewJo
 import './index.css';
 
 /**
- * This component renders a form for creating a new job posting.
+ * NewJobPostingPage renders a form for creating a new job posting.
  */
 const NewJobPostingPage = () => {
   const {

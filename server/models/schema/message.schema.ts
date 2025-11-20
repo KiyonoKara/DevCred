@@ -23,7 +23,7 @@ const messageSchema: Schema = new Schema(
     },
     type: {
       type: String,
-      enum: ['global', 'direct'],
+      enum: ['global', 'direct', 'resume', 'application'],
     },
   },
   { collection: 'Message' },

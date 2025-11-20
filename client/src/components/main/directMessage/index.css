@@ -240,3 +240,17 @@
   cursor: not-allowed;
   color: #999;
 }
+
+.unstyled-button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  width: auto;
+  font: inherit;
+  color: inherit;
+
+  appearance: none;
+  text-align: inherit;
+  cursor: pointer;
+}

@@ -3,7 +3,32 @@ import { useNavigate } from 'react-router-dom';
 import { createJobPosting } from '../services/jobPostingService';
 import { DatabaseJobPosting, JobType, Tag } from '../types/types';
 import useUserContext from './useUserContext';
-
+/**
+ * Custom hook to manage the state and logic for the "RecruitersNewJobPosting" page, including the creation of the job postings through
+ * detail addition
+ *
+ * @returns an object containing the following:
+ * - `error`: Error string to display in case of invalid form submission.
+ * - `company`: Company for which the job posting is being made.
+ * - `setCompany`: Set company string handler
+ * - `title`: Title of job that posting is being made for
+ * - `setTitle`: Set title string handler
+ * - `payRange`: Pay range of position
+ * - `setPayRange`: Set pay range string handler
+ * - `description`: Description of job in job posting
+ * - `setDescription`: Set job description string handler
+ * - `location`: Location of job
+ * - `setLocation`: Set location string handler
+ * - `jobType`: Type of job
+ * - `setJobType`: Set job type handler
+ * - `active`: Set if job posting should be active or not
+ * - `setActive`: Set active boolean handler
+ * - `deadline`: Application deadline for job
+ * - `setDeadline`: Set deadline date handler
+ * - `tags`: Tag string for job
+ * - `setTags`: Set tags string handler
+ * - `handleCreateJobPosting`: Handler for form submit for job posting creation
+ */
 const useRecruitersNewJobPostingPage = () => {
   const { user } = useUserContext();
   const navigate = useNavigate();

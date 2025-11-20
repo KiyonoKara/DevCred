@@ -10,14 +10,14 @@ import {
 import useUserContext from './useUserContext';
 
 /**
- * Custom hook to manage the state and logic for the "All Collections" page, including fetching collections,
- * creating a new collection, and navigating to collection details.
+ * Custom hook to manage the state and logic for the "RecruitersJobPostingViewer" page, including fetching job posting details,
+ * handling active status changes, and deleting job postings, and displaying all applications submitted for the given job.
  *
  * @returns an object containing the following:
- * - `usernameBeingViewed`: The username of the user whose collections are being viewed.
- * - `collections`: The list of collections for the user.
- * - `handleCreateCollection`: A function to navigate to the create collection page.
- * - `handleViewCollection`: A function to navigate to the collection details page.
+ * - `jobApplications`: Applications submitted to a job.
+ * - `jobPosting`: Details of a specific job posting for a user
+ * - `handleToggleActiveStatus`: A handler for the button to toggle active status of a job posting.
+ * - `handleDeleteJobPosting`: A handler to delete a job posting.
  */
 const useRecruitersJobPostingViewerPage = () => {
   const { user: currentUser } = useUserContext();

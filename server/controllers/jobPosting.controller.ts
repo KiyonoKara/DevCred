@@ -239,6 +239,11 @@ const jobPostingController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Gets all job postings made by a recruiter
+   * @param req The request object containing the recruiter and requestor usernames.
+   * @param res The HTTP response object used to send back the job postings.
+   */
   const getJobPostingByUserId = async (req: Request, res: Response): Promise<void> => {
     try {
       const recruiterUsername = req.params.username;

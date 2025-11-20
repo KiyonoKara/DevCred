@@ -10,6 +10,10 @@
   width: 98%;
 }
 
+.resume-message {
+  color: blue;
+}
+
 .message.sender {
   align-self: flex-end;
   background-color: #d1e7ff;

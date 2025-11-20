@@ -2,15 +2,24 @@ import { ObjectId } from 'mongodb';
 import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
+  createChat,
+  deleteDMForUser,
+  getChatById,
+  getChatsByUser,
+  sendMessage,
+} from '../services/chatService';
+import { getUserResumes } from '../services/resumeService';
+import { getUserByUsername } from '../services/userService';
+import {
   ChatUpdatePayload,
+  DMDeletedPayload,
   Message,
   PopulatedDatabaseChat,
+  SafeDatabaseResume,
   SafeDatabaseUser,
-  DMDeletedPayload,
 } from '../types/types';
+import useResumeManager from './useResumeManager';
 import useUserContext from './useUserContext';
-import { createChat, getChatsByUser, sendMessage, deleteDMForUser } from '../services/chatService';
-import { getUserByUsername } from '../services/userService';
 
 /**
  * useDirectMessage is a custom hook that provides state and functions for direct messaging between users.
@@ -37,6 +46,8 @@ const useDirectMessage = () => {
     },
     [socket],
   );
+
+  const { downloadResume } = useResumeManager(user.username);
 
   /**
    * Checks if a user can receive direct messages.
@@ -100,17 +111,31 @@ const useDirectMessage = () => {
     }
   };
 
+  const handleDownloadResume = async (message: Message) => {
+    const resumes: SafeDatabaseResume[] = await getUserResumes(message.msgFrom);
+    const activeResumes = resumes.filter(resume => resume.isActive);
+    if (activeResumes.length === 0) {
+      alert('User missing active resume to download.');
+      return;
+    }
+
+    const result = await downloadResume(activeResumes[0]._id.toString(), activeResumes[0].fileName);
+    if (!result.success) {
+      alert('Issue downloading resume. Please reach out to applicant.');
+    }
+  };
+
   const handleChatSelect = useCallback(
-    (chatID: ObjectId) => {
-      const chat = chats.find(c => c._id === chatID);
-      if (chat) {
-        setSelectedChat(chat);
-        handleJoinChat(chatID);
-        // Update URL to include chatId for notification filtering
-        setSearchParams({ chatId: String(chatID) });
+    async (chatID: ObjectId | undefined) => {
+      if (!chatID) {
+        setError('Invalid chat ID');
+        return;
       }
+      const chat = await getChatById(chatID);
+      setSelectedChat(chat);
+      handleJoinChat(chatID);
     },
-    [chats, handleJoinChat, setSearchParams],
+    [handleJoinChat],
   );
 
   const handleUserSelect = (selectedUser: SafeDatabaseUser) => {
@@ -332,6 +357,7 @@ const useDirectMessage = () => {
     handleUserSelect,
     handleCreateChat,
     handleDeleteDM,
+    handleDownloadResume,
     error,
     isLoading,
     targetUserDMEnabled,
