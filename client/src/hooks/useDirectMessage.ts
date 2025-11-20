@@ -196,7 +196,15 @@ const useDirectMessage = () => {
       // Clear the URL parameter
       setSearchParams({});
     }
-  }, [searchParams, setSearchParams, user.username, handleChatSelect, chats, selectedChat, handleJoinChat]);
+  }, [
+    searchParams,
+    setSearchParams,
+    user.username,
+    handleChatSelect,
+    chats,
+    selectedChat,
+    handleJoinChat,
+  ]);
 
   useEffect(() => {
     const fetchChats = async () => {
@@ -303,7 +311,7 @@ const useDirectMessage = () => {
     if (selectedChat) {
       // Join the chat room when a chat is selected
       handleJoinChat(selectedChat._id);
-      
+
       return () => {
         // Leave the chat room when chat is deselected or component unmounts
         socket.emit('leaveChat', String(selectedChat._id));

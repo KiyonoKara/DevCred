@@ -77,7 +77,7 @@ const useCodingTournament = (jobFairId: string, jobFair: DatabaseJobFair | null)
           const gradedBy = parts[3];
           const timestampStr = parts[4];
           const msgDateTime = new Date(m.msgDateTime);
-          
+
           // If we already have an acceptance for this user, keep the latest one
           const existing = acceptedMap.get(submittedBy);
           if (!existing || msgDateTime > existing.msgDateTime) {
@@ -229,7 +229,8 @@ const useCodingTournament = (jobFairId: string, jobFair: DatabaseJobFair | null)
         prev.map(sub => {
           const isMatch =
             sub.submittedBy === acceptedSubmission.submittedBy &&
-            new Date(sub.submittedAt).getTime() === new Date(acceptedSubmission.submittedAt).getTime();
+            new Date(sub.submittedAt).getTime() ===
+              new Date(acceptedSubmission.submittedAt).getTime();
           return isMatch
             ? {
                 ...sub,

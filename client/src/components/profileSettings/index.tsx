@@ -241,7 +241,10 @@ const ProfileSettings: React.FC = () => {
                               type='checkbox'
                               checked={notificationSettings.communityEnabled}
                               onChange={e =>
-                                handleNotificationSettingChange('communityEnabled', e.target.checked)
+                                handleNotificationSettingChange(
+                                  'communityEnabled',
+                                  e.target.checked,
+                                )
                               }
                             />
                             <span>Community updates</span>

@@ -20,10 +20,7 @@ const Layout = () => {
           <Outlet />
         </div>
       </div>
-      <NotificationBanner
-        notification={showNotification}
-        onDismiss={handleDismissNotification}
-      />
+      <NotificationBanner notification={showNotification} onDismiss={handleDismissNotification} />
     </>
   );
 };
