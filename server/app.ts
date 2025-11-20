@@ -96,7 +96,8 @@ socket.on('connection', conn => {
 setInterval(async () => {
   try {
     const UserModel = (await import('./models/users.model')).default;
-    const generateSummaryNotification = await import('./services/notificationSummary.service');
+    const generateSummaryNotification = (await import('./services/notificationSummary.service'))
+      .default;
 
     const now = new Date();
     const currentHour = now.getHours();
