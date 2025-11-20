@@ -8,12 +8,18 @@
   min-height: 600px;
 }
 
-.tournament-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+.tournament-layout {
+  display: flex;
   gap: 20px;
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
+}
+
+.tournament-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .code-submission-section,
@@ -189,6 +195,15 @@
   font-weight: 700;
 }
 
+.submission-accepted {
+  background-color: #4caf50;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
 .submission-language {
   display: flex;
   gap: 5px;
@@ -250,6 +265,165 @@
   font-weight: 600;
 }
 
+.accept-submission-btn {
+  padding: 10px 20px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  width: 100%;
+}
+
+.accept-submission-btn:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+.accept-submission-btn:disabled {
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.accept-submission-panel {
+  width: 400px;
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  max-height: 800px;
+  position: sticky;
+  top: 20px;
+  align-self: flex-start;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.panel-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.close-panel-btn {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #999;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.close-panel-btn:hover {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.panel-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1;
+}
+
+.applicant-info {
+  padding: 15px;
+  background-color: #f5f7fa;
+  border-radius: 6px;
+  border-left: 3px solid #0066cc;
+}
+
+.applicant-info p {
+  margin: 8px 0;
+  font-size: 14px;
+  color: #333;
+}
+
+.applicant-info strong {
+  color: #0066cc;
+  font-weight: 600;
+}
+
+.dm-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dm-form label {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.dm-message-input {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 120px;
+  transition: border-color 0.2s ease;
+}
+
+.dm-message-input:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+.dm-send-btn {
+  padding: 12px 24px;
+  background-color: #0066cc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.dm-send-btn:hover:not(:disabled) {
+  background-color: #0052a3;
+}
+
+.dm-send-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.panel-error {
+  padding: 12px;
+  background-color: #fee;
+  color: #c00;
+  border: 1px solid #fcc;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
 .submission-graded-by {
   font-size: 12px;
   color: #666;
@@ -262,8 +436,14 @@
 
 /* Responsive design */
 @media (max-width: 1024px) {
-  .tournament-container {
-    grid-template-columns: 1fr;
+  .tournament-layout {
+    flex-direction: column;
+  }
+
+  .accept-submission-panel {
+    width: 100%;
+    position: relative;
+    top: 0;
   }
 }
 

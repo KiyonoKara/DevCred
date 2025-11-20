@@ -39,7 +39,7 @@ export const getMessages = async (): Promise<DatabaseMessage[]> => {
 
 /**
  * Deletes multiple messages by their IDs from the database.
- * Used when deleting a chat conversation (story 2.7 - when both users delete, clean up messages).
+ * Used when deleting a chat conversation.
  * @param {string[]} messageIds - Array of message IDs to delete
  * @returns {Promise<{ success: boolean } | { error: string }>} - Success or error message
  */

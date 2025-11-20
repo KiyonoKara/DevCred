@@ -16,11 +16,27 @@ const handleErr = (err: AxiosError) => {
 
 const api = axios.create({ withCredentials: true });
 
+// Store for current username to be used in request headers
+let currentUsername: string | null = null;
+
+/**
+ * Set the current username for API requests
+ */
+export const setApiUsername = (username: string | null) => {
+  currentUsername = username;
+};
+
 /**
  * Add a request interceptor to the Axios instance.
  */
 api.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => config,
+  (config: InternalAxiosRequestConfig) => {
+    // Add username header if available
+    if (currentUsername) {
+      config.headers.username = currentUsername;
+    }
+    return config;
+  },
   (error: AxiosError) => handleErr(error),
 );
 

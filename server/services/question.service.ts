@@ -282,6 +282,12 @@ export const getCommunityQuestions = async (communityId: string): Promise<Databa
   }
 };
 
+/**
+ * Deletes a question by ID if the username matches the author.
+ * @param qid Question ID
+ * @param username Username
+ * @returns The deleted question
+ */
 export const deleteQuestionById = async (
   qid: string,
   username: string,
@@ -290,16 +296,10 @@ export const deleteQuestionById = async (
     const question = await QuestionModel.findById(qid);
 
     if (!question) {
-      // eslint-disable-next-line no-console
-      console.warn(`[deleteQuestionById] Question not found for id ${qid}`);
       return { error: 'Question not found' };
     }
 
     if (question.askedBy !== username) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        `[deleteQuestionById] Unauthorized delete attempt by ${username} for question ${qid}`,
-      );
       return { error: 'Unauthorized to delete this question' };
     }
 
@@ -309,12 +309,58 @@ export const deleteQuestionById = async (
 
     await QuestionModel.findByIdAndDelete(qid);
 
-    // eslint-disable-next-line no-console
-    console.log(`[deleteQuestionById] Question ${qid} deleted by ${username}`);
     return question;
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error(`[deleteQuestionById] Failed to delete question ${qid}:`, error);
     return { error: 'Error when deleting question' };
+  }
+};
+
+/**
+ * Updates a question by ID if the username matches the author.
+ * @param qid Question ID
+ * @param title New question title
+ * @param text New question text
+ * @param username Username
+ * @returns The updated question
+ */
+export const updateQuestionById = async (
+  qid: string,
+  title: string,
+  text: string,
+  username: string,
+): Promise<QuestionResponse> => {
+  try {
+    const question = await QuestionModel.findById(qid);
+
+    if (!question) {
+      return { error: 'Question not found' };
+    }
+
+    if (question.askedBy !== username) {
+      return { error: 'Unauthorized to update this question' };
+    }
+
+    question.title = title;
+    question.text = text;
+    await question.save();
+
+    const updatedQuestion = await QuestionModel.findById(qid).populate<{
+      tags: DatabaseTag[];
+      answers: PopulatedDatabaseAnswer[];
+      comments: DatabaseComment[];
+      community: DatabaseCommunity;
+    }>([
+      { path: 'tags', model: TagModel },
+      { path: 'answers', model: AnswerModel, populate: { path: 'comments', model: CommentModel } },
+      { path: 'comments', model: CommentModel },
+    ]);
+
+    if (!updatedQuestion) {
+      return { error: 'Error when fetching updated question' };
+    }
+
+    return updatedQuestion as unknown as DatabaseQuestion;
+  } catch (error) {
+    return { error: 'Error when updating question' };
   }
 };

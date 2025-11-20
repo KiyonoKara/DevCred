@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   createChat,
   deleteDMForUser,
@@ -29,6 +30,7 @@ import useUserContext from './useUserContext';
 
 const useDirectMessage = () => {
   const { user, socket } = useUserContext();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [showCreatePanel, setShowCreatePanel] = useState<boolean>(false);
   const [chatToCreate, setChatToCreate] = useState<string>('');
   const [selectedChat, setSelectedChat] = useState<PopulatedDatabaseChat | null>(null);
@@ -38,14 +40,17 @@ const useDirectMessage = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [targetUserDMEnabled, setTargetUserDMEnabled] = useState<boolean | null>(null);
 
-  const handleJoinChat = (chatID: ObjectId) => {
-    socket.emit('joinChat', String(chatID));
-  };
+  const handleJoinChat = useCallback(
+    (chatID: ObjectId) => {
+      socket.emit('joinChat', String(chatID));
+    },
+    [socket],
+  );
 
   const { downloadResume } = useResumeManager(user.username);
 
   /**
-   * Checks if a user can receive direct messages (story 2.3).
+   * Checks if a user can receive direct messages.
    * Validates that the target user has DMs enabled.
    * @param username - The username to check DM capability for.
    * @returns true if user accepts DMs, false otherwise.
@@ -161,7 +166,7 @@ const useDirectMessage = () => {
   };
 
   /**
-   * Deletes a DM for the current user (story 2.7 - local deletion).
+   * Deletes a DM for the current user.
    * If both users have deleted, the chat is completely removed from database.
    * @param chatID - The ID of the chat to delete.
    */
@@ -183,6 +188,47 @@ const useDirectMessage = () => {
     }
   };
 
+  // Handle URL parameter to pre-select user for DM
+  useEffect(() => {
+    const targetUser = searchParams.get('user');
+    const targetChatId = searchParams.get('chat');
+    const urlChatId = searchParams.get('chatId');
+
+    if (targetChatId) {
+      // Directly open an existing chat by ID
+      handleChatSelect(targetChatId as unknown as ObjectId);
+      // Update URL to use chatId instead of chat
+      setSearchParams({ chatId: targetChatId });
+    } else if (urlChatId) {
+      // Chat ID is in URL, select it
+      const chat = chats.find(c => String(c._id) === urlChatId);
+      if (chat && (!selectedChat || String(selectedChat._id) !== urlChatId)) {
+        setSelectedChat(chat);
+        handleJoinChat(chat._id);
+      } else if (!chat && chats.length > 0) {
+        // Chat not found in list, try to fetch it or select first chat
+        // For now, just ensure we join if we have a selectedChat
+        if (selectedChat && String(selectedChat._id) === urlChatId) {
+          handleJoinChat(selectedChat._id);
+        }
+      }
+    } else if (targetUser && targetUser !== user.username) {
+      // Open create panel with user pre-selected
+      setChatToCreate(targetUser);
+      setShowCreatePanel(true);
+      // Clear the URL parameter
+      setSearchParams({});
+    }
+  }, [
+    searchParams,
+    setSearchParams,
+    user.username,
+    handleChatSelect,
+    chats,
+    selectedChat,
+    handleJoinChat,
+  ]);
+
   useEffect(() => {
     const fetchChats = async () => {
       const userChats = await getChatsByUser(user.username);
@@ -195,12 +241,40 @@ const useDirectMessage = () => {
       switch (type) {
         case 'created': {
           if (chat.participants.includes(user.username)) {
-            setChats(prevChats => [chat, ...prevChats]);
+            setChats(prevChats => {
+              // Check if chat already exists
+              const exists = prevChats.some(c => String(c._id) === String(chat._id));
+              if (exists) {
+                return prevChats;
+              }
+              return [chat, ...prevChats];
+            });
           }
           return;
         }
         case 'newMessage': {
-          setSelectedChat(chat);
+          // update the chat in the chats list
+          setChats(prevChats => {
+            const existingChatIndex = prevChats.findIndex(c => String(c._id) === String(chat._id));
+            if (existingChatIndex !== -1) {
+              // update existing chat and move to top
+              const updatedChats = [...prevChats];
+              updatedChats[existingChatIndex] = chat;
+              // move to the top
+              return [chat, ...updatedChats.filter((_, i) => i !== existingChatIndex)];
+            }
+            // add new chat to the top
+            return [chat, ...prevChats];
+          });
+
+          // Update selected chat if it's the one that received the message
+          // Use functional update to avoid stale closure
+          setSelectedChat(prevSelected => {
+            if (prevSelected && String(prevSelected._id) === String(chat._id)) {
+              return chat;
+            }
+            return prevSelected;
+          });
           return;
         }
         case 'newParticipant': {
@@ -221,7 +295,7 @@ const useDirectMessage = () => {
     };
 
     /**
-     * Handles DM deletion events from socket (story 2.7).
+     * Handles DM deletion events from socket
      * If deletedCompletely is true, removes chat from list.
      * If deletedCompletely is false, just shows that user deleted it.
      */
@@ -229,14 +303,17 @@ const useDirectMessage = () => {
       const { chatId, deletedCompletely } = payload;
 
       if (deletedCompletely) {
-        // Both users deleted - completely remove from database
+        // Completely remove from database if both users delete it
         setChats(prevChats => prevChats.filter(c => String(c._id) !== chatId));
-        if (selectedChat && String(selectedChat._id) === chatId) {
-          setSelectedChat(null);
-        }
+        // Use functional update to avoid stale closure
+        setSelectedChat(prevSelected => {
+          if (prevSelected && String(prevSelected._id) === chatId) {
+            return null;
+          }
+          return prevSelected;
+        });
       } else {
-        // One user deleted - keep in list but show it's been deleted by them
-        // In a real UI, you might show a "deleted" indicator
+        // Keep in list but show it's been deleted by one user
         setChats(prevChats => prevChats.map(c => c));
       }
     };
@@ -249,10 +326,21 @@ const useDirectMessage = () => {
     return () => {
       socket.off('chatUpdate', handleChatUpdate);
       socket.off('dmDeleted', handleDMDeleted);
-      socket.emit('leaveChat', String(selectedChat?._id));
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user.username, socket]);
+
+  // Separate effect to handle joining/leaving chat rooms
+  useEffect(() => {
+    if (selectedChat) {
+      // Join the chat room when a chat is selected
+      handleJoinChat(selectedChat._id);
+
+      return () => {
+        // Leave the chat room when chat is deselected or component unmounts
+        socket.emit('leaveChat', String(selectedChat._id));
+      };
+    }
+  }, [selectedChat, handleJoinChat, socket]);
 
   return {
     selectedChat,

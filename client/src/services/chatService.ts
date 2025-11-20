@@ -77,7 +77,7 @@ export const createChat = async (participants: string[]): Promise<PopulatedDatab
 };
 
 /**
- * Deletes a DM for a specific user (marks as deleted by them for story 2.7).
+ * Deletes a DM for a specific user and marks it as deleted by them.
  * If both participants have deleted, removes the chat completely.
  *
  * @param chatID - The ID of the chat to delete for the user.

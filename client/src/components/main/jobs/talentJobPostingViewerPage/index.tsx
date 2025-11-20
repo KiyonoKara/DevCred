@@ -10,48 +10,80 @@ const ApplicantJobPostingsViewer = () => {
 
   return (
     !!jobPosting && (
-      <div className='job_postings-page'>
-        <div className='job_postings-header'>
-          <h1 className='job_postings-title'>
-            {jobPosting.title} - {jobPosting.company}
-          </h1>
+      <div className='job-posting-viewer'>
+        <div className='job-posting-container'>
+          <div className='job-posting-header'>
+            <div className='job-title-section'>
+              <h1 className='job-title'>{jobPosting.title}</h1>
+              <h2 className='company-name'>{jobPosting.company}</h2>
+            </div>
+            {!!jobPosting.jobType && (
+              <span className='job-type-badge'>{jobPosting.jobType.toUpperCase()}</span>
+            )}
+          </div>
+
+          <div className='job-meta-info'>
+            <div className='meta-item'>
+              <b>Location:</b>
+              <span className='meta-text'>{jobPosting.location}</span>
+            </div>
+            {!!jobPosting.payRange && (
+              <div className='meta-item'>
+                <b>Pay Range:</b>
+                <span className='meta-text'>{jobPosting.payRange}</span>
+              </div>
+            )}
+            {!!jobPosting.deadline && (
+              <div className='meta-item'>
+                <b>Deadline:</b>
+                <span className='meta-text'>
+                  {(() => {
+                    const date = new Date(jobPosting.deadline);
+                    if (Number.isNaN(date.getTime())) {
+                      return 'Unknown';
+                    }
+                    return date.toLocaleDateString(undefined, {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                    });
+                  })()}
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div className='application-section'>
+            {userType == 'recruiter' ? (
+              <div className='info-banner recruiter-notice'>
+                <span className='info-icon'>ℹ️</span>
+                <span>Recruiters cannot apply to postings</span>
+              </div>
+            ) : applicationStatus ? (
+              <div className='info-banner applied-status'>
+                <span>You have applied to this position</span>
+              </div>
+            ) : (
+              <button type='button' className='apply-button' onClick={handleApplyToPosition}>
+                Apply to Position
+              </button>
+            )}
+          </div>
+
+          <div className='job-description-section'>
+            <h3 className='section-title'>Position Overview</h3>
+            <p className='job-description'>{jobPosting.description}</p>
+          </div>
+
+          <div className='recruiter-section'>
+            <div className='recruiter-info'>
+              <div className='recruiter-details'>
+                <span className='recruiter-label'>Posted by</span>
+                <span className='recruiter-name'>{jobPosting.recruiter}</span>
+              </div>
+            </div>
+          </div>
         </div>
-
-        {!!jobPosting.jobType && <p>{jobPosting.jobType.toUpperCase()}</p>}
-
-        {!!jobPosting.payRange && <p>Pay Range: {jobPosting.payRange}</p>}
-        <p> Location: {jobPosting.location}</p>
-
-        {userType == 'recruiter' ? (
-          <p> Recruiters Cannot Apply to Postings </p>
-        ) : applicationStatus ? (
-          <h3>Applied to Position</h3>
-        ) : (
-          <button type='button' onClick={handleApplyToPosition}>
-            Apply to Posting
-          </button>
-        )}
-
-        {!!jobPosting.deadline && (
-          <p>
-            Application Deadline:{' '}
-            {(() => {
-              const date = new Date(jobPosting.deadline);
-              if (Number.isNaN(date.getTime())) {
-                return 'Unknown';
-              }
-              return date.toLocaleDateString(undefined, {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-              });
-            })()}
-          </p>
-        )}
-
-        <p> Position Overview: {jobPosting.description}</p>
-
-        <p> Recruiter: {jobPosting.recruiter}</p>
       </div>
     )
   );

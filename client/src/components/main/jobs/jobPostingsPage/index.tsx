@@ -3,7 +3,7 @@ import formattedDate from '../../../helpers/formattingHelpers';
 import './index.css';
 
 /**
- * RecruiterJobPostings component displays a list of job_postings for a specific user.
+ * RecruiterJobPostings component displays a list of job postings for a specific user.
  */
 const RecruiterJobPostings = () => {
   const { usernameBeingViewed, jobPostings, handleCreateJobPosting, handleViewJobPosting } =

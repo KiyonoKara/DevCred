@@ -16,6 +16,7 @@ const useRecruiterJobFairCreationPage = () => {
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [codingTournamentEnabled, setCodingTournamentEnabled] = useState(true);
+  const [overviewMessage, setOverviewMessage] = useState('');
   const [invitedUsers, setInvitedUsers] = useState<string[]>([]);
   const [currentInviteInput, setCurrentInviteInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -109,6 +110,7 @@ const useRecruiterJobFairCreationPage = () => {
         endTime: toISO8601(endTime),
         hostUsername: currentUser.username,
         codingTournamentEnabled,
+        overviewMessage: overviewMessage.trim() ? overviewMessage : undefined,
         invitedUsers: visibility === 'invite-only' ? invitedUsers : undefined,
       };
 
@@ -132,6 +134,7 @@ const useRecruiterJobFairCreationPage = () => {
     startTime,
     endTime,
     codingTournamentEnabled,
+    overviewMessage,
     currentUser.username,
     invitedUsers,
     navigate,
@@ -145,6 +148,7 @@ const useRecruiterJobFairCreationPage = () => {
     setStartTime('');
     setEndTime('');
     setCodingTournamentEnabled(true);
+    setOverviewMessage('');
     setInvitedUsers([]);
     setCurrentInviteInput('');
     setError(null);
@@ -164,6 +168,8 @@ const useRecruiterJobFairCreationPage = () => {
     setEndTime,
     codingTournamentEnabled,
     setCodingTournamentEnabled,
+    overviewMessage,
+    setOverviewMessage,
     invitedUsers,
     currentInviteInput,
     setCurrentInviteInput,

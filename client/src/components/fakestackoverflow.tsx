@@ -1,8 +1,9 @@
-import { JSX, useState } from 'react';
+import { JSX, useState, useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import LoginContext from '../contexts/LoginContext';
 import UserContext from '../contexts/UserContext';
 import { FakeSOSocket, SafeDatabaseUser } from '../types/types';
+import { setApiUsername } from '../services/config';
 import Login from './auth/login';
 import Signup from './auth/signup';
 import Layout from './layout';
@@ -25,7 +26,9 @@ import NewJobPostingPage from './main/jobs/newJobPostingPage';
 import RecruiterJobFairCreationPage from './main/jobs/recruiterJobFairCreationPage';
 import RecruiterJobPostingsViewer from './main/jobs/recruiterJobPostingViewerPage';
 import ApplicantJobPostingsViewer from './main/jobs/talentJobPostingViewerPage';
+import RecruiterJobFairEditPage from './main/jobs/recruiterJobFairEditPage';
 import MessagingPage from './main/messagingPage';
+import NotificationPage from './main/notificationPage';
 import NewAnswerPage from './main/newAnswer';
 import NewQuestionPage from './main/newQuestion';
 import QuestionPage from './main/questionPage';
@@ -56,6 +59,15 @@ const ProtectedRoute = ({
  */
 const FakeStackOverflow = ({ socket }: { socket: FakeSOSocket | null }) => {
   const [user, setUser] = useState<SafeDatabaseUser | null>(null);
+
+  // Update API username when user changes
+  useEffect(() => {
+    if (user?.username) {
+      setApiUsername(user.username);
+    } else {
+      setApiUsername(null);
+    }
+  }, [user]);
 
   return (
     <LoginContext.Provider value={{ setUser }}>
@@ -101,6 +113,11 @@ const FakeStackOverflow = ({ socket }: { socket: FakeSOSocket | null }) => {
             <Route path='/jobfairs' element={<JobFairListPage />} />
             <Route path='/jobfairs/:jobFairId' element={<JobFairDetailPage />} />
             <Route path='/recruiters/jobfairs/new' element={<RecruiterJobFairCreationPage />} />
+            <Route
+              path='/recruiters/jobfairs/:jobFairId/edit'
+              element={<RecruiterJobFairEditPage />}
+            />
+            <Route path='/notifications' element={<NotificationPage />} />
           </Route>
         }
       </Routes>

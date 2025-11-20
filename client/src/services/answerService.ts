@@ -30,5 +30,22 @@ const deleteAnswer = async (aid: string, username: string): Promise<void> => {
   }
 };
 
+const updateAnswer = async (
+  aid: string,
+  text: string,
+  username: string,
+): Promise<PopulatedDatabaseAnswer> => {
+  const res = await api.put(`${ANSWER_API_URL}/update/${aid}`, {
+    text,
+    username,
+  });
+
+  if (res.status !== 200) {
+    throw new Error('Error while updating answer');
+  }
+
+  return res.data;
+};
+
 export default addAnswer;
-export { deleteAnswer };
+export { deleteAnswer, updateAnswer };

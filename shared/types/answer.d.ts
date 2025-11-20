@@ -60,3 +60,19 @@ export interface DeleteAnswerRequest extends Request {
     username: string;
   };
 }
+
+/**
+ * Interface for the request when updating an answer.
+ * - `aid`: The unique identifier of the answer (params).
+ * - `text`: The updated text content (body).
+ * - `username`: The username of the user updating the answer (body).
+ */
+export interface UpdateAnswerRequest extends Request {
+  params: {
+    aid: string;
+  };
+  body: {
+    text: string;
+    username: string;
+  };
+}

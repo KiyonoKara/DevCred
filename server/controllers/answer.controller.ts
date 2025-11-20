@@ -4,10 +4,16 @@ import {
   Answer,
   AddAnswerRequest,
   DeleteAnswerRequest,
+  UpdateAnswerRequest,
   FakeSOSocket,
   PopulatedDatabaseAnswer,
 } from '../types/types';
-import { addAnswerToQuestion, deleteAnswerById, saveAnswer } from '../services/answer.service';
+import {
+  addAnswerToQuestion,
+  deleteAnswerById,
+  updateAnswerById,
+  saveAnswer,
+} from '../services/answer.service';
 import { populateDocument } from '../utils/database.util';
 
 const answerController = (socket: FakeSOSocket) => {
@@ -65,6 +71,12 @@ const answerController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Deletes an answer from the database based on its ID and the username of the requester.
+   * @param req The DeleteAnswerRequest object containing the answer ID as a parameter and the username as a query parameter.
+   * @param res The HTTP response object used to send back the result of the operation.
+   * @returns Void Promise
+   */
   const deleteAnswer = async (req: DeleteAnswerRequest, res: Response): Promise<void> => {
     const { aid } = req.params;
     const { username } = req.query;
@@ -93,20 +105,57 @@ const answerController = (socket: FakeSOSocket) => {
         }
         throw new Error(deletionResult.error);
       }
-
-      // eslint-disable-next-line no-console
-      console.log(`[answer.controller] Answer ${aid} deleted by ${username}`);
       res.json({ success: true, deletedAnswerId: aid });
     } catch (err: unknown) {
-      // eslint-disable-next-line no-console
-      console.error(`[answer.controller] Failed to delete answer ${aid} for ${username}:`, err);
       res.status(500).send(`Error when deleting answer: ${(err as Error).message}`);
+    }
+  };
+
+  /**
+   * Updates an existing answer's text in the database.
+   * @param req The UpdateAnswerRequest object containing the answer ID as a parameter and the updated text and username in the body.
+   * @param res The HTTP response object used to send back the result of the operation.
+   * @returns Void Promise
+   */
+  const updateAnswer = async (req: UpdateAnswerRequest, res: Response): Promise<void> => {
+    const { aid } = req.params;
+    const { text, username } = req.body;
+
+    if (!aid || !text || !username) {
+      res.status(400).send('Missing required fields');
+      return;
+    }
+
+    if (!ObjectId.isValid(aid)) {
+      res.status(400).send('Invalid ID format');
+      return;
+    }
+
+    try {
+      const updateResult = await updateAnswerById(aid, text, username);
+
+      if ('error' in updateResult) {
+        if (updateResult.error.includes('Unauthorized')) {
+          res.status(403).json({ error: updateResult.error });
+          return;
+        }
+        if (updateResult.error.includes('not found')) {
+          res.status(404).json({ error: updateResult.error });
+          return;
+        }
+        throw new Error(updateResult.error);
+      }
+
+      res.json(updateResult);
+    } catch (err: unknown) {
+      res.status(500).send(`Error when updating answer: ${(err as Error).message}`);
     }
   };
 
   // add appropriate HTTP verbs and their endpoints to the router.
   router.post('/addAnswer', addAnswer);
   router.delete('/delete/:aid', deleteAnswer);
+  router.put('/update/:aid', updateAnswer);
 
   return router;
 };

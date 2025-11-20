@@ -119,6 +119,25 @@ const deleteQuestion = async (qid: string, username: string): Promise<void> => {
   }
 };
 
+const updateQuestion = async (
+  qid: string,
+  title: string,
+  text: string,
+  username: string,
+): Promise<PopulatedDatabaseQuestion> => {
+  const res = await api.put(`${QUESTION_API_URL}/update/${qid}`, {
+    title,
+    text,
+    username,
+  });
+
+  if (res.status !== 200) {
+    throw new Error('Error when updating question');
+  }
+
+  return res.data;
+};
+
 export {
   getQuestionsByFilter,
   getQuestionById,
@@ -127,4 +146,5 @@ export {
   downvoteQuestion,
   getCommunityQuestionsById,
   deleteQuestion,
+  updateQuestion,
 };

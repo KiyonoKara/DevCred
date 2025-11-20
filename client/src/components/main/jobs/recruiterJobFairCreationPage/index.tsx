@@ -17,6 +17,8 @@ const RecruiterJobFairCreationPage = () => {
     setEndTime,
     codingTournamentEnabled,
     setCodingTournamentEnabled,
+    overviewMessage,
+    setOverviewMessage,
     invitedUsers,
     currentInviteInput,
     setCurrentInviteInput,
@@ -130,6 +132,19 @@ const RecruiterJobFairCreationPage = () => {
                   Allow participants to submit and compete in coding challenges during the job fair
                 </p>
               </div>
+            </div>
+
+            <div className='form-group'>
+              <label htmlFor='overview-message'>Overview Message</label>
+              <textarea
+                id='overview-message'
+                value={overviewMessage}
+                onChange={e => setOverviewMessage(e.target.value)}
+                placeholder='Enter an overview message that will be displayed in the Overview tab...'
+                className='form-textarea'
+                rows={4}
+              />
+              <span className='char-count'>{overviewMessage.length}/500</span>
             </div>
           </div>
 
