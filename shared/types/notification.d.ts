@@ -42,4 +42,3 @@ export interface NotificationPreferences {
   jobFairEnabled: boolean;
   communityEnabled: boolean;
 }
-

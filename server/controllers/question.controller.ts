@@ -142,9 +142,7 @@ const questionController = (socket: FakeSOSocket) => {
 
       // Create and emit notifications for community questions
       if (question.community && question.community._id) {
-        const community = await getCommunity(
-          question.community._id.toString(),
-        );
+        const community = await getCommunity(question.community._id.toString());
         if (!('error' in community) && community.participants) {
           // Notify all community participants except the question author
           for (const participant of community.participants) {

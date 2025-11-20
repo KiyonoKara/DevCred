@@ -49,4 +49,3 @@ const notificationSchema = new Schema(
 );
 
 export default notificationSchema;
-

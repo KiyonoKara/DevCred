@@ -138,4 +138,3 @@ export const getUnreadNotificationCount = async (username: string): Promise<numb
     return 0;
   }
 };
-

@@ -12,12 +12,16 @@ import { DatabaseNotification } from '../types/types';
  * @param username - The username to generate summary for.
  * @returns {Promise<DatabaseNotification | { error: string }>} - The summary notification or error.
  */
-export const generateSummaryNotification = async (
+const generateSummaryNotification = async (
   username: string,
 ): Promise<DatabaseNotification | { error: string }> => {
   try {
     const user = await UserModel.findOne({ username }).select('notificationPreferences');
-    if (!user || !user.notificationPreferences?.enabled || !user.notificationPreferences?.summarized) {
+    if (
+      !user ||
+      !user.notificationPreferences?.enabled ||
+      !user.notificationPreferences?.summarized
+    ) {
       return { error: 'User does not have summarized notifications enabled' };
     }
 
@@ -76,12 +80,12 @@ export const generateSummaryNotification = async (
           jobFair.startTime <= oneDayFromNow &&
           jobFair.startTime > now
         ) {
-          upcomingJobFairCount++;
+          upcomingJobFairCount += 1;
         }
 
         // Check for recently ended job fairs
         if (jobFair.status === 'ended' && jobFair.endTime > sinceTime) {
-          endedJobFairCount++;
+          endedJobFairCount += 1;
         }
       }
     }
@@ -120,16 +124,22 @@ export const generateSummaryNotification = async (
       summaryParts.push(`${jobFairCount} job fair update${jobFairCount > 1 ? 's' : ''}`);
     }
     if (upcomingJobFairCount > 0) {
-      summaryParts.push(`${upcomingJobFairCount} job fair${upcomingJobFairCount > 1 ? 's' : ''} starting soon`);
+      summaryParts.push(
+        `${upcomingJobFairCount} job fair${upcomingJobFairCount > 1 ? 's' : ''} starting soon`,
+      );
     }
     if (endedJobFairCount > 0) {
-      summaryParts.push(`${endedJobFairCount} job fair${endedJobFairCount > 1 ? 's' : ''} just ended`);
+      summaryParts.push(
+        `${endedJobFairCount} job fair${endedJobFairCount > 1 ? 's' : ''} just ended`,
+      );
     }
     if (communityQuestionCount > 0) {
       const communityList = Object.entries(communityCounts)
         .map(([name, count]) => `${name}: ${count}`)
         .join(', ');
-      summaryParts.push(`${communityQuestionCount} new question${communityQuestionCount > 1 ? 's' : ''} in followed communities (${communityList})`);
+      summaryParts.push(
+        `${communityQuestionCount} new question${communityQuestionCount > 1 ? 's' : ''} in followed communities (${communityList})`,
+      );
     }
 
     if (summaryParts.length === 0) {
@@ -159,3 +169,4 @@ export const generateSummaryNotification = async (
   }
 };
 
+export default generateSummaryNotification;

@@ -59,7 +59,7 @@ function startServer() {
   });
 }
 
-socket.on('connection', (conn: any) => {
+socket.on('connection', conn => {
   console.log('A user connected ->', conn.id);
 
   // Handle user room joining for notifications
@@ -97,7 +97,7 @@ setInterval(async () => {
   try {
     const UserModel = (await import('./models/users.model')).default;
     const { generateSummaryNotification } = await import('./services/notificationSummary.service');
-    
+
     const now = new Date();
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
@@ -111,7 +111,7 @@ setInterval(async () => {
 
     for (const user of users) {
       const summaryTime = user.notificationPreferences?.summaryTime || '09:00';
-      
+
       // Check if current time matches user's summary time (within 1 minute window)
       if (summaryTime === currentTime) {
         try {

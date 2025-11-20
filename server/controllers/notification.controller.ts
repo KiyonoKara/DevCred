@@ -6,7 +6,7 @@ import {
   clearAllNotifications,
   getUnreadNotificationCount,
 } from '../services/notification.service';
-import { generateSummaryNotification } from '../services/notificationSummary.service';
+import generateSummaryNotification from '../services/notificationSummary.service';
 import { FakeSOSocket } from '../types/types';
 
 /**
@@ -31,10 +31,7 @@ const notificationController = (socket: FakeSOSocket) => {
         return res.status(401).json({ error: 'Authentication required' });
       }
 
-      const notifications = await getUserNotifications(
-        username,
-        unreadOnly === 'true',
-      );
+      const notifications = await getUserNotifications(username, unreadOnly === 'true');
 
       if ('error' in notifications) {
         throw new Error(notifications.error);
@@ -194,4 +191,3 @@ const notificationController = (socket: FakeSOSocket) => {
 };
 
 export default notificationController;
-

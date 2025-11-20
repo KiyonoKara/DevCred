@@ -77,7 +77,6 @@ const userController = (socket: FakeSOSocket) => {
 
       res.status(200).json(user);
     } catch (error) {
-      console.error('Login error:', error);
       res.status(500).json({ error: `Login failed: ${(error as Error).message}` });
     }
   };
