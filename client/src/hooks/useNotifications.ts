@@ -232,7 +232,7 @@ const useNotifications = () => {
         socket.emit('leaveUserRoom', user.username);
       };
     }
-  }, [user, socket]);
+  }, [user, socket, shouldShowNotification]);
 
   // Fetch notifications on mount
   const fetchNotifications = useCallback(async () => {
