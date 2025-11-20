@@ -160,6 +160,10 @@ const chatController = (socket: FakeSOSocket) => {
       // Fetch the updated chat with deletion records cleared
       const populatedChat2 = await populateDocument(updatedChat._id.toString(), 'chat');
 
+      if ('error' in populatedChat2) {
+        throw new Error(populatedChat2.error);
+      }
+
       socket
         .to(chatId)
         .emit('chatUpdate', { chat: populatedChat2 as PopulatedDatabaseChat, type: 'newMessage' });

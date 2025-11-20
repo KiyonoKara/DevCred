@@ -129,8 +129,11 @@ describe('getUsersList', () => {
   });
 
   it('should throw an error if there is an error while searching the database', async () => {
+    const mockError = new Error('Error finding documents');
     jest.spyOn(UserModel, 'find').mockReturnValue({
-      select: jest.fn().mockRejectedValue(new Error('Error finding documents')),
+      select: jest.fn().mockReturnValue({
+        lean: jest.fn().mockImplementation(() => Promise.reject(mockError)),
+      }),
     } as unknown as Query<SafeDatabaseUser[], typeof UserModel>);
 
     const getUsersError = await getUsersList();

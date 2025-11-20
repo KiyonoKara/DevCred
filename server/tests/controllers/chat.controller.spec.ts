@@ -210,11 +210,13 @@ describe('Chat Controller', () => {
       // Mock resetDeletionTracking (won't be called since deletedBy is empty, but needed for safety)
       resetDeletionTrackingSpy.mockResolvedValue(chatResponse);
       // Mock UserModel.findOne for notification preferences check
-      jest.spyOn(UserModel, 'findOne').mockResolvedValue({
-        notificationPreferences: {
-          enabled: true,
-          dmEnabled: true,
-        },
+      jest.spyOn(UserModel, 'findOne').mockReturnValue({
+        select: jest.fn().mockResolvedValue({
+          notificationPreferences: {
+            enabled: true,
+            dmEnabled: true,
+          },
+        }),
       } as any);
       // Mock createNotification
       createNotificationSpy.mockResolvedValue({
