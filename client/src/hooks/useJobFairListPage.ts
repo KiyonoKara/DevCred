@@ -78,7 +78,14 @@ const useJobFairListPage = () => {
     }
 
     setFilteredJobFairs(filtered);
-  }, [jobFairs, statusFilter, visibilityFilter, myOrganizationOnly, isRecruiter, currentUser.username]);
+  }, [
+    jobFairs,
+    statusFilter,
+    visibilityFilter,
+    myOrganizationOnly,
+    isRecruiter,
+    currentUser.username,
+  ]);
 
   useEffect(() => {
     fetchJobFairs();
