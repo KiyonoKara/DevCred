@@ -2,18 +2,25 @@ import mongoose from 'mongoose';
 import ChatModel from '../../models/chat.model';
 import MessageModel from '../../models/messages.model';
 import UserModel from '../../models/users.model';
+import * as messageService from '../../services/message.service';
 import {
   saveChat,
   addMessageToChat,
   getChat,
   addParticipantToChat,
   getChatsByParticipants,
+  deleteDMForUser,
+  resetDeletionTracking,
+  deleteDMCompletely,
+  getDMsByUserWithoutDeleted,
+  canReceiveDirectMessages,
 } from '../../services/chat.service';
 import { Chat, DatabaseChat } from '../../types/types';
 import { user } from '../mockData.models';
 
 describe('Chat service', () => {
   beforeEach(() => {
+    // clean all mocks
     jest.clearAllMocks();
   });
 
@@ -164,6 +171,7 @@ describe('Chat service', () => {
 
   describe('addParticipantToChat', () => {
     it('should add a participant if user exists', async () => {
+      // mock the user lookup to return a valid user
       jest.spyOn(UserModel, 'findOne').mockResolvedValueOnce({
         _id: new mongoose.Types.ObjectId(),
         username: 'testUser',
@@ -364,6 +372,310 @@ describe('Chat service', () => {
 
       const result = await getChatsByParticipants(participantsUsedAsInput);
       expect(result).toHaveLength(0);
+    });
+  });
+
+  describe('deleteDMForUser', () => {
+    const mockChatId = new mongoose.Types.ObjectId().toString();
+
+    it('should mark chat as deleted by user successfully', async () => {
+      // mock the current date
+      const deletedAt = new Date();
+      const updatedChat = {
+        _id: new mongoose.Types.ObjectId(),
+        participants: ['user1', 'user2'],
+        messages: [],
+        deletedBy: [{ username: 'user1', deletedAt }],
+      };
+
+      // check if the correct update object is used
+      jest.spyOn(ChatModel, 'findByIdAndUpdate').mockResolvedValueOnce(updatedChat as any);
+
+      const result = await deleteDMForUser(mockChatId, 'user1');
+
+      expect('error' in result).toBe(false);
+      if (!('error' in result)) {
+        expect(result.deletedBy).toHaveLength(1);
+        expect(result.deletedBy[0].username).toBe('user1');
+      }
+    });
+
+    it('should return error if chat not found', async () => {
+      jest.spyOn(ChatModel, 'findByIdAndUpdate').mockResolvedValueOnce(null);
+
+      const result = await deleteDMForUser(mockChatId, 'user1');
+
+      expect('error' in result).toBe(true);
+      if ('error' in result) {
+        expect(result.error).toContain('Chat not found');
+      }
+    });
+
+    it('should return error if deletion marking fails', async () => {
+      jest.spyOn(ChatModel, 'findByIdAndUpdate').mockRejectedValueOnce(new Error('Update failed'));
+
+      const result = await deleteDMForUser(mockChatId, 'user1');
+
+      expect('error' in result).toBe(true);
+      if ('error' in result) {
+        expect(result.error).toContain('Error deleting DM for user');
+      }
+    });
+  });
+
+  describe('resetDeletionTracking', () => {
+    const mockChatId = new mongoose.Types.ObjectId().toString();
+
+    it('should reset deletion tracking successfully', async () => {
+      const updatedChat = {
+        _id: new mongoose.Types.ObjectId(),
+        participants: ['user1', 'user2'],
+        messages: [],
+        deletedBy: [],
+      };
+
+      jest.spyOn(ChatModel, 'findByIdAndUpdate').mockResolvedValueOnce(updatedChat as any);
+
+      const result = await resetDeletionTracking(mockChatId);
+
+      expect('error' in result).toBe(false);
+      if (!('error' in result)) {
+        expect(result.deletedBy).toHaveLength(0);
+      }
+    });
+
+    it('should return error if chat not found', async () => {
+      jest.spyOn(ChatModel, 'findByIdAndUpdate').mockResolvedValueOnce(null);
+
+      const result = await resetDeletionTracking(mockChatId);
+
+      expect('error' in result).toBe(true);
+      if ('error' in result) {
+        expect(result.error).toContain('Chat not found');
+      }
+    });
+
+    it('should return error if reset fails', async () => {
+      // reset as in two users deleted the chat but then one user wants to restore it
+      jest.spyOn(ChatModel, 'findByIdAndUpdate').mockRejectedValueOnce(new Error('Update failed'));
+
+      const result = await resetDeletionTracking(mockChatId);
+
+      expect('error' in result).toBe(true);
+      if ('error' in result) {
+        expect(result.error).toContain('Error resetting deletion tracking');
+      }
+    });
+  });
+
+  describe('deleteDMCompletely', () => {
+    // if two users mutually delete a chat, it should be removed from the database entirely
+    const mockChatId = new mongoose.Types.ObjectId().toString();
+    const mockMessageId1 = new mongoose.Types.ObjectId();
+    const mockMessageId2 = new mongoose.Types.ObjectId();
+
+    it('should delete chat and all messages successfully', async () => {
+      const chatWithMessages = {
+        _id: new mongoose.Types.ObjectId(),
+        participants: ['user1', 'user2'],
+        messages: [mockMessageId1, mockMessageId2],
+        deletedBy: [],
+      };
+
+      jest.spyOn(ChatModel, 'findById').mockResolvedValueOnce(chatWithMessages as any);
+      jest.spyOn(messageService, 'deleteMessagesByIds').mockResolvedValueOnce({ success: true });
+      jest.spyOn(ChatModel, 'findByIdAndDelete').mockResolvedValueOnce(chatWithMessages as any);
+
+      const result = await deleteDMCompletely(mockChatId);
+
+      expect(result).toEqual({ success: true });
+      expect(messageService.deleteMessagesByIds).toHaveBeenCalledWith([
+        mockMessageId1.toString(),
+        mockMessageId2.toString(),
+      ]);
+    });
+
+    it('should handle chat with no messages', async () => {
+      const chatWithoutMessages = {
+        _id: new mongoose.Types.ObjectId(),
+        participants: ['user1', 'user2'],
+        messages: [],
+        deletedBy: [],
+      };
+
+      jest.spyOn(ChatModel, 'findById').mockResolvedValueOnce(chatWithoutMessages as any);
+      const deleteMessagesSpy = jest.spyOn(messageService, 'deleteMessagesByIds');
+      jest.spyOn(ChatModel, 'findByIdAndDelete').mockResolvedValueOnce(chatWithoutMessages as any);
+
+      const result = await deleteDMCompletely(mockChatId);
+
+      expect(result).toEqual({ success: true });
+      expect(deleteMessagesSpy).not.toHaveBeenCalled();
+    });
+
+    it('should return error if chat not found during fetch', async () => {
+      // mock the chat not being found
+      jest.spyOn(ChatModel, 'findById').mockResolvedValueOnce(null);
+
+      const result = await deleteDMCompletely(mockChatId);
+
+      expect('error' in result).toBe(true);
+      if ('error' in result) {
+        expect(result.error).toContain('Chat not found');
+      }
+    });
+
+    it('should return error if message deletion fails', async () => {
+      const chatWithMessages = {
+        _id: new mongoose.Types.ObjectId(),
+        participants: ['user1', 'user2'],
+        messages: [mockMessageId1],
+        deletedBy: [],
+      };
+
+      jest.spyOn(ChatModel, 'findById').mockResolvedValueOnce(chatWithMessages as any);
+      jest
+        .spyOn(messageService, 'deleteMessagesByIds')
+        .mockResolvedValueOnce({ error: 'Failed to delete messages' });
+
+      const result = await deleteDMCompletely(mockChatId);
+
+      expect('error' in result).toBe(true);
+      if ('error' in result) {
+        expect(result.error).toContain('Failed to delete messages');
+      }
+    });
+
+    it('should return error if chat deletion fails', async () => {
+      const chatWithMessages = {
+        _id: new mongoose.Types.ObjectId(),
+        participants: ['user1', 'user2'],
+        messages: [mockMessageId1],
+        deletedBy: [],
+      };
+
+      jest.spyOn(ChatModel, 'findById').mockResolvedValueOnce(chatWithMessages as any);
+      jest.spyOn(messageService, 'deleteMessagesByIds').mockResolvedValueOnce({ success: true });
+      jest.spyOn(ChatModel, 'findByIdAndDelete').mockResolvedValueOnce(null);
+
+      const result = await deleteDMCompletely(mockChatId);
+
+      expect('error' in result).toBe(true);
+      if ('error' in result) {
+        expect(result.error).toContain('Chat not found');
+      }
+    });
+
+    it('should return error if exception occurs', async () => {
+      jest.spyOn(ChatModel, 'findById').mockRejectedValueOnce(new Error('Database error'));
+
+      const result = await deleteDMCompletely(mockChatId);
+
+      expect('error' in result).toBe(true);
+      if ('error' in result) {
+        expect(result.error).toContain('Error deleting DM completely');
+      }
+    });
+  });
+
+  describe('getDMsByUserWithoutDeleted', () => {
+    // tests for retrieving chats not deleted by a specific user
+    it('should retrieve chats not deleted by user', async () => {
+      const mockChat = {
+        _id: new mongoose.Types.ObjectId(),
+        participants: ['user1', 'user2'],
+        messages: [],
+        deletedBy: [],
+      };
+
+      jest.spyOn(ChatModel, 'find').mockReturnValue({
+        lean: jest.fn().mockResolvedValue([mockChat]),
+      } as any);
+
+      const result = await getDMsByUserWithoutDeleted('user1');
+
+      expect(result).toHaveLength(1);
+      expect(ChatModel.find).toHaveBeenCalledWith({
+        'participants': 'user1',
+        'deletedBy.username': { $ne: 'user1' },
+      });
+    });
+
+    it('should return empty array if no chats found', async () => {
+      // mock no chats found error
+      jest.spyOn(ChatModel, 'find').mockReturnValue({
+        lean: jest.fn().mockResolvedValue(null),
+      } as any);
+
+      const result = await getDMsByUserWithoutDeleted('user1');
+
+      expect(result).toEqual([]);
+    });
+
+    it('should return empty array if error occurs', async () => {
+      // mock a database error
+      jest.spyOn(ChatModel, 'find').mockReturnValue({
+        lean: jest.fn().mockRejectedValue(new Error('Database error')),
+      } as any);
+
+      const result = await getDMsByUserWithoutDeleted('user1');
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('canReceiveDirectMessages', () => {
+    // check if a user can receive DMs based on their dmEnabled setting
+    it('should return true if user has dmEnabled set to true', async () => {
+      jest.spyOn(UserModel, 'findOne').mockResolvedValueOnce({
+        username: 'user1',
+        dmEnabled: true,
+      } as any);
+
+      const result = await canReceiveDirectMessages('user1');
+
+      expect(result).toBe(true);
+    });
+
+    it('should return true if dmEnabled is not set (default)', async () => {
+      // dmEnabled defaults to true if not set
+      jest.spyOn(UserModel, 'findOne').mockResolvedValueOnce({
+        username: 'user1',
+      } as any);
+
+      const result = await canReceiveDirectMessages('user1');
+
+      expect(result).toBe(true);
+    });
+
+    it('should return false if user has dmEnabled set to false', async () => {
+      // dmEnabled set to false
+      jest.spyOn(UserModel, 'findOne').mockResolvedValueOnce({
+        username: 'user1',
+        dmEnabled: false,
+      } as any);
+
+      const result = await canReceiveDirectMessages('user1');
+
+      expect(result).toBe(false);
+    });
+
+    it('should return false if user not found', async () => {
+      // user not found
+      jest.spyOn(UserModel, 'findOne').mockResolvedValueOnce(null);
+
+      const result = await canReceiveDirectMessages('user1');
+
+      expect(result).toBe(false);
+    });
+
+    it('should return false if error occurs', async () => {
+      // database error occurs
+      jest.spyOn(UserModel, 'findOne').mockRejectedValueOnce(new Error('Database error'));
+
+      const result = await canReceiveDirectMessages('user1');
+
+      expect(result).toBe(false);
     });
   });
 });
