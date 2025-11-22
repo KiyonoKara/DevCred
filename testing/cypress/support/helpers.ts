@@ -392,3 +392,74 @@ export const verifyCollectionPageDetails = (name: string, username?: string) => 
     cy.get('.collection-meta').should('contain', username);
   }
 };
+
+/**
+ * Safely logs out the current user
+ */
+export const logoutUser = () => {
+  cy.window().then((win) => {
+    if (win && win.document) {
+      cy.contains('Log out').click();
+      cy.wait(500); // Wait for logout to complete
+    }
+  });
+};
+
+/**
+ * Navigates to the Direct Messages page
+ */
+export const goToDirectMessages = () => {
+  cy.contains('Messaging').click();
+  cy.contains('Direct Messages').click();
+  cy.url().should('include', '/messaging/direct-message');
+};
+
+/**
+ * Creates a new DM chat with a specified user
+ * @param targetUsername - The username to start a chat with
+ */
+export const createDMChat = (targetUsername: string) => {
+  cy.contains('Start a Chat').click();
+  cy.contains(targetUsername).click();
+  cy.contains('Create New Chat').click();
+};
+
+/**
+ * Sends a message in the currently active DM chat
+ * @param messageText - The message content to send
+ */
+export const sendDMMessage = (messageText: string) => {
+  cy.get('.custom-input').type(messageText);
+  cy.contains('Send').click();
+};
+
+/**
+ * Deletes the currently active DM chat
+ * @param confirmDeletion - Whether to confirm the deletion (default: true)
+ */
+export const deleteActiveDMChat = (confirmDeletion: boolean = true) => {
+  cy.get('.delete-chat-button').click();
+  if (confirmDeletion) {
+    cy.on('window:confirm', () => true);
+  } else {
+    cy.on('window:confirm', () => false);
+  }
+};
+
+/**
+ * Verifies the number of DM conversations in the chat list
+ * @param expectedCount - The expected number of conversations
+ */
+export const verifyDMConversationCount = (expectedCount: number) => {
+  cy.get('.chats-list h3').should('contain', `Your Conversations (${expectedCount})`);
+};
+
+/**
+ * Selects a DM chat from the chat list by username
+ * @param username - The username of the chat participant
+ */
+export const selectDMChatByUsername = (username: string) => {
+  cy.get('.chats-list').within(() => {
+    cy.contains(username).click();
+  });
+};
