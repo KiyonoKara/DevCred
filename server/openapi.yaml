@@ -1189,6 +1189,86 @@ paths:
                 $ref: '#/components/schemas/SimpleErrorBody'
         '500':
           $ref: '#/components/responses/ErrorResponse'
+    put:
+      tags:
+        - Job Fairs
+      summary: Update job fair information (host only).
+      parameters:
+        - in: path
+          name: jobFairId
+          required: true
+          schema:
+            type: string
+            format: object-id
+          description: The ID of the job fair
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - hostUsername
+              properties:
+                hostUsername:
+                  type: string
+                  description: The username of the job fair host
+                title:
+                  type: string
+                  description: The job fair title
+                description:
+                  type: string
+                  description: The job fair description
+                startTime:
+                  type: string
+                  format: date-time
+                  description: The start time of the job fair
+                endTime:
+                  type: string
+                  format: date-time
+                  description: The end time of the job fair
+                visibility:
+                  type: string
+                  enum: [public, invite-only]
+                  description: The visibility setting
+                codingTournamentEnabled:
+                  type: boolean
+                  description: Whether coding tournament is enabled
+                overviewMessage:
+                  type: string
+                  description: Overview message for the job fair
+                invitedUsers:
+                  type: array
+                  items:
+                    type: string
+                  description: List of invited usernames
+      responses:
+        '200':
+          description: Job fair successfully updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobFair'
+        '401':
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '403':
+          description: Only the host can update the job fair.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '404':
+          description: Job fair not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
 
   /jobfair/{jobFairId}/status:
     patch:
@@ -1211,11 +1291,15 @@ paths:
               type: object
               required:
                 - status
+                - hostUsername
               properties:
                 status:
                   type: string
                   enum: [upcoming, live, ended]
                   description: The new status for the job fair
+                hostUsername:
+                  type: string
+                  description: The username of the job fair host
       responses:
         '200':
           description: Job fair status successfully updated.
@@ -1387,6 +1471,72 @@ paths:
                 $ref: '#/components/schemas/SimpleErrorBody'
         '404':
           description: Job fair not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+
+  /jobfair/{jobFairId}/submission:
+    post:
+      tags:
+        - Job Fairs
+      summary: Submit a coding challenge solution to a job fair tournament.
+      parameters:
+        - in: path
+          name: jobFairId
+          required: true
+          schema:
+            type: string
+            format: object-id
+          description: The ID of the job fair
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - code
+                - language
+                - submittedAt
+                - submittedBy
+              properties:
+                code:
+                  type: string
+                  description: The code submission
+                language:
+                  type: string
+                  description: The programming language
+                submittedAt:
+                  type: string
+                  format: date-time
+                  description: The timestamp of submission
+                submittedBy:
+                  type: string
+                  description: The username of the submitter
+      responses:
+        '200':
+          description: Coding challenge successfully submitted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobFair'
+        '401':
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '403':
+          description: Only participants can submit code or recruiters cannot submit.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleErrorBody'
+        '404':
+          description: User or job fair not found.
           content:
             application/json:
               schema:

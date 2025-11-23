@@ -8,12 +8,13 @@ const saveMessageSpy = jest.spyOn(util, 'saveMessage');
 const getMessagesSpy = jest.spyOn(util, 'getMessages');
 
 describe('POST /addMessage', () => {
+  // test adding a new message
   it('should add a new message', async () => {
     const validId = new mongoose.Types.ObjectId();
 
     const requestMessage: Message = {
-      msg: 'Hello',
-      msgFrom: 'User1',
+      msg: 'Join the Boston Career Forum 2025!',
+      msgFrom: 'bostoncareerforum',
       msgDateTime: new Date('2024-06-04'),
       type: 'global',
     };
@@ -40,6 +41,7 @@ describe('POST /addMessage', () => {
   });
 
   it('should return bad request error if messageToAdd is missing', async () => {
+    // messageToAdd is required
     const response = await supertest(app).post('/api/message/addMessage').send({});
 
     const openApiError = JSON.parse(response.text);
@@ -49,6 +51,7 @@ describe('POST /addMessage', () => {
   });
 
   it('should return bad message body error if msg is empty', async () => {
+    // msg cannot be empty
     const badMessage = {
       msg: '',
       msgFrom: 'User1',
@@ -66,6 +69,7 @@ describe('POST /addMessage', () => {
   });
 
   it('should return bad message body error if msg is missing', async () => {
+    // msg is required
     const badMessage = {
       msgFrom: 'User1',
       msgDateTime: new Date('2024-06-04'),
@@ -82,8 +86,9 @@ describe('POST /addMessage', () => {
   });
 
   it('should return bad message body error if msgFrom is empty', async () => {
+    // msgFrom is required
     const badMessage = {
-      msg: 'Hello',
+      msg: 'whats up my sir',
       msgFrom: '',
       msgDateTime: new Date('2024-06-04'),
     };
@@ -99,8 +104,9 @@ describe('POST /addMessage', () => {
   });
 
   it('should return bad message body error if msgFrom is missing', async () => {
+    // msgFrom is required
     const badMessage = {
-      msg: 'Hello',
+      msg: 'the sky is blue or is it',
       msgDateTime: new Date('2024-06-04'),
     };
 
@@ -115,9 +121,10 @@ describe('POST /addMessage', () => {
   });
 
   it('should return bad message body error if msgDateTime is missing', async () => {
+    // msgDateTime is required
     const badMessage = {
-      msg: 'Hello',
-      msgFrom: 'User1',
+      msg: 'Job job job',
+      msgFrom: 'thejob',
     };
 
     const response = await supertest(app)
@@ -131,9 +138,11 @@ describe('POST /addMessage', () => {
   });
 
   it('should return bad message body error if msgDateTime is null', async () => {
+    // msgDateTime cannot be null
+    // check openapi validation as well
     const badMessage = {
-      msg: 'Hello',
-      msgFrom: 'User1',
+      msg: 'hi',
+      msgFrom: 'maybeguest1',
       msgDateTime: null,
     };
 
@@ -148,11 +157,12 @@ describe('POST /addMessage', () => {
   });
 
   it('should return internal server error if saveMessage fails', async () => {
+    // simulate saveMessage failing to save the message to the database
     const validId = new mongoose.Types.ObjectId();
     const message = {
       _id: validId,
-      msg: 'Hello',
-      msgFrom: 'User1',
+      msg: 'dont say it dont say it',
+      msgFrom: 'usr678',
       msgDateTime: new Date('2024-06-04'),
     };
 
@@ -169,6 +179,7 @@ describe('POST /addMessage', () => {
 
 describe('GET /getMessages', () => {
   it('should return all messages', async () => {
+    // get all the messages
     const message1: Message = {
       msg: 'Hello',
       msgFrom: 'User1',
