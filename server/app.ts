@@ -209,9 +209,17 @@ app.use('/api/jobapplication', jobApplicationController(socket));
 app.use('/api/metrics', userMetricsController(socket));
 app.use('/api/notification', notificationController(socket));
 
-const openApiDocument = yaml.parse(fs.readFileSync('./openapi.yaml', 'utf8'));
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiDocument));
-console.log('Swagger UI is available at /api/docs');
+// Setup Swagger UI docs if not in test environment
+try {
+  const openApiPath = './openapi.yaml';
+  if (fs.existsSync(openApiPath)) {
+    const openApiDocument = yaml.parse(fs.readFileSync(openApiPath, 'utf8'));
+    app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiDocument));
+    console.log('Swagger UI is available at /api/docs');
+  }
+} catch (e) {
+  console.error('Failed to load OpenAPI documentation:', e);
+}
 
 // Export the app instance
 export { app, server, startServer };

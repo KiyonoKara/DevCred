@@ -25,6 +25,8 @@ const populateDocumentSpy = jest.spyOn(databaseUtil, 'populateDocument');
 const getDMsByUserWithoutDeletedSpy = jest.spyOn(chatService, 'getDMsByUserWithoutDeleted');
 const createNotificationSpy = jest.spyOn(notificationService, 'createNotification');
 const resetDeletionTrackingSpy = jest.spyOn(chatService, 'resetDeletionTracking');
+const deleteDMForUserSpy = jest.spyOn(chatService, 'deleteDMForUser');
+const deleteDMCompletelySpy = jest.spyOn(chatService, 'deleteDMCompletely');
 
 /**
  * Sample test suite for the /chat endpoints
@@ -683,6 +685,221 @@ describe('Chat Controller', () => {
       expect(populateDocumentSpy).toHaveBeenCalledWith(chats[0]._id.toString(), 'chat');
       expect(response.status).toBe(500);
       expect(response.text).toBe('Error retrieving chat: Failed populating all retrieved chats');
+    });
+  });
+
+  describe('DELETE /chat/:chatId', () => {
+    const mockChatId = new mongoose.Types.ObjectId();
+
+    it('should delete DM for user and return success (not fully deleted)', async () => {
+      const mockChat: DatabaseChat = {
+        _id: mockChatId,
+        participants: ['user1', 'user2'],
+        messages: [],
+        deletedBy: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const updatedChat: DatabaseChat = {
+        ...mockChat,
+        deletedBy: [{ username: 'user1', deletedAt: new Date() }],
+        updatedAt: new Date(),
+      };
+
+      getChatSpy.mockResolvedValueOnce(mockChat);
+      deleteDMForUserSpy.mockResolvedValueOnce(updatedChat);
+
+      const response = await supertest(app)
+        .delete(`/api/chat/${mockChatId}`)
+        .send({ username: 'user1' });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        success: true,
+        deletedBy: ['user1'],
+      });
+      expect(deleteDMForUserSpy).toHaveBeenCalledWith(mockChatId.toString(), 'user1');
+    });
+
+    it('should delete DM completely when both users have deleted', async () => {
+      const mockChat: DatabaseChat = {
+        _id: mockChatId,
+        participants: ['user1', 'user2'],
+        messages: [],
+        deletedBy: [{ username: 'user1', deletedAt: new Date() }],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const updatedChat: DatabaseChat = {
+        ...mockChat,
+        deletedBy: [
+          { username: 'user1', deletedAt: new Date() },
+          { username: 'user2', deletedAt: new Date() },
+        ],
+        updatedAt: new Date(),
+      };
+
+      getChatSpy.mockResolvedValueOnce(mockChat);
+      deleteDMForUserSpy.mockResolvedValueOnce(updatedChat);
+      deleteDMCompletelySpy.mockResolvedValueOnce({ success: true });
+
+      const response = await supertest(app)
+        .delete(`/api/chat/${mockChatId}`)
+        .send({ username: 'user2' });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        success: true,
+        deletedBy: ['user1', 'user2'],
+      });
+      expect(deleteDMCompletelySpy).toHaveBeenCalledWith(mockChatId.toString());
+    });
+
+    it('should return 500 if chat not found', async () => {
+      getChatSpy.mockResolvedValueOnce({ error: 'Chat not found' });
+
+      const response = await supertest(app)
+        .delete(`/api/chat/${mockChatId}`)
+        .send({ username: 'user1' });
+
+      expect(response.status).toBe(500);
+      expect(response.text).toContain('Chat not found');
+    });
+
+    it('should return 500 if deleteDMForUser fails', async () => {
+      const mockChat: DatabaseChat = {
+        _id: mockChatId,
+        participants: ['user1', 'user2'],
+        messages: [],
+        deletedBy: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      getChatSpy.mockResolvedValueOnce(mockChat);
+      deleteDMForUserSpy.mockResolvedValueOnce({ error: 'Failed to mark as deleted' });
+
+      const response = await supertest(app)
+        .delete(`/api/chat/${mockChatId}`)
+        .send({ username: 'user1' });
+
+      expect(response.status).toBe(500);
+      expect(response.text).toContain('Failed to mark as deleted');
+    });
+
+    it('should return 500 if deleteDMCompletely fails', async () => {
+      const mockChat: DatabaseChat = {
+        _id: mockChatId,
+        participants: ['user1', 'user2'],
+        messages: [],
+        deletedBy: [{ username: 'user1', deletedAt: new Date() }],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const updatedChat: DatabaseChat = {
+        ...mockChat,
+        deletedBy: [
+          { username: 'user1', deletedAt: new Date() },
+          { username: 'user2', deletedAt: new Date() },
+        ],
+        updatedAt: new Date(),
+      };
+
+      getChatSpy.mockResolvedValueOnce(mockChat);
+      deleteDMForUserSpy.mockResolvedValueOnce(updatedChat);
+      deleteDMCompletelySpy.mockResolvedValueOnce({ error: 'Failed to delete completely' });
+
+      const response = await supertest(app)
+        .delete(`/api/chat/${mockChatId}`)
+        .send({ username: 'user2' });
+
+      expect(response.status).toBe(500);
+      expect(response.text).toContain('Failed to delete completely');
+    });
+  });
+
+  describe('GET /chat/:chatId/canDelete', () => {
+    const mockChatId = new mongoose.Types.ObjectId();
+
+    it('should return canDelete true when both users deleted', async () => {
+      const mockChat: DatabaseChat = {
+        _id: mockChatId,
+        participants: ['user1', 'user2'],
+        messages: [],
+        deletedBy: [
+          { username: 'user1', deletedAt: new Date() },
+          { username: 'user2', deletedAt: new Date() },
+        ],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      getChatSpy.mockResolvedValueOnce(mockChat);
+
+      const response = await supertest(app).get(`/api/chat/${mockChatId}/canDelete`);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        canDelete: true,
+        deletedBy: ['user1', 'user2'],
+        participants: ['user1', 'user2'],
+      });
+    });
+
+    it('should return canDelete false when only one user deleted', async () => {
+      const mockChat: DatabaseChat = {
+        _id: mockChatId,
+        participants: ['user1', 'user2'],
+        messages: [],
+        deletedBy: [{ username: 'user1', deletedAt: new Date() }],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      getChatSpy.mockResolvedValueOnce(mockChat);
+
+      const response = await supertest(app).get(`/api/chat/${mockChatId}/canDelete`);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        canDelete: false,
+        deletedBy: ['user1'],
+        participants: ['user1', 'user2'],
+      });
+    });
+
+    it('should return canDelete false when no users deleted', async () => {
+      const mockChat: DatabaseChat = {
+        _id: mockChatId,
+        participants: ['user1', 'user2'],
+        messages: [],
+        deletedBy: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      getChatSpy.mockResolvedValueOnce(mockChat);
+
+      const response = await supertest(app).get(`/api/chat/${mockChatId}/canDelete`);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        canDelete: false,
+        deletedBy: [],
+        participants: ['user1', 'user2'],
+      });
+    });
+
+    it('should return 500 if chat not found', async () => {
+      getChatSpy.mockResolvedValueOnce({ error: 'Chat not found' });
+
+      const response = await supertest(app).get(`/api/chat/${mockChatId}/canDelete`);
+
+      expect(response.status).toBe(500);
+      expect(response.text).toContain('Chat not found');
     });
   });
 
