@@ -8,6 +8,7 @@ import {
 } from '../types/types';
 import { addMessageToChat, getChatsByParticipants, saveChat } from './chat.service';
 import { saveMessage } from './message.service';
+import { _incrementUserPoint } from './user.service';
 
 /**
  * Gets the count of applications for a specific job posting.
@@ -118,6 +119,11 @@ export const createApplication = async (
     } else {
       await addMessageToChat(soloChat._id.toString(), introductionMessage._id.toString());
       await addMessageToChat(soloChat._id.toString(), resumeMessage._id.toString());
+    }
+
+    const userPointIncrement = await _incrementUserPoint(username);
+    if (!userPointIncrement || 'error' in userPointIncrement) {
+      throw new Error(userPointIncrement.error);
     }
 
     return newApplication;

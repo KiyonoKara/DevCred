@@ -2910,6 +2910,8 @@ components:
             - private
             - public-metrics-only
             - public-full
+        userPoints:
+          type: string
 
     UserActivitySummary:
       type: object

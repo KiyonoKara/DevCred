@@ -1,6 +1,6 @@
-import './index.css';
 import { Link } from 'react-router-dom';
 import useUserActivityPage from '../../../hooks/useUserActivityPage';
+import './index.css';
 import PaginationControls from './PaginationControls';
 
 const UserActivityPage = () => {
@@ -54,6 +54,7 @@ const UserActivityPage = () => {
               Joined {new Date(profile.dateJoined).toLocaleDateString()}
             </p>
           )}
+          <p className='user-activity-joined'>User Points: {activity.userPoints || 0}</p>
           <p className='user-activity-bio'>
             {profile.biography?.trim() ? profile.biography : 'No biography available.'}
           </p>

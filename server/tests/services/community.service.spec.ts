@@ -1,17 +1,26 @@
 import mongoose from 'mongoose';
 import CommunityModel from '../../models/community.model';
+import UserModel from '../../models/users.model';
 import {
-  getCommunity,
-  getAllCommunities,
-  toggleCommunityMembership,
   createCommunity,
   deleteCommunity,
+  getAllCommunities,
+  getCommunity,
+  toggleCommunityMembership,
 } from '../../services/community.service';
 import { Community, DatabaseCommunity } from '../../types/types';
 
 describe('Community Service', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+
+    const mockUser = {
+      username: 'testUser123',
+      points: 0,
+    };
+    jest
+      .spyOn(UserModel, 'findOneAndUpdate')
+      .mockResolvedValueOnce(mockUser as unknown as ReturnType<typeof UserModel.findOneAndUpdate>);
   });
 
   // Mock community data with admin as participant

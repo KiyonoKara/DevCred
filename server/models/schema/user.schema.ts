@@ -52,6 +52,11 @@ const userSchema: Schema = new Schema(
       enum: ['recruiter', 'talent'],
       default: 'talent',
     },
+    points: {
+      type: Number,
+      default: 0,
+      required: false,
+    },
     notificationPreferences: {
       enabled: {
         type: Boolean,
@@ -63,7 +68,7 @@ const userSchema: Schema = new Schema(
       },
       summaryTime: {
         type: String,
-        default: '09:00', // Default 9 AM
+        default: '09:00',
       },
       dmEnabled: {
         type: Boolean,

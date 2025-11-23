@@ -1,16 +1,16 @@
-import UserModel from '../models/users.model';
-import QuestionModel from '../models/questions.model';
 import AnswerModel from '../models/answers.model';
+import QuestionModel from '../models/questions.model';
 import TagModel from '../models/tags.model';
+import UserModel from '../models/users.model';
 import {
+  DatabaseAnswer,
+  DatabaseQuestion,
+  DatabaseTag,
   SafeDatabaseUser,
   User,
   UserCredentials,
   UserResponse,
   UsersResponse,
-  DatabaseQuestion,
-  DatabaseAnswer,
-  DatabaseTag,
 } from '../types/types';
 
 // TODO: Add in recruiter validation checks + Ability to sign up as recruiter
@@ -39,6 +39,7 @@ export const saveUser = async (user: User): Promise<UserResponse> => {
       userType: resultObj.userType,
       profileVisibility: resultObj.profileVisibility,
       dmEnabled: resultObj.dmEnabled,
+      points: 0,
       notificationPreferences: resultObj.notificationPreferences || {
         enabled: true,
         summarized: false,
@@ -93,6 +94,7 @@ export const getUserByUsername = async (username: string): Promise<UserResponse>
       notificationPreferences: user.notificationPreferences,
       activityHistory: user.activityHistory || [],
       activeResumeId: user.activeResumeId,
+      points: 0,
     };
 
     return safeUser;
@@ -176,6 +178,7 @@ export const loginUser = async (loginCredentials: UserCredentials): Promise<User
       notificationPreferences: user.notificationPreferences,
       activityHistory: user.activityHistory || [],
       activeResumeId: user.activeResumeId,
+      points: 0,
     };
 
     return safeUser;
@@ -315,6 +318,7 @@ export interface UserActivityResult {
   isOwner: boolean;
   questions: UserActivityQuestionSummary[];
   answers: UserActivityAnswerSummary[];
+  userPoints: Number;
 }
 
 const mapQuestionSummary = (question: QuestionWithTags): UserActivityQuestionSummary => {
@@ -369,7 +373,7 @@ export const getUserActivityData = async (
 ): Promise<UserActivityResult | { error: string; statusCode?: number }> => {
   try {
     const userDoc = await UserModel.findOne({ username })
-      .select('username biography dateJoined profileVisibility')
+      .select('username biography dateJoined profileVisibility points')
       .lean();
 
     if (!userDoc) {
@@ -403,6 +407,7 @@ export const getUserActivityData = async (
         isOwner,
         questions: [],
         answers: [],
+        userPoints: userDoc.points,
       };
     }
 
@@ -471,6 +476,7 @@ export const getUserActivityData = async (
       isOwner,
       questions: questionSummaries,
       answers: answerSummaries,
+      userPoints: userDoc.points,
     };
   } catch (error) {
     return { error: `Error occurred when retrieving user activity: ${error}` };
@@ -510,5 +516,26 @@ export const getUserProfileVisibility = async (
   } catch (error) {
     // Default to private on error for privacy
     return 'private';
+  }
+};
+
+/**
+ * Internal helper method to increment the user points for a user.
+ * @param username Username of user to increment points for
+ */
+export const _incrementUserPoint = async (username: string): Promise<UserResponse> => {
+  try {
+    const user = await UserModel.findOneAndUpdate(
+      { username: username },
+      { $inc: { points: 1 } },
+      { new: true },
+    );
+    if (!user) {
+      console.log('CRASHING OUT');
+      throw new Error('Answering user not Found');
+    }
+    return user;
+  } catch (err) {
+    return { error: 'Answering user not Found' };
   }
 };

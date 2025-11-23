@@ -1,6 +1,7 @@
 import mongoose, { Query } from 'mongoose';
 import UserModel from '../../models/users.model';
 import {
+  _incrementUserPoint,
   deleteUserByUsername,
   getUserByUsername,
   getUsersList,
@@ -9,7 +10,7 @@ import {
   updateUser,
 } from '../../services/user.service';
 import { SafeDatabaseUser, User, UserCredentials } from '../../types/types';
-import { user, safeUser } from '../mockData.models';
+import { safeUser, user } from '../mockData.models';
 
 describe('User model', () => {
   beforeEach(() => {
@@ -266,6 +267,7 @@ describe('updateUser', () => {
     username: user.username,
     userType: 'talent',
     dateJoined: user.dateJoined,
+    points: 0,
   };
 
   const updates: Partial<User> = {
@@ -351,5 +353,48 @@ describe('updateUser', () => {
     const updatedError = await updateUser(user.username, biographyUpdates);
 
     expect('error' in updatedError).toBe(true);
+  });
+});
+
+describe('updateUser', () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+  });
+
+  const updatedUser: User = {
+    ...user,
+    password: 'newPassword',
+  };
+
+  const safeUpdatedUser: SafeDatabaseUser = {
+    _id: new mongoose.Types.ObjectId(),
+    username: user.username,
+    userType: 'talent',
+    dateJoined: user.dateJoined,
+    points: 1,
+  };
+
+  it('should return the updated user point count successfully', async () => {
+    jest
+      .spyOn(UserModel, 'findOneAndUpdate')
+      .mockReturnValue(safeUpdatedUser as unknown as Query<SafeDatabaseUser, typeof UserModel>);
+
+    const result = (await _incrementUserPoint(user.username)) as SafeDatabaseUser;
+
+    expect(result.points).toEqual(1);
+    expect(result.username).toEqual(user.username);
+    expect(result.username).toEqual(updatedUser.username);
+    expect(result.dateJoined).toEqual(user.dateJoined);
+    expect(result.dateJoined).toEqual(updatedUser.dateJoined);
+  });
+
+  it('should catch the unsuccessful update of a user not in the database', async () => {
+    jest.spyOn(UserModel, 'findOneAndUpdate').mockRejectedValue({
+      error: 'Answering user not Found',
+    });
+
+    const result = await _incrementUserPoint(user.username);
+
+    expect(result).toHaveProperty('error');
   });
 });

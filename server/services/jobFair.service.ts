@@ -1,7 +1,8 @@
 import JobFairModel from '../models/jobFair.model';
 import UserModel from '../models/users.model';
-import { JobFair, JobFairResponse, DatabaseJobFair, Message } from '../types/types';
+import { DatabaseJobFair, JobFair, JobFairResponse, Message } from '../types/types';
 import { saveMessage } from './message.service';
+import { _incrementUserPoint } from './user.service';
 
 /**
  * Creates a new job fair.
@@ -150,6 +151,12 @@ export const joinJobFair = async (
     // Check if job fair exists
     if (!jobFair) {
       return { error: 'Job fair not found' };
+    }
+
+    // Update user points for joining job fairs
+    const user = await _incrementUserPoint(username);
+    if (!user || 'error' in user) {
+      throw new Error(user.error);
     }
 
     // Check if job fair is accessible to the user
