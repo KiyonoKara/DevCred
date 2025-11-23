@@ -36,7 +36,7 @@ export interface User extends UserCredentials {
   activityHistory?: string[];
   activeResumeId?: string;
   notificationPreferences?: NotificationPreferences;
-  points: Number;
+  points: number;
 }
 
 /**
