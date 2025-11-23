@@ -39,6 +39,8 @@ export type MessageResponse = DatabaseMessage | { error: string };
  */
 export interface AddMessageRequest extends Request {
   body: {
-    messageToAdd: Omit<Message, 'type'>;
+    messageToAdd: Omit<Message, 'type'> & {
+      type?: 'global' | 'direct' | 'resume' | 'application';
+    };
   };
 }

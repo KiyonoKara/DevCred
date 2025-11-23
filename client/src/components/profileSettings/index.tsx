@@ -2,8 +2,8 @@
 import * as React from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import './index.css';
 import useProfileSettings from '../../hooks/useProfileSettings';
+import './index.css';
 
 const ProfileSettings: React.FC = () => {
   const {
@@ -40,52 +40,18 @@ const ProfileSettings: React.FC = () => {
     resumes,
     resumesLoading,
     resumeActionLoading,
-    handleResumeUpload,
     handleResumeDownload,
     handleResumeDelete,
     handleSetActiveResume,
-    maxResumeSizeBytes,
+    selectedResumeFile,
+    makeActiveOnUpload,
+    setMakeActiveOnUpload,
+    resumeErrorMessage,
+    resumeSuccessMessage,
+    maxResumeSizeMB,
+    onResumeFileChange,
+    onResumeUploadClick,
   } = useProfileSettings();
-
-  const [selectedResumeFile, setSelectedResumeFile] = React.useState<File | null>(null);
-  const [makeActiveOnUpload, setMakeActiveOnUpload] = React.useState(true);
-  const [resumeErrorMessage, setResumeErrorMessage] = React.useState<string | null>(null);
-  const [resumeSuccessMessage, setResumeSuccessMessage] = React.useState<string | null>(null);
-
-  const maxResumeSizeMB = React.useMemo(
-    () => (maxResumeSizeBytes ? (maxResumeSizeBytes / (1024 * 1024)).toFixed(0) : '8'),
-    [maxResumeSizeBytes],
-  );
-
-  const onResumeFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0] ?? null;
-    setSelectedResumeFile(file);
-  };
-
-  const onResumeUploadClick = async () => {
-    if (!selectedResumeFile) {
-      return;
-    }
-
-    // Clear previous messages
-    setResumeErrorMessage(null);
-    setResumeSuccessMessage(null);
-
-    const didUpload = await handleResumeUpload(selectedResumeFile, makeActiveOnUpload);
-    if (didUpload) {
-      // Clear file preview and reset state on successful upload
-      setSelectedResumeFile(null);
-      setMakeActiveOnUpload(true);
-      setResumeSuccessMessage('Resume uploaded successfully!');
-    } else {
-      // Extract error from global errorMessage
-      if (errorMessage) {
-        setResumeErrorMessage(errorMessage);
-      } else {
-        setResumeErrorMessage('Failed to upload resume. Please try again.');
-      }
-    }
-  };
 
   if (loading) {
     return (

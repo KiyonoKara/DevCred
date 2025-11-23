@@ -1,10 +1,10 @@
 import mongoose, { Query } from 'mongoose';
 import UserModel from '../../models/users.model';
 import {
-  _incrementUserPoint,
   deleteUserByUsername,
   getUserByUsername,
   getUsersList,
+  incrementUserPoint,
   loginUser,
   saveUser,
   updateUser,
@@ -379,7 +379,7 @@ describe('updateUser', () => {
       .spyOn(UserModel, 'findOneAndUpdate')
       .mockReturnValue(safeUpdatedUser as unknown as Query<SafeDatabaseUser, typeof UserModel>);
 
-    const result = (await _incrementUserPoint(user.username)) as SafeDatabaseUser;
+    const result = (await incrementUserPoint(user.username)) as SafeDatabaseUser;
 
     expect(result.points).toEqual(1);
     expect(result.username).toEqual(user.username);
@@ -393,7 +393,7 @@ describe('updateUser', () => {
       error: 'Answering user not Found',
     });
 
-    const result = await _incrementUserPoint(user.username);
+    const result = await incrementUserPoint(user.username);
 
     expect(result).toHaveProperty('error');
   });

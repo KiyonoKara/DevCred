@@ -202,7 +202,6 @@ export const getJobPostings = async (
       };
     }
 
-    // TODO: does this type work?
     const query: Record<string, unknown> = {};
     // For talent users, only show active jobs that haven't expired
     query.active = true;
@@ -210,7 +209,7 @@ export const getJobPostings = async (
 
     // Apply location filter
     if (location) {
-      query.location = { $regex: location, $options: 'i' }; // Case-insensitive partial match
+      query.location = { $regex: location, $options: 'i' };
     }
 
     // Apply job type filter

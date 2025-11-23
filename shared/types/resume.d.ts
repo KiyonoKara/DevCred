@@ -19,6 +19,7 @@ export interface Resume {
   fileSize: number;
   uploadDate: Date;
   isActive: boolean;
+  isDMFile?: boolean;
 }
 
 /**
@@ -66,6 +67,7 @@ export interface UploadResumeRequest extends Request {
   body: {
     userId: string;
     isActive?: boolean;
+    isDMFile?: boolean;
   };
   file?: Express.Multer.File;
 }

@@ -11,7 +11,7 @@ import {
   PopulatedDatabaseQuestion,
   QuestionResponse,
 } from '../types/types';
-import { _incrementUserPoint } from './user.service';
+import { incrementUserPoint } from './user.service';
 
 /**
  * Records the most recent answer time for a given question based on its answers.
@@ -39,7 +39,7 @@ export const getMostRecentAnswerTime = (
  */
 export const saveAnswer = async (answer: Answer): Promise<AnswerResponse> => {
   try {
-    const user = await _incrementUserPoint(answer.ansBy);
+    const user = await incrementUserPoint(answer.ansBy);
     if ('error' in user) {
       throw new Error(user.error);
     }

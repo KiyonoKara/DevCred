@@ -318,7 +318,7 @@ export interface UserActivityResult {
   isOwner: boolean;
   questions: UserActivityQuestionSummary[];
   answers: UserActivityAnswerSummary[];
-  userPoints: Number;
+  userPoints: number;
 }
 
 const mapQuestionSummary = (question: QuestionWithTags): UserActivityQuestionSummary => {
@@ -523,7 +523,7 @@ export const getUserProfileVisibility = async (
  * Internal helper method to increment the user points for a user.
  * @param username Username of user to increment points for
  */
-export const _incrementUserPoint = async (username: string): Promise<UserResponse> => {
+export const incrementUserPoint = async (username: string): Promise<UserResponse> => {
   try {
     const user = await UserModel.findOneAndUpdate(
       { username: username },
@@ -531,7 +531,6 @@ export const _incrementUserPoint = async (username: string): Promise<UserRespons
       { new: true },
     );
     if (!user) {
-      console.log('CRASHING OUT');
       throw new Error('Answering user not Found');
     }
     return user;

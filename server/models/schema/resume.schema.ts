@@ -11,6 +11,7 @@ import { Schema } from 'mongoose';
  * - `contentType`: The MIME type of the file.
  * - `fileSize`: The size of the file in bytes.
  * - `uploadDate`: The date when the resume was uploaded.
+ * - `isDMFile`: Whether the file is a non-resume DM file.
  * - `isActive`: Whether this is the user's active resume.
  */
 const resumeSchema: Schema = new Schema(
@@ -39,6 +40,11 @@ const resumeSchema: Schema = new Schema(
     uploadDate: {
       type: Date,
       default: Date.now,
+    },
+    isDMFile: {
+      type: Boolean,
+      default: false,
+      required: false,
     },
     isActive: {
       type: Boolean,

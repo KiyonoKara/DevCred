@@ -24,7 +24,7 @@ import {
   sortQuestionsByUnanswered,
 } from '../utils/sort.util';
 import { checkTagInQuestion } from './tag.service';
-import { _incrementUserPoint } from './user.service';
+import { incrementUserPoint } from './user.service';
 
 /**
  * Checks if keywords exist in a question's title or text.
@@ -163,7 +163,7 @@ export const fetchAndIncrementQuestionViewsById = async (
  */
 export const saveQuestion = async (question: Question): Promise<QuestionResponse> => {
   try {
-    const user = await _incrementUserPoint(question.askedBy);
+    const user = await incrementUserPoint(question.askedBy);
     if (!user || 'error' in user) {
       throw new Error(user.error);
     }
@@ -245,7 +245,7 @@ export const addVoteToQuestion = async (
     }
 
     if (voteType === 'upvote') {
-      const user = await _incrementUserPoint(result.askedBy);
+      const user = await incrementUserPoint(result.askedBy);
       if (!user || 'error' in user) {
         throw new Error(user.error);
       }

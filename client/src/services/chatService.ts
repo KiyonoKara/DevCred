@@ -47,7 +47,7 @@ export const getChatById = async (chatID: ObjectId): Promise<PopulatedDatabaseCh
  * @throws Throws an error if the message could not be added to the chat.
  */
 export const sendMessage = async (
-  message: Omit<Message, 'type'>,
+  message: Message,
   chatID: ObjectId,
 ): Promise<PopulatedDatabaseChat> => {
   const res = await api.post(`${CHAT_API_URL}/${chatID}/addMessage`, message);

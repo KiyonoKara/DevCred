@@ -7,7 +7,7 @@ import {
   CommunityResponse,
   DatabaseCommunity,
 } from '../types/types';
-import { _incrementUserPoint } from './user.service';
+import { incrementUserPoint } from './user.service';
 
 interface QuestionCountAggregate {
   _id: Types.ObjectId;
@@ -246,7 +246,7 @@ export const createCommunity = async (communityData: Community): Promise<Communi
       visibility: communityData.visibility || 'PUBLIC',
     });
 
-    const user = await _incrementUserPoint(communityData.admin);
+    const user = await incrementUserPoint(communityData.admin);
     if (!user || 'error' in user) {
       throw new Error(user.error);
     }

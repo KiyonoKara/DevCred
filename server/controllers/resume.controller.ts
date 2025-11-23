@@ -1,26 +1,26 @@
 import express, { Response, Router } from 'express';
 import multer from 'multer';
 import {
-  FakeSOSocket,
-  UploadResumeRequest,
-  ResumeByIdRequest,
-  UserResumesRequest,
-  SetActiveResumeRequest,
-} from '../types/types';
-import {
-  createResume,
-  getUserResumes,
-  downloadResume,
+  createResumeOrPDF,
   deleteResume,
+  downloadResume,
+  getUserResumes,
   setActiveResume,
 } from '../services/resume.service';
+import {
+  FakeSOSocket,
+  ResumeByIdRequest,
+  SetActiveResumeRequest,
+  UploadResumeRequest,
+  UserResumesRequest,
+} from '../types/types';
 
 const resumeController = (socket: FakeSOSocket) => {
   const router: Router = express.Router();
 
   const upload = multer({
     storage: multer.memoryStorage(),
-    limits: { fileSize: 8 * 1024 * 1024 }, // 8MB
+    limits: { fileSize: 8 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
       if (file.mimetype === 'application/pdf') {
         cb(null, true);
@@ -39,9 +39,10 @@ const resumeController = (socket: FakeSOSocket) => {
    *
    * @returns A Promise that resolves to void.
    */
-  const uploadResumeRoute = async (req: UploadResumeRequest, res: Response): Promise<void> => {
+  const uploadPDFRoute = async (req: UploadResumeRequest, res: Response): Promise<void> => {
     const { userId } = req.body;
     let { isActive = true } = req.body;
+    const { isDMFile = false } = req.body;
     const file = req.file;
 
     // Get isActive from string to boolean if it came as a string from FormData
@@ -55,7 +56,7 @@ const resumeController = (socket: FakeSOSocket) => {
     }
 
     try {
-      const resume = await createResume({
+      const resume = await createResumeOrPDF({
         userId,
         fileName: file.originalname,
         fileData: file.buffer,
@@ -63,6 +64,7 @@ const resumeController = (socket: FakeSOSocket) => {
         fileSize: file.size,
         uploadDate: new Date(),
         isActive,
+        isDMFile: isDMFile,
       });
 
       if ('error' in resume) {
@@ -161,7 +163,7 @@ const resumeController = (socket: FakeSOSocket) => {
     }
   };
 
-  router.post('/upload', upload.single('resume'), uploadResumeRoute);
+  router.post('/upload', upload.single('resume'), uploadPDFRoute);
   router.get('/user/:userId', getUserResumesRoute);
   router.get('/download/:resumeId', downloadResumeRoute);
   router.delete('/:resumeId', deleteResumeRoute);

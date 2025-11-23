@@ -26,10 +26,15 @@ const DirectMessage = () => {
     handleCreateChat,
     handleDeleteDM,
     canSendDMToUser,
-    handleDownloadResume,
+    handleDownloadPDF,
     error,
     isLoading,
     targetUserDMEnabled,
+    showUploadPDFDropdown,
+    setShowUploadPDFDropdown,
+    selectedPDF,
+    onPDFChange,
+    onPDFUploadClick,
   } = useDirectMessage();
 
   const handleCreateChatWithCheck = async () => {
@@ -125,8 +130,8 @@ const DirectMessage = () => {
                       <button
                         type='button'
                         className='unstyled-button'
-                        onClick={() => handleDownloadResume(message)}>
-                        <MessageCard key={String(message._id)} message={message} />{' '}
+                        onClick={() => handleDownloadPDF(message)}>
+                        <MessageCard key={String(message._id)} message={message} />
                       </button>
                     ) : (
                       <MessageCard key={String(message._id)} message={message} />
@@ -152,6 +157,31 @@ const DirectMessage = () => {
                   Send
                 </button>
               </div>
+              <button
+                className='custom-button'
+                type='button'
+                onClick={() => setShowUploadPDFDropdown(!showUploadPDFDropdown)}>
+                {showUploadPDFDropdown ? 'Close PDF Upload Panel' : 'Upload PDF'}
+              </button>
+              {showUploadPDFDropdown && (
+                <>
+                  <h4>Upload PDF to Chat</h4>
+                  <div className='resume-upload'>
+                    <div className='file-input-wrapper'>
+                      <input type='file' accept='application/pdf' onChange={onPDFChange} />
+                    </div>
+                    <span className='file-input-label'>
+                      {selectedPDF ? selectedPDF.name : `Choose a PDF (max 8 MB)`}
+                    </span>
+                    <button
+                      className='button button-primary'
+                      onClick={onPDFUploadClick}
+                      disabled={!selectedPDF}>
+                      Upload PDF to Chat
+                    </button>
+                  </div>
+                </>
+              )}
             </>
           ) : (
             <div className='no-chat-selected'>

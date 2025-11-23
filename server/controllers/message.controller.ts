@@ -1,6 +1,6 @@
-import express, { Response, Request } from 'express';
-import { FakeSOSocket, AddMessageRequest } from '../types/types';
-import { saveMessage, getMessages } from '../services/message.service';
+import express, { Request, Response } from 'express';
+import { getMessages, saveMessage } from '../services/message.service';
+import { AddMessageRequest, FakeSOSocket } from '../types/types';
 
 const messageController = (socket: FakeSOSocket) => {
   const router = express.Router();
@@ -16,9 +16,8 @@ const messageController = (socket: FakeSOSocket) => {
    */
   const addMessageRoute = async (req: AddMessageRequest, res: Response): Promise<void> => {
     const { messageToAdd: msg } = req.body;
-
     try {
-      const msgFromDb = await saveMessage({ ...msg, type: 'global' });
+      const msgFromDb = await saveMessage({ ...msg, type: msg.type || 'global' });
 
       if ('error' in msgFromDb) {
         throw new Error(msgFromDb.error);

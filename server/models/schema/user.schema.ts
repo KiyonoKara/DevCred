@@ -12,6 +12,7 @@ import { Schema } from 'mongoose';
  * - `profileVisibility`: Controls what parts of the user's profile are visible to others.
  * - `dmEnabled`: Whether the user accepts direct messages, user is opted-in by default.
  * - `userType`: The type of the user signing up (recruiter/talent)
+ * - `points`: User activity points
  */
 const userSchema: Schema = new Schema(
   {
