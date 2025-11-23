@@ -28,7 +28,7 @@ describe('Question model', () => {
 
     const mockUser = {
       username: 'testUser123',
-      points: 0,
+      points: 1,
     };
     jest
       .spyOn(UserModel, 'findOneAndUpdate')
