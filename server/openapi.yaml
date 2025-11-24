@@ -1708,14 +1708,14 @@ paths:
         '500':
           $ref: '#/components/responses/ErrorResponse'
 
-  /jobapplication/{user}:
+  /jobapplication/user/{username}:
     get:
       tags:
         - Job Applications
       summary: Retrieve all applications for the given user.
       parameters:
         - in: path
-          name: user
+          name: username
           required: true
           schema:
             type: string
@@ -1736,7 +1736,7 @@ paths:
         '500':
           $ref: '#/components/responses/ErrorResponse'
 
-  /jobapplication/{jobId}/job:
+  /jobapplication/job/{jobId}:
     get:
       tags:
         - Job Applications
@@ -1749,7 +1749,7 @@ paths:
             type: string
           description: Job Id of job to fetch applications for.
         - in: query
-          name: username
+          name: requestor
           schema:
             type: string
           description: User requesting all job applications by job id.
@@ -3286,9 +3286,10 @@ components:
       properties:
         jobPosting:
           oneOf:
-            - $ref: '#/components/schemas/JobPosting'
+            - type: object
+              $ref: '#/components/schemas/JobPosting'
             - type: string
-              description: Object reference to the job posting associated to the application
+            - type: 'null'
         user:
           type: string
           description: Username of the job applicant

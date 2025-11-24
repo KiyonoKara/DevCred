@@ -384,13 +384,13 @@ describe('Job Posting Services', () => {
     });
 
     it('should return an empty array when neither keywords nor tags match any job', () => {
-      jest.spyOn(ParseUtil, 'parseTags').mockReturnValue(['fake-tag']);
-      jest.spyOn(ParseUtil, 'parseKeyword').mockReturnValue(['fake-keyword']);
+      jest.spyOn(ParseUtil, 'parseTags').mockReturnValue(['fakeTag']);
+      jest.spyOn(ParseUtil, 'parseKeyword').mockReturnValue(['fakeKeyword']);
 
       jest.spyOn(JobPostingService, 'checkKeywordInJobPosting').mockReturnValue(false);
       jest.spyOn(JobPostingService, 'checkTagInJobPosting').mockReturnValue(false);
 
-      const result = filterJobPostingsBySearch(jobList, 'nonexistent-keyword #nonexistent-tag');
+      const result = filterJobPostingsBySearch(jobList, 'nonexistentKeyword #nonexistentTag');
 
       expect(result).toEqual([]);
     });
@@ -419,7 +419,7 @@ describe('Job Posting Services', () => {
       expect(checkTagInJobPosting(mockJob, ['remote'])).toBe(true);
     });
 
-    it('should return true when a tag matches case-insensitively', () => {
+    it('should return true when a tag matches case insensitively', () => {
       const result = checkTagInJobPosting(mockJob, ['BACKEND']);
       expect(result).toBe(true);
     });
@@ -508,7 +508,7 @@ describe('Job Posting Services', () => {
       expect(result).toEqual({ error: 'User not found' });
     });
 
-    it('should fetch active, non-expired jobs with no extra filters', async () => {
+    it('should fetch active, non expired jobs with no extra filters', async () => {
       jest
         .spyOn(UserModel, 'findOne')
         .mockResolvedValue(mockUser as unknown as ReturnType<typeof UserModel.findOne>);

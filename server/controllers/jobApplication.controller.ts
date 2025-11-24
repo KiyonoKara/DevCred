@@ -25,12 +25,7 @@ const jobApplicationController = (socket: FakeSOSocket) => {
   const createApplicationRoute = async (req: Request, res: Response): Promise<void> => {
     const { jobId, username } = req.body;
 
-    if (!username) {
-      res.status(401).send('Authentication required');
-      return;
-    }
-
-    if (!jobId || !ObjectId.isValid(jobId)) {
+    if (!ObjectId.isValid(jobId)) {
       res.status(400).send('Invalid job ID');
       return;
     }
