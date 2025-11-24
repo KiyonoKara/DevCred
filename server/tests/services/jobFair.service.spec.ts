@@ -2,18 +2,18 @@ import mongoose from 'mongoose';
 import JobFairModel from '../../models/jobFair.model';
 import UserModel from '../../models/users.model';
 import {
+  addJobFairMessage,
   createJobFair,
-  getJobFairs,
+  deleteJobFair,
   getJobFairById,
-  updateJobFairStatus,
+  getJobFairs,
   joinJobFair,
   leaveJobFair,
-  addJobFairMessage,
   updateJobFair,
-  deleteJobFair,
+  updateJobFairStatus,
 } from '../../services/jobFair.service';
-import { JobFair, DatabaseJobFair, Message } from '../../types/types';
 import * as messageService from '../../services/message.service';
+import { DatabaseJobFair, JobFair, Message } from '../../types/types';
 
 describe('Job Fair Service', () => {
   beforeEach(() => {
@@ -380,6 +380,19 @@ describe('Job Fair Service', () => {
   });
 
   describe('joinJobFair', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      const mockUser = {
+        username: 'testUser123',
+        points: 1,
+      };
+      jest
+        .spyOn(UserModel, 'findOneAndUpdate')
+        .mockResolvedValueOnce(
+          mockUser as unknown as ReturnType<typeof UserModel.findOneAndUpdate>,
+        );
+    });
+
     const mockJobFair = {
       _id: new mongoose.Types.ObjectId(),
       title: 'Test Fair',

@@ -14,7 +14,6 @@ export const saveMessage = async (message: Message): Promise<MessageResponse> =>
     if (!user) {
       throw new Error('Message sender is invalid or does not exist.');
     }
-
     const result: DatabaseMessage = await MessageModel.create(message);
     return result;
   } catch (error) {

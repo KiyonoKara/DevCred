@@ -1,6 +1,5 @@
 .job_postings-page {
   padding: 2rem;
-  background-color: #f9f9f9;
   font-family: Arial, sans-serif;
   min-height: 100vh;
 }
@@ -14,11 +13,11 @@
 
 .job_postings-title {
   font-size: 2rem;
-  color: #333;
+  color: #006d2c;
 }
 
 .job_postings-create-btn {
-  background-color: #2563eb;
+  background-color: #006d2c;
   color: white;
   padding: 0.6rem 1.2rem;
   font-size: 1rem;
@@ -31,11 +30,11 @@
 }
 
 .job_postings-create-btn:hover {
-  background-color: #1e40af;
+  background-color: #01471d;
 }
 
 .job_postings-create-btn:active {
-  background-color: #163493;
+  background-color: #01471d;
 }
 
 .job_postings-list {
@@ -76,6 +75,31 @@
   box-orient: vertical;
 
   overflow: hidden;
+}
+
+.filter-control {
+  background-color: rgb(161, 217, 155, 0.8);
+  padding: 20px 80px 20px 80px;
+  margin-bottom: 30px;
+  border-radius: 15px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.filter-control input {
+  padding: 10px 10px 10px 10px;
+  border: white;
+  width: 20vw;
+  border-radius: 5px;
+}
+
+.filter-control select {
+  padding: 10px 10px 10px 10px;
+  border: #31a354;
+  background-color: #31a354;
+  color: white;
+  font-weight: bold;
+  border-radius: 5px;
 }
 
 .job_posting-privacy,

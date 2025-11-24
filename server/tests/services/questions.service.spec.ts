@@ -1,29 +1,38 @@
 import mongoose, { Query } from 'mongoose';
 import QuestionModel from '../../models/questions.model';
 import {
-  filterQuestionsBySearch,
-  filterQuestionsByAskedBy,
-  getQuestionsByOrder,
-  fetchAndIncrementQuestionViewsById,
-  saveQuestion,
   addVoteToQuestion,
+  fetchAndIncrementQuestionViewsById,
+  filterQuestionsByAskedBy,
+  filterQuestionsBySearch,
   getCommunityQuestions,
+  getQuestionsByOrder,
+  saveQuestion,
 } from '../../services/question.service';
 import { DatabaseQuestion, PopulatedDatabaseQuestion } from '../../types/types';
 import {
-  QUESTIONS,
-  tag1,
-  tag2,
   ans1,
   ans2,
   ans3,
   ans4,
   POPULATED_QUESTIONS,
+  QUESTIONS,
+  tag1,
+  tag2,
 } from '../mockData.models';
+import UserModel from '../../models/users.model';
 
 describe('Question model', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+
+    const mockUser = {
+      username: 'testUser123',
+      points: 1,
+    };
+    jest
+      .spyOn(UserModel, 'findOneAndUpdate')
+      .mockResolvedValueOnce(mockUser as unknown as ReturnType<typeof UserModel.findOneAndUpdate>);
   });
 
   describe('filterQuestionsBySearch', () => {

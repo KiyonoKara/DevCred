@@ -36,7 +36,7 @@ const JobFairListPage = () => {
             className='job-fair-create-btn'
             onClick={handleCreateJobFair}
             disabled={!isRecruiter}>
-            + Create Job Fair
+            Create Job Fair
           </button>
         )}
       </div>

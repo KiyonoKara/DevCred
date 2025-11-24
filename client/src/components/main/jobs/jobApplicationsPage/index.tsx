@@ -27,6 +27,7 @@ const TalentApplicationView = () => {
 
                 {job_application.jobPosting.active ? (
                   <button
+                    className='view-posting-button'
                     type='button'
                     onClick={() => handleViewJobPosting(job_application.jobPosting._id.toString())}>
                     View Job Posting

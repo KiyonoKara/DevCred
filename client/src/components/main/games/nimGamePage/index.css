@@ -8,7 +8,7 @@ body {
 
 /* Button Specific Classes */
 .btn-submit {
-  background: #007bff;
+  background: #006d2c;
   color: white;
   padding: 10px 20px;
   border: none;
@@ -19,7 +19,7 @@ body {
 }
 
 .btn-submit:hover {
-  background: #0056b3;
+  background: #01471d;
 }
 
 .btn-submit:disabled {

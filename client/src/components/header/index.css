@@ -4,40 +4,51 @@
   justify-content: space-around;
   height: 10%;
   width: 100%;
-  background: #dddddd;
+  background: #ffffff;
+  border-bottom-right-radius: 20px;
+  border-bottom-left-radius: 20px;
+}
+
+.header-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
 }
 
 .title {
   font-size: 32px;
   font-weight: 800;
+  color: #1f6a36;
 }
 
 #searchBar {
   flex: 0 0 auto;
-  width: clamp(160px, 12vw, 200px);
-  max-width: 200px;
+  width: 300px;
   padding: 10px 14px;
   border: 1px solid #bbbbbb;
   border-radius: 6px;
   font-size: 16px;
   background-color: #ffffff;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 #searchBar:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+  border-color: #1f6a36;
+  box-shadow: 0 0 0 3px rgba(49, 163, 84, 0.2);
 }
 
 .logout-button {
-  padding: 12px;
-  font-size: 16px;
-  background-color: #007bff;
+  background-color: #006d2c;
   color: #fff;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 16px;
   transition: background-color 0.3s;
 }
 
@@ -48,7 +59,7 @@
 }
 
 .create-dropdown-button {
-  background-color: #28a745;
+  background-color: #006d2c;
   color: white;
   border: none;
   padding: 10px 16px;
@@ -63,11 +74,11 @@
 }
 
 .create-dropdown-button:hover {
-  background-color: #218838;
+  background-color: #01471d;
 }
 
 .create-dropdown-button:active {
-  background-color: #1e7e34;
+  background-color: #01471d;
 }
 
 .dropdown-menu {
@@ -113,17 +124,19 @@
 }
 
 .view-profile-button {
-  background-color: #007bff;
+  background-color: #006d2c;
   color: white;
   border: none;
-  padding: 10px 15px;
   border-radius: 5px;
   cursor: pointer;
   margin-left: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 16px;
 }
 
 .view-profile-button:hover {
-  background-color: #0056b3;
+  background-color: #01471d;
 }
 
 .view-profile-button:active {
@@ -132,20 +145,20 @@
 
 .notification-button {
   position: relative;
-  background-color: #007bff;
+  background-color: #006d2c;
   color: white;
   border: none;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  padding: 10px 15px;
+  padding: 10px 16px;
   margin-right: 10px;
   border-radius: 5px;
   transition: background-color 0.3s;
 }
 
 .notification-button:hover {
-  background-color: #0056b3;
+  background-color: #01471d;
 }
 
 .notification-badge {

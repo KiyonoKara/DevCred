@@ -1,11 +1,11 @@
 import ResumeModel from '../models/resume.model';
 import {
   DatabaseResume,
-  SafeDatabaseResume,
   Resume,
+  ResumeDownloadResponse,
   ResumeResponse,
   ResumesResponse,
-  ResumeDownloadResponse,
+  SafeDatabaseResume,
 } from '../types/types';
 
 /**
@@ -14,7 +14,7 @@ import {
  * @param {Resume} resume - The resume object to be saved, containing file data and metadata.
  * @returns {Promise<ResumeResponse>} - Resolves with the saved resume object (without file data) or an error message.
  */
-export const createResume = async (resume: Resume): Promise<ResumeResponse> => {
+export const createResumeOrPDF = async (resume: Resume): Promise<ResumeResponse> => {
   try {
     const result: DatabaseResume = await ResumeModel.create(resume);
     const safeResume: SafeDatabaseResume = {
@@ -25,6 +25,7 @@ export const createResume = async (resume: Resume): Promise<ResumeResponse> => {
       fileSize: result.fileSize,
       uploadDate: result.uploadDate,
       isActive: result.isActive,
+      isDMFile: resume.isDMFile || false,
     };
     return safeResume;
   } catch (error) {
@@ -40,7 +41,10 @@ export const createResume = async (resume: Resume): Promise<ResumeResponse> => {
  */
 export const getUserResumes = async (userId: string): Promise<ResumesResponse> => {
   try {
-    const resumes: SafeDatabaseResume[] = await ResumeModel.find({ userId }).select('-fileData');
+    const resumes: SafeDatabaseResume[] = await ResumeModel.find({
+      userId: userId,
+      isDMFile: false,
+    }).select('-fileData');
     return resumes;
   } catch (error) {
     return { error: `Error finding user resumes: ${error}` };

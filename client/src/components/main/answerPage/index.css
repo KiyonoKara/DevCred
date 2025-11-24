@@ -2,6 +2,16 @@
   color: #bbbbbb;
 }
 
+.container {
+  display: contents;
+}
+
+.container-box {
+  background-color: white;
+  margin: 30px 30px 30px 30px;
+  border-radius: 20px;
+}
+
 .ansButton {
   margin: 2% 0 2% 2%;
 }

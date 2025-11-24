@@ -1,5 +1,6 @@
 import JobApplicationModel from '../models/jobApplication.model';
 import JobPostingModel from '../models/jobPosting.model';
+import ResumeModel from '../models/resume.model';
 import UserModel from '../models/users.model';
 import {
   ChatResponse,
@@ -8,20 +9,7 @@ import {
 } from '../types/types';
 import { addMessageToChat, getChatsByParticipants, saveChat } from './chat.service';
 import { saveMessage } from './message.service';
-
-/**
- * Gets the count of applications for a specific job posting.
- * @param {string} jobId - The ID of the job posting.
- * @returns {Promise<number>} - The count of applications or 0 if error.
- */
-export const getApplicationCount = async (jobId: string): Promise<number> => {
-  try {
-    const count = await JobApplicationModel.countDocuments({ jobPosting: jobId });
-    return count;
-  } catch (err) {
-    return 0;
-  }
-};
+import { incrementUserPoint } from './user.service';
 
 /**
  * Checks if a user has applied to a job posting.
@@ -29,15 +17,19 @@ export const getApplicationCount = async (jobId: string): Promise<number> => {
  * @param {string} username - The username of the user.
  * @returns {Promise<boolean>} - True if the user has applied, false otherwise.
  */
-export const hasUserApplied = async (jobId: string, username: string): Promise<boolean> => {
+export const hasUserApplied = async (
+  jobId: string,
+  username: string,
+): Promise<boolean | { error: string }> => {
   try {
     const application = await JobApplicationModel.findOne({
       jobPosting: jobId,
       user: username,
     });
+
     return application !== null;
   } catch (err) {
-    return false;
+    return { error: 'Error checking application status' };
   }
 };
 
@@ -66,6 +58,16 @@ export const createApplication = async (
       return { error: 'Job not found' };
     }
 
+    const resume = await ResumeModel.findOne({
+      userId: username,
+      isActive: true,
+      isDMFile: false,
+    });
+
+    if (!resume) {
+      return { error: 'Cannot apply for job without active resume on profile!' };
+    }
+
     const newApplication = await JobApplicationModel.create({
       jobPosting: job,
       user: username,
@@ -79,8 +81,9 @@ export const createApplication = async (
       msgDateTime: new Date(),
       type: 'application',
     });
+
     const resumeMessage = await saveMessage({
-      msg: `Click Here to Download Applicant Resume`,
+      msg: `Click Here to Download Applicant Resume: ${resume.fileName}, ${resume._id}`,
       msgFrom: username,
       msgDateTime: new Date(),
       type: 'resume',
@@ -120,6 +123,11 @@ export const createApplication = async (
       await addMessageToChat(soloChat._id.toString(), resumeMessage._id.toString());
     }
 
+    const userPointIncrement = await incrementUserPoint(username);
+    if (!userPointIncrement || 'error' in userPointIncrement) {
+      throw new Error(userPointIncrement.error);
+    }
+
     return newApplication;
   } catch (err) {
     return { error: 'Error when applying to a job' };
@@ -143,7 +151,7 @@ export const deleteApplication = async (
       return { error: 'Application not found' };
     }
 
-    if (application.user !== username || application.jobPosting.recruiter !== username) {
+    if (application.user !== username && application.jobPosting.recruiter !== username) {
       return { error: 'Not authorized to withdraw application' };
     }
 

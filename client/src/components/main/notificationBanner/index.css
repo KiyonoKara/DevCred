@@ -27,7 +27,7 @@
   gap: 12px;
   min-width: 320px;
   max-width: 400px;
-  border-left: 4px solid #007bff;
+  border-left: 4px solid #006d2c;
   cursor: pointer;
   transition: transform 0.2s;
 }
@@ -78,4 +78,3 @@
 .notification-banner-close:hover {
   color: #333;
 }
-

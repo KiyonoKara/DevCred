@@ -1,6 +1,5 @@
 import express, { Request, Response } from 'express';
 import { ObjectId } from 'mongodb';
-import { FindJobPostingsRequest, FakeSOSocket, JobPosting, DatabaseTag } from '../types/types';
 import JobPostingModel from '../models/jobPosting.model';
 import TagModel from '../models/tags.model';
 import {
@@ -12,6 +11,7 @@ import {
   toggleJobPostingActive,
 } from '../services/jobPosting.service';
 import { processTags } from '../services/tag.service';
+import { DatabaseTag, FakeSOSocket, FindJobPostingsRequest, JobPosting } from '../types/types';
 
 /**
  * Express controller for handling job posting-related requests.
@@ -49,8 +49,6 @@ const jobPostingController = (socket: FakeSOSocket) => {
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).send(`Error when fetching job postings: ${err.message}`);
-      } else {
-        res.status(500).send('Error when fetching job postings');
       }
     }
   };
@@ -93,8 +91,6 @@ const jobPostingController = (socket: FakeSOSocket) => {
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).send(`Error when fetching job posting by id: ${err.message}`);
-      } else {
-        res.status(500).send('Error when fetching job posting by id');
       }
     }
   };
@@ -145,8 +141,6 @@ const jobPostingController = (socket: FakeSOSocket) => {
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).send(`Error when saving job posting: ${err.message}`);
-      } else {
-        res.status(500).send('Error when saving job posting');
       }
     }
   };
@@ -189,8 +183,6 @@ const jobPostingController = (socket: FakeSOSocket) => {
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).send(`Error when deleting job posting: ${err.message}`);
-      } else {
-        res.status(500).send('Error when deleting job posting');
       }
     }
   };
@@ -233,8 +225,6 @@ const jobPostingController = (socket: FakeSOSocket) => {
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).send(`Error when toggling job posting status: ${err.message}`);
-      } else {
-        res.status(500).send('Error when toggling job posting status');
       }
     }
   };
@@ -263,8 +253,6 @@ const jobPostingController = (socket: FakeSOSocket) => {
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).send(`Error when fetching job postings: ${err.message}`);
-      } else {
-        res.status(500).send('Error when fetching job postings.');
       }
     }
   };

@@ -1,12 +1,29 @@
 /* Container styles */
-.container {
+.signup-container {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #f7f7f7;
+  background-color: #c7e9c0;
   padding: 20px;
+}
+
+.auth-box {
+  padding: 2rem 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 50vw;
+  background: rgba(255, 255, 255, 0.75);
+  margin: 40px auto;
+  text-align: center;
+}
+
+.form {
+  margin: 0 auto;
+  width: 100%;
+  background: transparent !important;
+  padding: 1.5rem;
 }
 
 /* Heading styles */
@@ -56,15 +73,15 @@ form {
 }
 
 .input-text:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  border-color: #006d2c;
+  box-shadow: 0 0 5px rgba(49, 163, 84, 0.5);
 }
 
 /* Button styles */
 .signup-button {
   padding: 12px;
   font-size: 16px;
-  background-color: #007bff;
+  background-color: #006d2c;
   color: #fff;
   border: none;
   border-radius: 5px;
@@ -73,18 +90,18 @@ form {
 }
 
 .signup-button:hover {
-  background-color: #0056b3;
+  background-color: #01471d;
 }
 
 .signup-button:active {
-  background-color: #003f7f;
+  background-color: #01471d;
 }
 
 /* Signup link styles */
 .login-link {
   margin-top: 30px; /* Increased spacing */
   font-size: 14px;
-  color: #007bff;
+  color: #01471d;
   text-decoration: none;
   cursor: pointer;
   transition: color 0.3s;
@@ -92,7 +109,7 @@ form {
 }
 
 .login-link:hover {
-  color: #0056b3;
+  color: #01471d;
   text-decoration: underline;
 }
 
@@ -125,28 +142,28 @@ form {
 }
 
 .user-type-button:hover {
-  border-color: #007bff;
-  color: #007bff;
+  border-color: #01471d;
+  color: #01471d;
   background-color: #f0f7ff;
 }
 
 .user-type-button.selected {
-  background-color: #007bff;
+  background-color: #006d2c;
   color: #fff;
-  border-color: #007bff;
-  box-shadow: 0 2px 6px rgba(0, 123, 255, 0.3);
+  border-color: #006d2c;
+  box-shadow: 0 2px 6px rgba(0, 109, 44, 0.3);
 }
 
 .user-type-button.selected:hover {
-  background-color: #0056b3;
-  border-color: #0056b3;
+  background-color: #00250f;
+  border-color: #00250f;
 }
 
 /* Login button */
 .login-button {
   padding: 12px;
   font-size: 16px;
-  background-color: #007bff;
+  background-color: #006d2c;
   color: #fff;
   border: none;
   border-radius: 5px;
@@ -155,11 +172,11 @@ form {
 }
 
 .login-button:hover {
-  background-color: #0056b3;
+  background-color: #01471d;
 }
 
 .login-button:active {
-  background-color: #003f7f;
+  background-color: #01471d;
 }
 
 /* Show password checkbox */

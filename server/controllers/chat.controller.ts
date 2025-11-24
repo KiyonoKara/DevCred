@@ -1,29 +1,29 @@
 import express, { Response } from 'express';
+import UserModel from '../models/users.model';
 import {
-  saveChat,
   addMessageToChat,
-  getChat,
   addParticipantToChat,
-  deleteDMForUser,
   deleteDMCompletely,
+  deleteDMForUser,
+  getChat,
   getDMsByUserWithoutDeleted,
   resetDeletionTracking,
+  saveChat,
 } from '../services/chat.service';
-import { populateDocument } from '../utils/database.util';
-import {
-  FakeSOSocket,
-  CreateChatRequest,
-  AddMessageRequestToChat,
-  AddParticipantRequest,
-  ChatIdRequest,
-  GetChatByParticipantsRequest,
-  PopulatedDatabaseChat,
-  DeleteDMRequest,
-  CanDeleteDMRequest,
-} from '../types/types';
 import { saveMessage } from '../services/message.service';
 import { createNotification } from '../services/notification.service';
-import UserModel from '../models/users.model';
+import {
+  AddMessageRequestToChat,
+  AddParticipantRequest,
+  CanDeleteDMRequest,
+  ChatIdRequest,
+  CreateChatRequest,
+  DeleteDMRequest,
+  FakeSOSocket,
+  GetChatByParticipantsRequest,
+  PopulatedDatabaseChat,
+} from '../types/types';
+import { populateDocument } from '../utils/database.util';
 
 /*
  * This controller handles chat-related routes.
@@ -84,7 +84,7 @@ const chatController = (socket: FakeSOSocket) => {
     res: Response,
   ): Promise<void> => {
     const { chatId } = req.params;
-    const { msg, msgFrom, msgDateTime } = req.body;
+    const { msg, msgFrom, msgDateTime, type } = req.body;
 
     try {
       // Check if the chat exists
@@ -109,7 +109,7 @@ const chatController = (socket: FakeSOSocket) => {
         // Create a new fresh chat
         const newChat = await saveChat({
           participants: [msgFrom, otherParticipant],
-          messages: [{ msg, msgFrom, msgDateTime, type: 'direct' }],
+          messages: [{ msg, msgFrom, msgDateTime, type: type || 'direct' }],
         });
 
         if ('error' in newChat) {
@@ -144,7 +144,7 @@ const chatController = (socket: FakeSOSocket) => {
       }
 
       // Create a new message in the DB
-      const newMessage = await saveMessage({ msg, msgFrom, msgDateTime, type: 'direct' });
+      const newMessage = await saveMessage({ msg, msgFrom, msgDateTime, type: type || 'direct' });
 
       if ('error' in newMessage) {
         throw new Error(newMessage.error);

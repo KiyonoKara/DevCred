@@ -7,7 +7,6 @@
   max-width: 1200px;
   margin: 0 auto;
   min-height: 100vh;
-  background-color: #f5f7fa;
 }
 
 .job-fair-header {
@@ -27,7 +26,7 @@
 
 .job-fair-create-btn {
   padding: 12px 24px;
-  background-color: #0066cc;
+  background-color: #006d2c;
   color: white;
   border: none;
   border-radius: 6px;
@@ -39,7 +38,7 @@
 }
 
 .job-fair-create-btn:hover {
-  background-color: #0052a3;
+  background-color: #01471d;
 }
 
 .job-fair-error {

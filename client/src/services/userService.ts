@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { UserCredentials, SafeDatabaseUser } from '../types/types';
+import { SafeDatabaseUser, UserCredentials } from '../types/types';
 import api from './config';
 
 const USER_API_URL = `/api/user`;
@@ -214,6 +214,7 @@ export interface UserActivityResponse {
   isOwner: boolean;
   questions: UserActivityQuestionSummary[];
   answers: UserActivityAnswerSummary[];
+  userPoints: number;
 }
 
 const getUserActivity = async (
@@ -232,14 +233,14 @@ const getUserActivity = async (
 };
 
 export {
-  getUsers,
-  getUserByUsername,
-  loginUser,
   createUser,
   deleteUser,
+  getUserActivity,
+  getUserByUsername,
+  getUsers,
+  loginUser,
   resetPassword,
   updateBiography,
-  updatePrivacySettings,
   updateNotificationPreferences,
-  getUserActivity,
+  updatePrivacySettings,
 };

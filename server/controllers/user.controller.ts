@@ -1,13 +1,13 @@
 import express, { Request, Response, Router } from 'express';
 import {
   deleteUserByUsername,
+  getUserActivityData,
   getUserByUsername,
   getUsersList,
   loginUser,
   saveUser,
   updateUser,
   updateUserPrivacySettings,
-  getUserActivityData,
 } from '../services/user.service';
 import {
   FakeSOSocket,
@@ -36,6 +36,7 @@ const userController = (socket: FakeSOSocket) => {
       dateJoined: new Date(),
       biography: requestUser.biography ?? '',
       userType: requestUser.type || 'talent',
+      points: 0,
     };
 
     try {

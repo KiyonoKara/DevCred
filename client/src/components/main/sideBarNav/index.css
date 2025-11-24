@@ -2,9 +2,16 @@
   display: flex;
   flex-direction: column;
   width: 15%;
-  border-right: dashed;
-  padding: 4% 0 4% 0;
+  padding: 2% 0 2% 0;
   align-items: center;
+  background-color: #ffffff;
+  border-top-right-radius: 20px;
+  border-bottom-right-radius: 20px;
+  box-shadow: 10px 0 10px -8px #31a354;
+
+  height: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .menu_button:first-child {
@@ -18,11 +25,13 @@
   border-radius: 5px;
   text-align: center;
   line-height: 40px;
-  color: cornflowerblue;
+  color: #31a354;
+  text-decoration: none;
 }
 
 .menu_selected {
-  background: #cccccc;
+  background: #006d2c;
+  color: white;
 }
 
 .additional-options {
@@ -37,7 +46,7 @@
 }
 
 .message-option-selected {
-  background: #3090e2;
+  background: #74c278;
   color: white;
   width: 110%;
 }

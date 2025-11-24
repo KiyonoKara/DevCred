@@ -1,16 +1,16 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { ChangeEvent, useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
-  getUserByUsername,
   deleteUser,
+  getUserByUsername,
   resetPassword,
   updateBiography,
-  updatePrivacySettings,
   updateNotificationPreferences,
+  updatePrivacySettings,
 } from '../services/userService';
 import { SafeDatabaseUser } from '../types/types';
-import useUserContext from './useUserContext';
 import useResumeManager from './useResumeManager';
+import useUserContext from './useUserContext';
 
 /**
  * A custom hook to encapsulate all logic/state for the ProfileSettings component.
@@ -354,6 +354,50 @@ const useProfileSettings = () => {
     return;
   };
 
+  const [selectedResumeFile, setSelectedResumeFile] = useState<File | null>(null);
+  const [makeActiveOnUpload, setMakeActiveOnUpload] = useState(true);
+  const [resumeErrorMessage, setResumeErrorMessage] = useState<string | null>(null);
+  const [resumeSuccessMessage, setResumeSuccessMessage] = useState<string | null>(null);
+
+  const maxResumeSizeMB = useMemo(
+    () => (maxResumeSizeBytes ? (maxResumeSizeBytes / (1024 * 1024)).toFixed(0) : '8'),
+    [maxResumeSizeBytes],
+  );
+
+  const onResumeFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    setSelectedResumeFile(file);
+  };
+
+  const onResumeUploadClick = async () => {
+    if (!selectedResumeFile) {
+      return;
+    }
+
+    // Clear previous messages
+    setResumeErrorMessage(null);
+    setResumeSuccessMessage(null);
+
+    const didUpload = await handleResumeUpload(selectedResumeFile, makeActiveOnUpload);
+    if (didUpload) {
+      // Clear file preview and reset state on successful upload
+      setSelectedResumeFile(null);
+      setMakeActiveOnUpload(true);
+      setResumeSuccessMessage('Resume uploaded successfully!');
+    } else {
+      // Extract error from global errorMessage
+      if (errorMessage) {
+        setResumeErrorMessage(errorMessage);
+      } else {
+        setResumeErrorMessage('Failed to upload resume. Please try again.');
+      }
+    }
+
+    if (userData && userData.profileVisibility !== 'public-full') {
+      alert('Help Recruiters Learn More, set your profile visibility to full!');
+    }
+  };
+
   return {
     userData,
     newPassword,
@@ -394,6 +438,17 @@ const useProfileSettings = () => {
     handleResumeDelete,
     handleSetActiveResume,
     maxResumeSizeBytes,
+    selectedResumeFile,
+    setSelectedResumeFile,
+    makeActiveOnUpload,
+    setMakeActiveOnUpload,
+    resumeErrorMessage,
+    setResumeErrorMessage,
+    resumeSuccessMessage,
+    setResumeSuccessMessage,
+    maxResumeSizeMB,
+    onResumeFileChange,
+    onResumeUploadClick,
   };
 };
 

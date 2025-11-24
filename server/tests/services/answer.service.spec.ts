@@ -1,13 +1,22 @@
 import mongoose from 'mongoose';
 import AnswerModel from '../../models/answers.model';
 import QuestionModel from '../../models/questions.model';
-import { saveAnswer, addAnswerToQuestion } from '../../services/answer.service';
+import UserModel from '../../models/users.model';
+import { addAnswerToQuestion, saveAnswer } from '../../services/answer.service';
 import { DatabaseAnswer, DatabaseQuestion } from '../../types/types';
 import { QUESTIONS, ans1, ans4 } from '../mockData.models';
 
 describe('Answer model', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+
+    const mockUser = {
+      username: 'testUser123',
+      points: 0,
+    };
+    jest
+      .spyOn(UserModel, 'findOneAndUpdate')
+      .mockResolvedValueOnce(mockUser as unknown as ReturnType<typeof UserModel.findOneAndUpdate>);
   });
 
   describe('saveAnswer', () => {
@@ -47,7 +56,6 @@ describe('Answer model', () => {
       jest
         .spyOn(AnswerModel, 'create')
         .mockRejectedValueOnce(mockError as unknown as ReturnType<typeof AnswerModel.create>);
-
       const result = (await saveAnswer(mockAnswer)) as DatabaseAnswer;
 
       expect(result).toEqual({ error: 'Error when saving an answer' });

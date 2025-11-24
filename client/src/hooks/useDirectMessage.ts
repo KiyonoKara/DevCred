@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { useCallback, useEffect, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   createChat,
@@ -8,14 +8,13 @@ import {
   getChatsByUser,
   sendMessage,
 } from '../services/chatService';
-import { getUserResumes } from '../services/resumeService';
+import { uploadResume } from '../services/resumeService';
 import { getUserByUsername } from '../services/userService';
 import {
   ChatUpdatePayload,
   DMDeletedPayload,
   Message,
   PopulatedDatabaseChat,
-  SafeDatabaseResume,
   SafeDatabaseUser,
 } from '../types/types';
 import useResumeManager from './useResumeManager';
@@ -36,9 +35,11 @@ const useDirectMessage = () => {
   const [selectedChat, setSelectedChat] = useState<PopulatedDatabaseChat | null>(null);
   const [chats, setChats] = useState<PopulatedDatabaseChat[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  const [showUploadPDFDropdown, setShowUploadPDFDropdown] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [targetUserDMEnabled, setTargetUserDMEnabled] = useState<boolean | null>(null);
+  const [selectedPDF, setSelectedPDF] = useState<File | null>(null);
 
   const handleJoinChat = useCallback(
     (chatID: ObjectId) => {
@@ -92,10 +93,11 @@ const useDirectMessage = () => {
   const handleSendMessage = async () => {
     if (newMessage.trim() && selectedChat?._id) {
       try {
-        const message: Omit<Message, 'type'> = {
+        const message: Message = {
           msg: newMessage,
           msgFrom: user.username,
           msgDateTime: new Date(),
+          type: 'direct',
         };
 
         const chat = await sendMessage(message, selectedChat._id);
@@ -111,17 +113,18 @@ const useDirectMessage = () => {
     }
   };
 
-  const handleDownloadResume = async (message: Message) => {
-    const resumes: SafeDatabaseResume[] = await getUserResumes(message.msgFrom);
-    const activeResumes = resumes.filter(resume => resume.isActive);
-    if (activeResumes.length === 0) {
-      alert('User missing active resume to download.');
-      return;
-    }
+  const handleDownloadPDF = async (message: Message) => {
+    try {
+      const messageParts = message.msg.split(':')[1].split(',');
+      const pdfId = messageParts[1].trim();
+      const pdfName = messageParts[0].trim();
 
-    const result = await downloadResume(activeResumes[0]._id.toString(), activeResumes[0].fileName);
-    if (!result.success) {
-      alert('Issue downloading resume. Please reach out to applicant.');
+      const result = await downloadResume(pdfId, pdfName);
+      if (!result.success) {
+        alert('Issue downloading resume. Please reach out to applicant.');
+      }
+    } catch (error) {
+      alert('Error downloading PDF, please reach out to sender.');
     }
   };
 
@@ -344,6 +347,44 @@ const useDirectMessage = () => {
     }
   }, [selectedChat, handleJoinChat, socket]);
 
+  const onPDFChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    setSelectedPDF(file);
+  };
+
+  const onPDFUploadClick = async () => {
+    if (!selectedPDF || !selectedChat?._id) {
+      return;
+    }
+
+    const uploadedResume = await uploadResume(user.username, selectedPDF, {
+      isActive: false,
+      isDMFile: true,
+    });
+
+    if (!uploadedResume) {
+      setError('Error uploading PDF, please try later or different file.');
+    } else {
+      setError('');
+      try {
+        const message: Message = {
+          msg: `Click this message to download PDF - ${uploadedResume.fileName}: ${uploadedResume.fileName}, ${uploadedResume._id}`,
+          msgFrom: user.username,
+          msgDateTime: new Date(),
+          type: 'resume',
+        };
+
+        const chat = await sendMessage(message, selectedChat._id);
+
+        setSelectedChat(chat);
+        setError(null);
+        setNewMessage('');
+      } catch (err) {
+        setError(`Error sending message: ${(err as Error).message}`);
+      }
+    }
+  };
+
   return {
     selectedChat,
     chatToCreate,
@@ -357,12 +398,17 @@ const useDirectMessage = () => {
     handleUserSelect,
     handleCreateChat,
     handleDeleteDM,
-    handleDownloadResume,
+    handleDownloadPDF,
     error,
     isLoading,
     targetUserDMEnabled,
     canSendDMToUser,
     refreshChats,
+    showUploadPDFDropdown,
+    setShowUploadPDFDropdown,
+    selectedPDF,
+    onPDFChange,
+    onPDFUploadClick,
   };
 };
 

@@ -1,5 +1,5 @@
-import api from './config';
 import { SafeDatabaseResume } from '../types/types';
+import api from './config';
 
 const RESUME_API_URL = `/api/resume`;
 
@@ -14,12 +14,13 @@ const RESUME_API_URL = `/api/resume`;
 const uploadResume = async (
   userId: string,
   file: File,
-  options: { isActive?: boolean } = {},
+  options: { isActive?: boolean; isDMFile?: boolean } = {},
 ): Promise<SafeDatabaseResume> => {
   const formData = new FormData();
   formData.append('userId', userId);
   formData.append('resume', file);
   formData.append('isActive', String(options.isActive ?? true));
+  formData.append('isDMFile', String(options.isDMFile || false));
 
   const res = await api.post(`${RESUME_API_URL}/upload`, formData);
 
@@ -94,4 +95,4 @@ const setActiveResume = async (userId: string, resumeId: string): Promise<SafeDa
   return res.data as SafeDatabaseResume;
 };
 
-export { uploadResume, getUserResumes, downloadResume, deleteResume, setActiveResume };
+export { deleteResume, downloadResume, getUserResumes, setActiveResume, uploadResume };

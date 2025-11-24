@@ -1,5 +1,5 @@
 .custom-button {
-  background-color: #007bff;
+  background-color: #006d2c;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -9,7 +9,7 @@
 }
 
 .custom-button:hover {
-  background-color: #0056b3;
+  background-color: #01471d;
 }
 
 .custom-input {
@@ -64,7 +64,7 @@
 }
 
 .chat-message strong {
-  color: #007bff;
+  color: #006d2c;
 }
 
 .message-input {

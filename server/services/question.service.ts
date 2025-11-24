@@ -1,5 +1,9 @@
 import { ObjectId } from 'mongodb';
 import { QueryOptions } from 'mongoose';
+import AnswerModel from '../models/answers.model';
+import CommentModel from '../models/comments.model';
+import QuestionModel from '../models/questions.model';
+import TagModel from '../models/tags.model';
 import {
   DatabaseComment,
   DatabaseCommunity,
@@ -12,18 +16,15 @@ import {
   QuestionResponse,
   VoteResponse,
 } from '../types/types';
-import AnswerModel from '../models/answers.model';
-import QuestionModel from '../models/questions.model';
-import TagModel from '../models/tags.model';
-import CommentModel from '../models/comments.model';
 import { parseKeyword, parseTags } from '../utils/parse.util';
-import { checkTagInQuestion } from './tag.service';
 import {
   sortQuestionsByActive,
   sortQuestionsByMostViews,
   sortQuestionsByNewest,
   sortQuestionsByUnanswered,
 } from '../utils/sort.util';
+import { checkTagInQuestion } from './tag.service';
+import { incrementUserPoint } from './user.service';
 
 /**
  * Checks if keywords exist in a question's title or text.
@@ -162,8 +163,12 @@ export const fetchAndIncrementQuestionViewsById = async (
  */
 export const saveQuestion = async (question: Question): Promise<QuestionResponse> => {
   try {
-    const result: DatabaseQuestion = await QuestionModel.create(question);
+    const user = await incrementUserPoint(question.askedBy);
+    if (!user || 'error' in user) {
+      throw new Error(user.error);
+    }
 
+    const result: DatabaseQuestion = await QuestionModel.create(question);
     return result;
   } catch (error) {
     return { error: 'Error when saving a question' };
@@ -237,6 +242,13 @@ export const addVoteToQuestion = async (
 
     if (!result) {
       return { error: 'Question not found!' };
+    }
+
+    if (voteType === 'upvote') {
+      const user = await incrementUserPoint(result.askedBy);
+      if (!user || 'error' in user) {
+        throw new Error(user.error);
+      }
     }
 
     let msg = '';
