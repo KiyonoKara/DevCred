@@ -17,15 +17,19 @@ import { incrementUserPoint } from './user.service';
  * @param {string} username - The username of the user.
  * @returns {Promise<boolean>} - True if the user has applied, false otherwise.
  */
-export const hasUserApplied = async (jobId: string, username: string): Promise<boolean> => {
+export const hasUserApplied = async (
+  jobId: string,
+  username: string,
+): Promise<boolean | { error: string }> => {
   try {
     const application = await JobApplicationModel.findOne({
       jobPosting: jobId,
       user: username,
     });
+
     return application !== null;
   } catch (err) {
-    return false;
+    return { error: 'Error checking application status' };
   }
 };
 
@@ -61,7 +65,7 @@ export const createApplication = async (
     });
 
     if (!resume) {
-      throw new Error('Cannot apply for job without active resume on profile!');
+      return { error: 'Cannot apply for job without active resume on profile!' };
     }
 
     const newApplication = await JobApplicationModel.create({
@@ -147,7 +151,7 @@ export const deleteApplication = async (
       return { error: 'Application not found' };
     }
 
-    if (application.user !== username || application.jobPosting.recruiter !== username) {
+    if (application.user !== username && application.jobPosting.recruiter !== username) {
       return { error: 'Not authorized to withdraw application' };
     }
 

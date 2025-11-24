@@ -112,7 +112,7 @@ export const toggleJobPostingActive = async (
  * @param {string[]} keywordlist - The keywords to check
  * @returns {boolean} - `true` if any keyword is found
  */
-const checkKeywordInJobPosting = (
+export const checkKeywordInJobPosting = (
   job: DatabaseJobPosting & { tags: DatabaseTag[] },
   keywordlist: string[],
 ): boolean => {
@@ -131,14 +131,14 @@ const checkKeywordInJobPosting = (
 /**
  * Checks if given job posting contains any tags from the given list.
  * @param {DatabaseJobPosting} job - The job posting to check
- * @param {string[]} taglist - The list of tags to check for
+ * @param {string[]} tagList - The list of tags to check for
  * @returns {boolean} - `true` if any tag is present in the job posting, `false` otherwise
  */
-const checkTagInJobPosting = (
+export const checkTagInJobPosting = (
   job: DatabaseJobPosting & { tags: DatabaseTag[] },
-  taglist: string[],
+  tagList: string[],
 ): boolean => {
-  for (const tagname of taglist) {
+  for (const tagname of tagList) {
     for (const tag of job.tags) {
       if (tagname.toLowerCase() === tag.name.toLowerCase()) {
         return true;
@@ -154,7 +154,7 @@ const checkTagInJobPosting = (
  * @param {string} search - The search string
  * @returns {(DatabaseJobPosting & { tags: DatabaseTag[] })[]} - Filtered list of job postings
  */
-const filterJobPostingsBySearch = (
+export const filterJobPostingsBySearch = (
   jobList: (DatabaseJobPosting & { tags: DatabaseTag[] })[],
   search: string,
 ): (DatabaseJobPosting & { tags: DatabaseTag[] })[] => {
