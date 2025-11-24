@@ -6,6 +6,11 @@
   color: #333;
 }
 
+.user-activity-container {
+  all: inherit;
+  background-color: white;
+  border-radius: 20px;
+}
 .user-activity-header {
   display: flex;
   justify-content: space-between;
@@ -41,7 +46,7 @@
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 4px;
-  background-color: #1976d2;
+  background-color: #006d2c;
   color: white;
   cursor: pointer;
   font-weight: 500;
@@ -49,7 +54,7 @@
 }
 
 .user-activity-settings-button:hover {
-  background-color: #125aa2;
+  background-color: #003f19;
 }
 
 .user-activity-message-button {
@@ -91,7 +96,7 @@
 
 .user-activity-search-input:focus {
   outline: none;
-  border-color: #1976d2;
+  border-color: #31a354;
 }
 
 .user-activity-search-clear {
@@ -152,6 +157,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
+  margin-bottom: 10px;
 }
 
 .section-header h2 {
@@ -160,6 +166,8 @@
 
 .section-filter select {
   margin-left: 0.5rem;
+  padding: 5px 5px 5px 5px;
+  border-radius: 10px;
 }
 
 .user-activity-hint {
@@ -189,7 +197,7 @@
 
 .item-title {
   font-weight: 600;
-  color: #1976d2;
+  color: #006d2c;
   text-decoration: none;
 }
 
@@ -234,8 +242,8 @@
 .tag-pill {
   padding: 0.25rem 0.5rem;
   border-radius: 12px;
-  background-color: #e0ecff;
-  color: #1a4d8f;
+  background-color: #c7e9c0;
+  color: #31a354;
   font-size: 0.85rem;
 }
 
@@ -262,15 +270,15 @@
 
 .user-activity-secondary-button {
   padding: 0.5rem 1rem;
-  border: 1px solid #1976d2;
+  border: 1px solid #006d2c;
   border-radius: 4px;
   background-color: transparent;
-  color: #1976d2;
+  color: #006d2c;
   cursor: pointer;
 }
 
 .user-activity-secondary-button:hover {
-  background-color: rgba(25, 118, 210, 0.1);
+  background-color: #00270f;
 }
 
 .pagination-container {
@@ -290,10 +298,10 @@
 
 .pagination-button {
   padding: 0.4rem 0.75rem;
-  border: 1px solid #1976d2;
+  border: 1px solid #31a354;
   border-radius: 4px;
   background-color: white;
-  color: #1976d2;
+  color: #31a354;
   cursor: pointer;
 }
 
@@ -314,14 +322,14 @@
   border: 1px solid transparent;
   border-radius: 4px;
   background-color: transparent;
-  color: #1976d2;
+  color: #31a354;
   cursor: pointer;
 }
 
 .pagination-page-button.active {
-  background-color: #1976d2;
+  background-color: #31a354;
   color: white;
-  border-color: #1976d2;
+  border-color: #31a354;
 }
 
 .pagination-ellipsis {
@@ -342,4 +350,3 @@
   border: 1px solid #ccc;
   border-radius: 4px;
 }
-

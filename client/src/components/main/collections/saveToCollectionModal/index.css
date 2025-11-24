@@ -74,7 +74,7 @@
 
 .save-btn {
   padding: 0.5rem 0.75rem;
-  background-color: #007bff;
+  background-color: #006d2c;
   color: white;
   border: none;
   border-radius: 6px;
@@ -85,7 +85,7 @@
 }
 
 .save-btn:hover {
-  background-color: #0056b3;
+  background-color: #01471d;
 }
 
 .close-btn {

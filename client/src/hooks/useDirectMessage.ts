@@ -368,7 +368,7 @@ const useDirectMessage = () => {
       setError('');
       try {
         const message: Message = {
-          msg: `${uploadedResume.fileName}: ${uploadedResume.fileName}, ${uploadedResume._id}`,
+          msg: `Click this message to download PDF - ${uploadedResume.fileName}: ${uploadedResume.fileName}, ${uploadedResume._id}`,
           msgFrom: user.username,
           msgDateTime: new Date(),
           type: 'resume',

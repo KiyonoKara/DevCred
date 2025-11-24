@@ -1,6 +1,6 @@
-import './index.css';
 import useMessagingPage from '../../../hooks/useMessagingPage';
 import MessageCard from '../messageCard';
+import './index.css';
 
 /**
  * Represents the MessagingPage component which displays the public chat room.
@@ -19,6 +19,7 @@ const MessagingPage = () => {
           <MessageCard key={String(message._id)} message={message} />
         ))}
       </div>
+
       <div className='message-input'>
         <textarea
           className='message-textbox'

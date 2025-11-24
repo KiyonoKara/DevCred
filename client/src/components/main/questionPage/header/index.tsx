@@ -1,8 +1,8 @@
+import { orderTypeDisplayName } from '../../../../types/constants';
+import { OrderType } from '../../../../types/types';
+import AskQuestionButton from '../../askQuestionButton';
 import './index.css';
 import OrderButton from './orderButton';
-import { OrderType } from '../../../../types/types';
-import { orderTypeDisplayName } from '../../../../types/constants';
-import AskQuestionButton from '../../askQuestionButton';
 
 /**
  * Interface representing the props for the QuestionHeader component.
@@ -28,11 +28,14 @@ interface QuestionHeaderProps {
  */
 const QuestionHeader = ({ titleText, qcnt, setQuestionOrder }: QuestionHeaderProps) => (
   <div>
-    <div className='space_between right_padding'>
-      <div className='bold_title'>{titleText}</div>
+    <div className='questions-header'>
+      <div className='title'>{titleText}</div>
+      <div />
+      <div />
+      <div />
       <AskQuestionButton />
     </div>
-    <div className='space_between right_padding'>
+    <div className='filter_headers'>
       <div id='question_count'>{qcnt} questions</div>
       <div className='btns'>
         {Object.keys(orderTypeDisplayName).map(order => (

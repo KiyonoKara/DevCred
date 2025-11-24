@@ -1,5 +1,5 @@
-import './index.css';
 import useUserSearch from '../../../../hooks/useUserSearch';
+import './index.css';
 
 /**
  * Interface representing the props for the UserHeader component.
@@ -25,7 +25,7 @@ const UsersListHeader = ({ userCount, setUserFilter }: UserHeaderProps) => {
 
   return (
     <div>
-      <div className='space_between right_padding'>
+      <div className='users-header '>
         <div className='bold_title'>Users List</div>
         <input
           id='user_search_bar'
@@ -36,7 +36,9 @@ const UsersListHeader = ({ userCount, setUserFilter }: UserHeaderProps) => {
         />
       </div>
       <div className='space_between right_padding'>
-        <div id='user_count'>{userCount} users</div>
+        <div className='user-count' id='user_count'>
+          {userCount} users
+        </div>
       </div>
     </div>
   );

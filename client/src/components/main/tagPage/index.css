@@ -4,3 +4,23 @@
   gap: 48px 32px;
   align-items: stretch;
 }
+
+.tags-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-left: 5vw;
+  margin-top: 10px;
+  padding: 10px;
+  padding-left: 40px;
+  padding-right: 5px;
+  width: 75vw;
+  background-color: rgb(255, 255, 255);
+  border-radius: 20px;
+  color: #006d2c;
+}
+
+.tag-count {
+  color: #31a354;
+  font-size: large;
+}

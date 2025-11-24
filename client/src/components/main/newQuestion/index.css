@@ -34,7 +34,7 @@
 }
 
 .community-search-button:hover {
-  background-color: #2563eb;
+  background-color: #006d2c;
 }
 
 .joined-communities {
@@ -50,17 +50,19 @@
   border-radius: 9999px;
   background-color: #ffffff;
   cursor: pointer;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .joined-community-chip:hover {
-  border-color: #2563eb;
+  border-color: #006d2c;
 }
 
 .joined-community-chip.selected {
-  background-color: #2563eb;
+  background-color: #006d2c;
   color: #ffffff;
-  border-color: #2563eb;
+  border-color: #006d2c;
 }
 
 .community-suggestions {
@@ -111,16 +113,18 @@
   align-items: center;
   gap: 1rem;
   cursor: pointer;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .community-suggestion-item:hover {
-  border-color: #2563eb;
+  border-color: #006d2c;
   background-color: #f8fafc;
 }
 
 .community-suggestion-item.selected {
-  border-color: #2563eb;
+  border-color: #006d2c;
   background-color: rgba(37, 99, 235, 0.1);
 }
 

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { applyToJobPosting, getApplicationStatus } from '../services/jobApplicationService';
 import { getJobPostingByJobId } from '../services/jobPostingService';
+import { getUserResumes } from '../services/resumeService';
 import useUserContext from './useUserContext';
 
 /**
@@ -20,13 +21,18 @@ const useTalentJobPostingViewerPage = () => {
   const { jobId } = useParams();
   const [jobPosting, setJobPosting] = useState<DatabaseJobPosting | null>(null);
   const [applicationStatus, setApplicationStatus] = useState<boolean>(false);
+  const [hasActiveResume, setHasActiveResume] = useState<boolean>(false);
 
   const handleApplyToPosition = async () => {
     if (jobId) {
       await applyToJobPosting(jobId, currentUser.username);
       setApplicationStatus(await getApplicationStatus(jobId, currentUser.username));
     }
-    alert('Position applied to and DM with Recruiter created!');
+    if (currentUser.profileVisibility !== 'public-full') {
+      alert('Help Recruiters Learn More, set your profile visibility to full!');
+    } else {
+      alert('Position applied to and DM with Recruiter created!');
+    }
   };
 
   useEffect(() => {
@@ -42,14 +48,24 @@ const useTalentJobPostingViewerPage = () => {
       }
     };
 
+    const fetchHasActiveResume = async () => {
+      if (currentUser) {
+        let resumes = await getUserResumes(currentUser.username);
+        resumes = resumes.filter(resume => resume.isActive);
+        setHasActiveResume(resumes.length === 1);
+      }
+    };
+
     fetchJobApplicationStatus();
     fetchJobPosting();
+    fetchHasActiveResume();
   }, [currentUser.username, jobId]);
 
   return {
     userType: currentUser.userType,
     jobPosting,
     applicationStatus,
+    hasActiveResume,
     handleApplyToPosition,
   };
 };

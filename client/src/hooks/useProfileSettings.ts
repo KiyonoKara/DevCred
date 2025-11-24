@@ -392,6 +392,10 @@ const useProfileSettings = () => {
         setResumeErrorMessage('Failed to upload resume. Please try again.');
       }
     }
+
+    if (userData && userData.profileVisibility !== 'public-full') {
+      alert('Help Recruiters Learn More, set your profile visibility to full!');
+    }
   };
 
   return {

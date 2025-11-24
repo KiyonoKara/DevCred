@@ -1,9 +1,9 @@
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useState, useRef, useEffect } from 'react';
 import useHeader from '../../hooks/useHeader';
-import './index.css';
-import useUserContext from '../../hooks/useUserContext';
 import useNotifications from '../../hooks/useNotifications';
+import useUserContext from '../../hooks/useUserContext';
+import './index.css';
 
 /**
  * Header component that renders the main title and a search bar.
@@ -40,8 +40,7 @@ const Header = () => {
 
   return (
     <div id='header' className='header'>
-      <div></div>
-      <div className='title'>Fake Stack Overflow</div>
+      <div className='title'>DevCred</div>
       <input
         id='searchBar'
         placeholder='Search ...'
@@ -51,46 +50,48 @@ const Header = () => {
         onKeyDown={handleKeyDown}
       />
       {/* Dropdown menu for job postings and fairs, only shown if user is a recruiter */}
-      {isRecruiter && (
-        <div className='create-dropdown' ref={dropdownRef}>
-          <button
-            className='create-dropdown-button'
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            title='Create new job opportunities'>
-            + Create
-          </button>
-          {isDropdownOpen && (
-            <div className='dropdown-menu'>
-              <button
-                className='dropdown-item'
-                onClick={() => handleNavigate('/recruiters/jobposting/new')}>
-                + Create Job Posting
-              </button>
-              <button
-                className='dropdown-item'
-                onClick={() => handleNavigate('/recruiters/jobfairs/new')}>
-                + Create Job Fair
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+      <div className='header-buttons '>
+        {isRecruiter && (
+          <div className='create-dropdown' ref={dropdownRef}>
+            <button
+              className='create-dropdown-button'
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              title='Create new job opportunities'>
+              + Create
+            </button>
+            {isDropdownOpen && (
+              <div className='dropdown-menu'>
+                <button
+                  className='dropdown-item'
+                  onClick={() => handleNavigate('/recruiters/jobposting/new')}>
+                  + Create Job Posting
+                </button>
+                <button
+                  className='dropdown-item'
+                  onClick={() => handleNavigate('/recruiters/jobfairs/new')}>
+                  + Create Job Fair
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
-      <button
-        className='notification-button'
-        onClick={() => navigate('/notifications')}
-        title='Notifications'>
-        Notification
-        {unreadCount > 0 && <span className='notification-badge'>{unreadCount}</span>}
-      </button>
-      <button onClick={handleSignOut} className='logout-button'>
-        Log out
-      </button>
-      <button
-        className='view-profile-button'
-        onClick={() => navigate(`/user/${currentUser.username}`)}>
-        View Profile
-      </button>
+        <button
+          className='notification-button'
+          onClick={() => navigate('/notifications')}
+          title='Notifications'>
+          Notification
+          {unreadCount > 0 && <span className='notification-badge'>{unreadCount}</span>}
+        </button>
+        <button onClick={handleSignOut} className='logout-button'>
+          Log out
+        </button>
+        <button
+          className='view-profile-button'
+          onClick={() => navigate(`/user/${currentUser.username}`)}>
+          View Profile
+        </button>
+      </div>
     </div>
   );
 };

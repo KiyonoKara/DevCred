@@ -1,10 +1,9 @@
 .community-card {
   background-color: white;
-  border: 1px solid #ddd;
   border-radius: 12px;
   padding: 1.5rem;
-  width: 300px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  width: 76vw;
+  box-shadow: 0 10px 6px rgba(0, 109, 44, 0.4);
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
@@ -12,7 +11,7 @@
 
 .community-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 6px rgba(0, 109, 44, 0.1);
 }
 
 .community-card-title {
