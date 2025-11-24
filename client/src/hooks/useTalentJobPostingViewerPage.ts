@@ -59,7 +59,7 @@ const useTalentJobPostingViewerPage = () => {
     fetchJobApplicationStatus();
     fetchJobPosting();
     fetchHasActiveResume();
-  }, [currentUser.username, jobId]);
+  }, [currentUser.username, jobId, currentUser]);
 
   return {
     userType: currentUser.userType,

@@ -82,6 +82,31 @@ const RecruiterJobPostingsViewer = () => {
             </div>
           </div>
         </div>
+
+        <div className='job-applications-container'>
+          <h3 className='section-title'>Applications By Viewers</h3>
+          <div className='job_application-list'>
+            {jobApplications.map(job_application => (
+              <div key={job_application._id.toString()} className='job_application-card'>
+                <h2 className='job_application-name'>Applicant: {job_application.user}</h2>
+                <p className='job_application-description'>
+                  Application Submission Date:{' '}
+                  {(() => {
+                    const date = new Date(job_application.applicationDate);
+                    if (Number.isNaN(date.getTime())) {
+                      return 'Unknown';
+                    }
+                    return date.toLocaleDateString(undefined, {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                    });
+                  })()}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     )
   );

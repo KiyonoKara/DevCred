@@ -14,6 +14,26 @@
   padding: 2.5rem;
 }
 
+.job_application-card {
+  box-shadow: 0 10px 10px rgb(0, 109, 44, 0.5);
+  border-radius: 20px;
+  margin-bottom: 10px;
+  background-color: #fff;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease;
+}
+
+.job-applications-container {
+  max-width: 900px;
+  margin: 0 auto;
+  margin-top: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 2.5rem;
+}
+
 /* Header Section */
 .job-posting-header {
   border-bottom: 2px solid #e5e7eb;
