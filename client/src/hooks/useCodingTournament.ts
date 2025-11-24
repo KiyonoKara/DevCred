@@ -1,8 +1,8 @@
-import { useEffect, useState, useCallback } from 'react';
 import { DatabaseJobFair } from '@fake-stack-overflow/shared';
+import { useCallback, useEffect, useState } from 'react';
+import { createChat, sendMessage } from '../services/chatService';
 import jobFairService from '../services/jobFairService';
 import useUserContext from './useUserContext';
-import { createChat, sendMessage } from '../services/chatService';
 
 /**
  * Represents a coding submission in a job fair tournament.
@@ -209,6 +209,7 @@ const useCodingTournament = (jobFairId: string, jobFair: DatabaseJobFair | null)
           msg: dmMessage,
           msgFrom: currentUser.username,
           msgDateTime: new Date(),
+          type: 'direct',
         },
         chat._id,
       );
