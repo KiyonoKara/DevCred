@@ -1,9 +1,10 @@
-import { DatabaseJobPosting } from '@fake-stack-overflow/shared';
+import { DatabaseJobPosting, SafeDatabaseUser } from '@fake-stack-overflow/shared';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { applyToJobPosting, getApplicationStatus } from '../services/jobApplicationService';
 import { getJobPostingByJobId } from '../services/jobPostingService';
 import { getUserResumes } from '../services/resumeService';
+import { getUserByUsername } from '../services/userService';
 import useUserContext from './useUserContext';
 
 /**
@@ -22,13 +23,14 @@ const useTalentJobPostingViewerPage = () => {
   const [jobPosting, setJobPosting] = useState<DatabaseJobPosting | null>(null);
   const [applicationStatus, setApplicationStatus] = useState<boolean>(false);
   const [hasActiveResume, setHasActiveResume] = useState<boolean>(false);
+  const [userData, setUserData] = useState<SafeDatabaseUser | null>(null);
 
   const handleApplyToPosition = async () => {
     if (jobId) {
       await applyToJobPosting(jobId, currentUser.username);
       setApplicationStatus(await getApplicationStatus(jobId, currentUser.username));
     }
-    if (currentUser.profileVisibility !== 'public-full') {
+    if (userData && userData.profileVisibility !== 'public-full') {
       alert('Help Recruiters Learn More, set your profile visibility to full!');
     } else {
       alert('Position applied to and DM with Recruiter created!');
@@ -56,6 +58,12 @@ const useTalentJobPostingViewerPage = () => {
       }
     };
 
+    const fetchUserPrivacySettings = async () => {
+      const data = await getUserByUsername(currentUser.username);
+      setUserData(data);
+    };
+
+    fetchUserPrivacySettings();
     fetchJobApplicationStatus();
     fetchJobPosting();
     fetchHasActiveResume();
