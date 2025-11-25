@@ -42,7 +42,7 @@ button {
 .btn-leave-game,
 .btn-refresh-list,
 .btn-join-game {
-  background: #007bff;
+  background: #006d2c;
   color: white;
   padding: 10px 20px;
   border: none;
@@ -56,7 +56,7 @@ button {
 .btn-leave-game:hover,
 .btn-refresh-list:hover,
 .btn-join-game:hover {
-  background: #0056b3;
+  background: #01471d;
 }
 
 button:disabled {

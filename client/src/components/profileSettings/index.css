@@ -2,8 +2,8 @@
   --color-bg: #f2f4f7;
   --color-card-bg: #ffffff;
   --color-border: #d1d5db;
-  --color-primary: #2563eb;
-  --color-primary-hover: #1e40af;
+  --color-primary: #006d2c;
+  --color-primary-hover: #01471d;
   --color-danger: #dc2626;
   --color-danger-hover: #991b1b;
   --color-success: #16a34a;
@@ -13,7 +13,7 @@
   --font-md: 1rem;
   --font-lg: 1.25rem;
 
-  background-color: var(--color-bg);
+  /* background-color: var(--color-bg); */
   padding: 2rem;
   display: flex;
   justify-content: center;
@@ -244,7 +244,9 @@
   padding: 0.75rem;
   border: 1px solid transparent;
   border-radius: var(--radius);
-  transition: border-color 0.2s ease, background-color 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .profile-settings .privacy-option:hover {

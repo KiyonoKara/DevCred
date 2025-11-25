@@ -5,7 +5,6 @@ import {
   deleteApplication,
   getAllApplications,
   getApplicationByJobId,
-  getApplicationCount,
   hasUserApplied,
 } from '../services/jobApplication.service';
 import { FakeSOSocket } from '../types/types';
@@ -26,12 +25,7 @@ const jobApplicationController = (socket: FakeSOSocket) => {
   const createApplicationRoute = async (req: Request, res: Response): Promise<void> => {
     const { jobId, username } = req.body;
 
-    if (!username) {
-      res.status(401).send('Authentication required');
-      return;
-    }
-
-    if (!jobId || !ObjectId.isValid(jobId)) {
+    if (!ObjectId.isValid(jobId)) {
       res.status(400).send('Invalid job ID');
       return;
     }
@@ -193,31 +187,6 @@ const jobApplicationController = (socket: FakeSOSocket) => {
   };
 
   /**
-   * Gets the application count for a job posting.
-   * @param req The request object containing the job ID.
-   * @param res The response object to send the result.
-   */
-  const getApplicationCountRoute = async (req: Request, res: Response): Promise<void> => {
-    const { jobId } = req.params as { jobId: string };
-
-    if (!ObjectId.isValid(jobId)) {
-      res.status(400).send('Invalid job ID');
-      return;
-    }
-
-    try {
-      const count = await getApplicationCount(jobId);
-      res.status(200).json({ count });
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        res.status(500).send(`Error when fetching application count: ${err.message}`);
-      } else {
-        res.status(500).send('Error when fetching application count');
-      }
-    }
-  };
-
-  /**
    * Checks if a user has applied to a job posting.
    * @param req The request object containing the job ID.
    * @param res The response object to send the result.
@@ -253,7 +222,6 @@ const jobApplicationController = (socket: FakeSOSocket) => {
   router.delete('/:applicationId', deleteApplicationRoute);
   router.get('/user/:username', getAllApplicationsRoute);
   router.get('/job/:jobId', getApplicationByJobIdRoute);
-  router.get('/:jobId/count', getApplicationCountRoute);
   router.get('/:jobId/status', hasUserAppliedRoute);
 
   return router;

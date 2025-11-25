@@ -1,6 +1,5 @@
 .job_postings-page {
   padding: 2rem;
-  background-color: #f9f9f9;
   font-family: Arial, sans-serif;
   min-height: 100vh;
 }
@@ -10,6 +9,10 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
+  margin-top: 5px;
+  background-color: white;
+  padding: 0 20px 0 20px;
+  border-radius: 20px;
 }
 
 .job_postings-title {
@@ -18,7 +21,7 @@
 }
 
 .job_postings-create-btn {
-  background-color: #2563eb;
+  background-color: #006d2c;
   color: white;
   padding: 0.6rem 1.2rem;
   font-size: 1rem;
@@ -31,11 +34,11 @@
 }
 
 .job_postings-create-btn:hover {
-  background-color: #1e40af;
+  background-color: #01471d;
 }
 
 .job_postings-create-btn:active {
-  background-color: #163493;
+  background-color: #01471d;
 }
 
 .job_postings-list {

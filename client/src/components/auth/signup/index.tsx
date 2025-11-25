@@ -21,95 +21,97 @@ const Signup = () => {
   } = useAuth('signup');
 
   return (
-    <div className='container'>
-      <h2>Sign up for FakeStackOverflow!</h2>
-      <form onSubmit={handleSubmit}>
-        <h4>Please select a username.</h4>
-        <input
-          type='text'
-          value={username}
-          onChange={event => handleInputChange(event, 'username')}
-          placeholder='Enter your username'
-          required
-          className='input-text'
-          id='username-input'
-        />
-        <h4>I am a:</h4>
-        <div className='user-type-buttons'>
-          <button
-            type='button'
-            className={`user-type-button recruiter-button ${userType === 'recruiter' ? 'selected' : ''}`}
-            onClick={event => {
-              event.stopPropagation();
-              handleInputChange(
-                {
-                  target: {
-                    value: 'recruiter',
-                  },
-                } as ChangeEvent<HTMLInputElement>,
-                'userType',
-              );
-            }}>
-            Recruiter
-          </button>
-          <button
-            type='button'
-            className={`user-type-button talent-button ${userType === 'talent' ? 'selected' : ''}`}
-            onClick={event => {
-              event.stopPropagation();
-              handleInputChange(
-                {
-                  target: {
-                    value: 'talent',
-                  },
-                } as ChangeEvent<HTMLInputElement>,
-                'userType',
-              );
-            }}>
-            Applicant
-          </button>
-        </div>
-        <input
-          type='hidden'
-          name='role'
-          value={userType}
-          onChange={event => event.stopPropagation()}
-        />
-        <h4>Please enter your password.</h4>
-        <input
-          type={showPassword ? 'text' : 'password'}
-          value={password}
-          onChange={event => handleInputChange(event, 'password')}
-          placeholder='Enter your password'
-          required
-          className='input-text'
-          id='password-input'
-        />
-        <input
-          type={showPassword ? 'text' : 'password'}
-          value={passwordConfirmation}
-          onChange={e => handleInputChange(e, 'confirmPassword')}
-          placeholder='Confirm your password'
-          required
-          className='input-text'
-        />
-        <div className='show-password'>
+    <div className='signup-container'>
+      <div className='auth-box'>
+        <h2>Sign up for DevCred!</h2>
+        <form className='form' onSubmit={handleSubmit}>
+          <h4>Please select a username.</h4>
           <input
-            type='checkbox'
-            id='showPasswordToggle'
-            checked={showPassword}
-            onChange={togglePasswordVisibility}
+            type='text'
+            value={username}
+            onChange={event => handleInputChange(event, 'username')}
+            placeholder='Enter your username'
+            required
+            className='input-text'
+            id='username-input'
           />
-          <label htmlFor='showPasswordToggle'>Show Password</label>
-        </div>
-        <button type='submit' className='login-button'>
-          Submit
-        </button>
-      </form>
-      {err && <p className='error-message'>{err}</p>}
-      <Link to='/' className='login-link'>
-        Have an account? Login here.
-      </Link>
+          <h4>I am a:</h4>
+          <div className='user-type-buttons'>
+            <button
+              type='button'
+              className={`user-type-button recruiter-button ${userType === 'recruiter' ? 'selected' : ''}`}
+              onClick={event => {
+                event.stopPropagation();
+                handleInputChange(
+                  {
+                    target: {
+                      value: 'recruiter',
+                    },
+                  } as ChangeEvent<HTMLInputElement>,
+                  'userType',
+                );
+              }}>
+              Recruiter
+            </button>
+            <button
+              type='button'
+              className={`user-type-button talent-button ${userType === 'talent' ? 'selected' : ''}`}
+              onClick={event => {
+                event.stopPropagation();
+                handleInputChange(
+                  {
+                    target: {
+                      value: 'talent',
+                    },
+                  } as ChangeEvent<HTMLInputElement>,
+                  'userType',
+                );
+              }}>
+              Applicant
+            </button>
+          </div>
+          <input
+            type='hidden'
+            name='role'
+            value={userType}
+            onChange={event => event.stopPropagation()}
+          />
+          <h4>Please enter your password.</h4>
+          <input
+            type={showPassword ? 'text' : 'password'}
+            value={password}
+            onChange={event => handleInputChange(event, 'password')}
+            placeholder='Enter your password'
+            required
+            className='input-text'
+            id='password-input'
+          />
+          <input
+            type={showPassword ? 'text' : 'password'}
+            value={passwordConfirmation}
+            onChange={e => handleInputChange(e, 'confirmPassword')}
+            placeholder='Confirm your password'
+            required
+            className='input-text'
+          />
+          <div className='show-password'>
+            <input
+              type='checkbox'
+              id='showPasswordToggle'
+              checked={showPassword}
+              onChange={togglePasswordVisibility}
+            />
+            <label htmlFor='showPasswordToggle'>Show Password</label>
+          </div>
+          <button type='submit' className='login-button'>
+            Submit
+          </button>
+        </form>
+        {err && <p className='error-message'>{err}</p>}
+        <Link to='/' className='login-link'>
+          Have an account? Login here.
+        </Link>
+      </div>
     </div>
   );
 };

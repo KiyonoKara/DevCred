@@ -16,7 +16,11 @@ const MessageCard = ({ message }: { message: DatabaseMessage }) => (
       <div className='message-time'>{getMetaData(new Date(message.msgDateTime))}</div>
     </div>
     <div className='message-body'>
-      <Markdown remarkPlugins={[remarkGfm]}>{message.msg}</Markdown>
+      <Markdown remarkPlugins={[remarkGfm]}>
+        {message.type == 'resume'
+          ? message.msg.substring(0, message.msg.indexOf(':'))
+          : message.msg}
+      </Markdown>
     </div>
   </div>
 );

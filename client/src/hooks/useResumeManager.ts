@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
-  uploadResume as uploadResumeRequest,
-  getUserResumes,
-  downloadResume as downloadResumeRequest,
   deleteResume as deleteResumeRequest,
+  downloadResume as downloadResumeRequest,
+  getUserResumes,
   setActiveResume as setActiveResumeRequest,
+  uploadResume as uploadResumeRequest,
 } from '../services/resumeService';
 import { SafeDatabaseResume } from '../types/types';
 
@@ -55,7 +55,10 @@ const useResumeManager = (username?: string) => {
   }, [username, refreshResumes]);
 
   const uploadResume = useCallback(
-    async (file: File, options: { makeActive?: boolean } = {}): Promise<ResumeActionResult> => {
+    async (
+      file: File,
+      options: { makeActive?: boolean; isDMFile?: boolean } = {},
+    ): Promise<ResumeActionResult> => {
       if (!username) {
         return { success: false, error: 'You must be logged in to upload a resume.' };
       }
@@ -68,6 +71,7 @@ const useResumeManager = (username?: string) => {
         setResumeActionLoading(true);
         const uploadedResume = await uploadResumeRequest(username, file, {
           isActive: options.makeActive ?? true,
+          isDMFile: options.isDMFile ?? false,
         });
 
         if (options.makeActive ?? true) {

@@ -3,9 +3,9 @@
 // The server should run on localhost port 8000.
 // This is where you should start writing server-side code for this application.
 // startServer() is a function that starts the server
+import cors from 'cors';
 import 'dotenv/config';
 import express, { NextFunction, Request, Response } from 'express';
-import cors from 'cors';
 import * as OpenApiValidator from 'express-openapi-validator';
 import * as fs from 'fs';
 import * as http from 'http';

@@ -1,6 +1,6 @@
-import './index.css';
 import { ObjectId } from 'mongodb';
 import { PopulatedDatabaseChat } from '../../../../types/types';
+import './index.css';
 
 /**
  * ChatsListCard component displays information about a chat and allows the user to select it.
@@ -21,8 +21,10 @@ const ChatsListCard = ({
   handleDeleteDM: (chatID: ObjectId) => void;
   isSelected: boolean;
 }) => (
-  <div className={`chats-list-card ${isSelected ? 'selected' : ''}`}>
-    <div onClick={() => handleChatSelect(chat._id)} className='chat-info'>
+  <div
+    className={`chats-list-card ${isSelected ? 'selected' : ''}`}
+    onClick={() => handleChatSelect(chat._id)}>
+    <div className='chat-info'>
       <p>
         <strong>Chat with:</strong> {chat.participants.join(', ')}
       </p>

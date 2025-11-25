@@ -3,10 +3,11 @@ import CommunityModel from '../models/community.model';
 import QuestionModel from '../models/questions.model';
 import {
   Community,
+  CommunityEngagementSummary,
   CommunityResponse,
   DatabaseCommunity,
-  CommunityEngagementSummary,
 } from '../types/types';
+import { incrementUserPoint } from './user.service';
 
 interface QuestionCountAggregate {
   _id: Types.ObjectId;
@@ -244,6 +245,11 @@ export const createCommunity = async (communityData: Community): Promise<Communi
         : [...communityData.participants, communityData.admin],
       visibility: communityData.visibility || 'PUBLIC',
     });
+
+    const user = await incrementUserPoint(communityData.admin);
+    if (!user || 'error' in user) {
+      throw new Error(user.error);
+    }
 
     const savedCommunity = await newCommunity.save();
     return savedCommunity;

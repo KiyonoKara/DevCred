@@ -1,14 +1,14 @@
-import { getMetaData } from '../../../tool';
 import { useState } from 'react';
-import AnswerView from './answer';
-import AnswerHeader from './header';
+import useAnswerPage from '../../../hooks/useAnswerPage';
+import { getMetaData } from '../../../tool';
 import { Comment } from '../../../types/types';
-import './index.css';
-import QuestionBody from './questionBody';
-import VoteComponent from '../voteComponent';
 import CommentSection from '../commentSection';
 import EditQuestionModal from '../editQuestionModal';
-import useAnswerPage from '../../../hooks/useAnswerPage';
+import VoteComponent from '../voteComponent';
+import AnswerView from './answer';
+import AnswerHeader from './header';
+import './index.css';
+import QuestionBody from './questionBody';
 
 /**
  * AnswerPage component that displays the full content of a question along with its answers.
@@ -73,57 +73,59 @@ const AnswerPage = () => {
   ) : undefined;
 
   return (
-    <>
-      <VoteComponent question={question} />
-      <AnswerHeader
-        ansCount={question.answers.length}
-        title={question.title}
-        actionButtons={actionButtons}
-      />
-
-      <QuestionBody
-        views={question.views.length}
-        text={question.text}
-        askby={question.askedBy}
-        meta={getMetaData(new Date(question.askDateTime))}
-      />
-      <CommentSection
-        comments={question.comments}
-        handleAddComment={(comment: Comment) => handleNewComment(comment, 'question', questionID)}
-      />
-      {question.answers.map(a => (
-        <AnswerView
-          key={String(a._id)}
-          text={a.text}
-          ansBy={a.ansBy}
-          meta={getMetaData(new Date(a.ansDateTime))}
-          comments={a.comments}
-          answerId={String(a._id)}
-          handleAddComment={(comment: Comment) =>
-            handleNewComment(comment, 'answer', String(a._id))
-          }
-          handleEditAnswer={handleEditAnswer}
-          handleDeleteAnswer={handleDeleteAnswer}
+    <div className='container'>
+      <div className='container-box'>
+        <VoteComponent question={question} />
+        <AnswerHeader
+          ansCount={question.answers.length}
+          title={question.title}
+          actionButtons={actionButtons}
         />
-      ))}
-      <button
-        className='bluebtn ansButton'
-        onClick={() => {
-          handleNewAnswer();
-        }}>
-        Answer Question
-      </button>
 
-      {isEditingQuestion && (
-        <EditQuestionModal
-          questionId={questionID}
-          currentTitle={question.title}
-          currentText={question.text}
-          onSave={handleQuestionEdit}
-          onCancel={() => setIsEditingQuestion(false)}
+        <QuestionBody
+          views={question.views.length}
+          text={question.text}
+          askby={question.askedBy}
+          meta={getMetaData(new Date(question.askDateTime))}
         />
-      )}
-    </>
+        <CommentSection
+          comments={question.comments}
+          handleAddComment={(comment: Comment) => handleNewComment(comment, 'question', questionID)}
+        />
+        {question.answers.map(a => (
+          <AnswerView
+            key={String(a._id)}
+            text={a.text}
+            ansBy={a.ansBy}
+            meta={getMetaData(new Date(a.ansDateTime))}
+            comments={a.comments}
+            answerId={String(a._id)}
+            handleAddComment={(comment: Comment) =>
+              handleNewComment(comment, 'answer', String(a._id))
+            }
+            handleEditAnswer={handleEditAnswer}
+            handleDeleteAnswer={handleDeleteAnswer}
+          />
+        ))}
+        <button
+          className='bluebtn ansButton'
+          onClick={() => {
+            handleNewAnswer();
+          }}>
+          Answer Question
+        </button>
+
+        {isEditingQuestion && (
+          <EditQuestionModal
+            questionId={questionID}
+            currentTitle={question.title}
+            currentText={question.text}
+            onSave={handleQuestionEdit}
+            onCancel={() => setIsEditingQuestion(false)}
+          />
+        )}
+      </div>
+    </div>
   );
 };
 

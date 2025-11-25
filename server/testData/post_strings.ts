@@ -53,7 +53,7 @@ const ERROR_EMPTY_ANSWER = 'Answer text cannot be empty';
 const ERROR_EMPTY_TEXT = 'Question text cannot be empty';
 
 // User interface text
-const WELCOME_MESSAGE = 'Welcome to FakeStackOverflow!';
+const WELCOME_MESSAGE = 'Welcome to DevCred!';
 const ASK_QUESTION_BUTTON = 'Ask a Question';
 const POST_QUESTION_BUTTON = 'Post Question';
 const ANSWER_QUESTION_BUTTON = 'Answer Question';
@@ -63,49 +63,44 @@ const UNANSWERED_FILTER = 'Unanswered';
 const ACTIVE_FILTER = 'Active';
 
 export {
-  // Question descriptions
-  Q1_DESC,
-  Q2_DESC,
-  Q3_DESC,
-  Q4_DESC,
-  Q5_DESC,
-  Q6_DESC,
-  Q7_DESC,
-  Q8_DESC,
-  Q9_DESC,
-  Q10_DESC,
-
-  // Question texts
-  Q1_TXT,
-  Q2_TXT,
-  Q3_TXT,
-  Q4_TXT,
-
   // Answer texts
   A1_TXT,
   A2_TXT,
   A3_TXT,
   A4_TXT,
-
-  // Test data
-  TEST_USERNAME,
-  TEST_QUESTION_TITLE,
-  TEST_QUESTION_TEXT,
-  TEST_ANSWER_TEXT,
-  TEST_TAG,
-
-  // Error messages
-  ERROR_EMPTY_TITLE,
+  ACTIVE_FILTER,
+  ANSWER_QUESTION_BUTTON,
+  ASK_QUESTION_BUTTON,
   ERROR_EMPTY_ANSWER,
   ERROR_EMPTY_TEXT,
-
+  // Error messages
+  ERROR_EMPTY_TITLE,
+  POST_ANSWER_BUTTON,
+  POST_QUESTION_BUTTON,
+  Q10_DESC,
+  // Question descriptions
+  Q1_DESC,
+  // Question texts
+  Q1_TXT,
+  Q2_DESC,
+  Q2_TXT,
+  Q3_DESC,
+  Q3_TXT,
+  Q4_DESC,
+  Q4_TXT,
+  Q5_DESC,
+  Q6_DESC,
+  Q7_DESC,
+  Q8_DESC,
+  Q9_DESC,
+  QUESTIONS_LINK,
+  TEST_ANSWER_TEXT,
+  TEST_QUESTION_TEXT,
+  TEST_QUESTION_TITLE,
+  TEST_TAG,
+  // Test data
+  TEST_USERNAME,
+  UNANSWERED_FILTER,
   // UI text
   WELCOME_MESSAGE,
-  ASK_QUESTION_BUTTON,
-  POST_QUESTION_BUTTON,
-  ANSWER_QUESTION_BUTTON,
-  POST_ANSWER_BUTTON,
-  QUESTIONS_LINK,
-  UNANSWERED_FILTER,
-  ACTIVE_FILTER,
 };

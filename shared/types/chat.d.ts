@@ -1,5 +1,5 @@
-import { ObjectId } from 'mongodb';
 import { Request } from 'express';
+import { ObjectId } from 'mongodb';
 import { DatabaseMessage, Message } from './message';
 import { DatabaseUser } from './user';
 
@@ -87,7 +87,9 @@ export interface ChatIdRequest extends Request {
  * - `chatId` is passed in the route params.
  */
 export interface AddMessageRequestToChat extends ChatIdRequest {
-  body: Omit<Message, 'type'>;
+  body: Omit<Message, 'type'> & {
+    type?: 'global' | 'direct' | 'resume' | 'application';
+  };
 }
 
 /**

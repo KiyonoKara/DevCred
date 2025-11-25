@@ -1,8 +1,8 @@
-import './index.css';
+import useQuestionView from '../../../../hooks/useQuestionView';
 import { getMetaData } from '../../../../tool';
 import { PopulatedDatabaseQuestion } from '../../../../types/types';
 import SaveToCollectionModal from '../../collections/saveToCollectionModal';
-import useQuestionView from '../../../../hooks/useQuestionView';
+import './index.css';
 
 /**
  * Interface representing the props for the Question component.
@@ -38,6 +38,13 @@ const QuestionView = ({ question }: QuestionProps) => {
       </div>
       <div className='question_mid'>
         <div className='postTitle'>{question.title}</div>
+      </div>
+      <div className='metrics'>
+        <div className='lastActivity'>
+          <div className='question_author'>{question.askedBy}</div>
+          <div>&nbsp;</div>
+          <div className='question_meta'>asked {getMetaData(new Date(question.askDateTime))}</div>
+        </div>
         <div className='question_tags'>
           {question.tags.map(tag => (
             <button
@@ -51,11 +58,6 @@ const QuestionView = ({ question }: QuestionProps) => {
             </button>
           ))}
         </div>
-      </div>
-      <div className='lastActivity'>
-        <div className='question_author'>{question.askedBy}</div>
-        <div>&nbsp;</div>
-        <div className='question_meta'>asked {getMetaData(new Date(question.askDateTime))}</div>
       </div>
 
       <button

@@ -5,7 +5,7 @@ import './index.css';
  * ApplicantJobPostingsViewer component displays details for a specific job posting, allowing users to apply and recruiter to view.
  */
 const ApplicantJobPostingsViewer = () => {
-  const { userType, jobPosting, applicationStatus, handleApplyToPosition } =
+  const { userType, jobPosting, applicationStatus, handleApplyToPosition, hasActiveResume } =
     useTalentJobPostingViewerPage();
 
   return (
@@ -63,10 +63,17 @@ const ApplicantJobPostingsViewer = () => {
               <div className='info-banner applied-status'>
                 <span>You have applied to this position</span>
               </div>
-            ) : (
+            ) : hasActiveResume ? (
               <button type='button' className='apply-button' onClick={handleApplyToPosition}>
                 Apply to Position
               </button>
+            ) : (
+              <div className='info-banner no-resume-notice'>
+                <span>
+                  You must have active resume to apply to this position. Please add one to your
+                  profile through View Profile {'>'} Go To Settings
+                </span>
+              </div>
             )}
           </div>
 

@@ -23,7 +23,7 @@ const JobBoard = () => {
         <h1 className='job_postings-title'>Explore Job Postings</h1>
       </div>
 
-      <div>
+      <div className='filter-control'>
         <input
           value={location}
           onChange={e => setLocation(e.target.value)}
@@ -55,7 +55,6 @@ const JobBoard = () => {
                 onClick={() => handleViewJobPosting(job_posting._id.toString())}>
                 <h2 className='job_posting-name'>{job_posting.title}</h2>
                 <p className='job_posting-description'>{job_posting.company}</p>
-                <p className='job_posting-privacy'>{job_posting.active ? 'Active' : 'Inactive'}</p>
                 {job_posting.deadline && (
                   <p className='job_posting-privacy'>{`Application Deadline: ${formattedDate(job_posting.deadline)}`}</p>
                 )}

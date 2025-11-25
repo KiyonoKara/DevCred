@@ -1,9 +1,8 @@
 .questionBody {
   display: flex;
   flex-direction: row;
-  /* justify-content: space-between;  */
   margin-top: 5%;
-  border-bottom: #000000 1px dashed;
+  border-bottom: #cecece 2px solid;
 }
 
 .answer_question_view {
