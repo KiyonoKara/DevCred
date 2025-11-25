@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { DatabaseJobFair } from '@fake-stack-overflow/shared';
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import jobFairService from '../services/jobFairService';
 import useUserContext from './useUserContext';
 
@@ -14,12 +14,8 @@ const useJobFairListPage = () => {
   const [filteredJobFairs, setFilteredJobFairs] = useState<DatabaseJobFair[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<'upcoming' | 'live' | 'ended' | 'all'>(
-    'upcoming',
-  );
-  const [visibilityFilter, setVisibilityFilter] = useState<'public' | 'invite-only' | 'all'>(
-    'public',
-  );
+  const [statusFilter, setStatusFilter] = useState<'upcoming' | 'live' | 'ended' | 'all'>('all');
+  const [visibilityFilter, setVisibilityFilter] = useState<'public' | 'invite-only' | 'all'>('all');
   const [myOrganizationOnly, setMyOrganizationOnly] = useState<boolean>(false);
   const { user: currentUser } = useUserContext();
   // Check if user is a recruiter or not
