@@ -598,5 +598,67 @@ describe('Test userController', () => {
       expect(response.status).toBe(500);
       expect(response.text).toContain('Error when updating user privacy settings');
     });
+
+    it('should return 400 for empty username string', async () => {
+      const mockReqBody = {
+        username: '',
+        profileVisibility: 'private' as const,
+        dmEnabled: false,
+      };
+
+      const response = await supertest(app)
+        .patch('/api/user/updatePrivacySettings')
+        .send(mockReqBody);
+
+      const openApiError = JSON.parse(response.text);
+      expect(response.status).toBe(400);
+      expect(openApiError.errors[0].path).toBe('/body/username');
+    });
+
+    it('should handle missing both profileVisibility and dmEnabled', async () => {
+      const mockReqBody = {
+        username: mockUser.username,
+        // Neither profileVisibility nor dmEnabled provided
+      };
+
+      // Should still work - updateUser can handle empty updates
+      updateUserPrivacySettingsSpy.mockResolvedValueOnce(mockSafeUser);
+
+      const response = await supertest(app)
+        .patch('/api/user/updatePrivacySettings')
+        .send(mockReqBody);
+
+      expect(response.status).toBe(200);
+    });
+
+    it('should handle undefined username (OpenAPI validation)', async () => {
+      const mockReqBody = {
+        username: undefined,
+        profileVisibility: 'private' as const,
+        dmEnabled: false,
+      };
+
+      const response = await supertest(app)
+        .patch('/api/user/updatePrivacySettings')
+        .send(mockReqBody);
+
+      // OpenAPI validation should catch undefined required field
+      expect(response.status).toBe(400);
+    });
+
+    it('should handle null username (OpenAPI validation)', async () => {
+      const mockReqBody = {
+        username: null,
+        profileVisibility: 'private' as const,
+        dmEnabled: false,
+      };
+
+      const response = await supertest(app)
+        .patch('/api/user/updatePrivacySettings')
+        .send(mockReqBody);
+
+      // OpenAPI validation should catch null required field
+      expect(response.status).toBe(400);
+    });
   });
 });

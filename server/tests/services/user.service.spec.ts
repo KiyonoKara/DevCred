@@ -635,4 +635,301 @@ describe('getUserActivityData', () => {
       expect(result.statusCode).toBe(404);
     }
   });
+
+  it('should handle empty username', async () => {
+    jest.spyOn(UserModel, 'findOne').mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue(null),
+      }),
+    } as unknown as Query<null, typeof UserModel>);
+
+    const result = await getUserActivityData('', viewerUsername);
+
+    expect('error' in result).toBe(true);
+    if ('error' in result) {
+      expect(result.error).toContain('User not found');
+      expect(result.statusCode).toBe(404);
+    }
+  });
+
+  it('should handle null viewerUsername', async () => {
+    jest.spyOn(UserModel, 'findOne').mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue(mockUserDoc),
+      }),
+    } as unknown as Query<typeof mockUserDoc, typeof UserModel>);
+
+    jest.spyOn(QuestionModel, 'countDocuments').mockResolvedValueOnce(2);
+    jest.spyOn(AnswerModel, 'countDocuments').mockResolvedValueOnce(1);
+
+    const mockQuestions = [
+      {
+        ...QUESTIONS[0],
+        tags: [tag1, tag2],
+      },
+    ];
+
+    const mockAnswers = [ans1];
+    const mockQuestionForAnswer = QUESTIONS[0];
+
+    const questionFindMock = {
+      populate: jest.fn().mockReturnThis(),
+      select: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockResolvedValue(mockQuestions),
+    };
+    jest.spyOn(QuestionModel, 'find').mockReturnValueOnce(questionFindMock as any);
+
+    const answerFindMock = {
+      select: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockResolvedValue(mockAnswers),
+    };
+    jest.spyOn(AnswerModel, 'find').mockReturnValueOnce(answerFindMock as any);
+
+    const questionForAnswerFindMock = {
+      select: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockResolvedValue([mockQuestionForAnswer]),
+    };
+    jest.spyOn(QuestionModel, 'find').mockReturnValueOnce(questionForAnswerFindMock as any);
+
+    const result = await getUserActivityData(testUsername, null as any);
+
+    expect('error' in result).toBe(false);
+    if (!('error' in result)) {
+      expect(result.visibility).toBe('public-full');
+      expect(result.canViewDetails).toBe(true);
+      expect(result.isOwner).toBe(false);
+    }
+  });
+
+  it('should handle QuestionModel.countDocuments failure', async () => {
+    jest.spyOn(UserModel, 'findOne').mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue(mockUserDoc),
+      }),
+    } as unknown as Query<typeof mockUserDoc, typeof UserModel>);
+
+    const error = new Error('Database query failed');
+    jest.spyOn(QuestionModel, 'countDocuments').mockRejectedValueOnce(error);
+
+    const result = await getUserActivityData(testUsername, viewerUsername);
+
+    expect('error' in result).toBe(true);
+    if ('error' in result) {
+      expect(result.error).toContain('Error occurred when retrieving user activity');
+    }
+  });
+
+  it('should handle AnswerModel.countDocuments failure', async () => {
+    jest.spyOn(UserModel, 'findOne').mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue(mockUserDoc),
+      }),
+    } as unknown as Query<typeof mockUserDoc, typeof UserModel>);
+
+    jest.spyOn(QuestionModel, 'countDocuments').mockResolvedValueOnce(2);
+    const error = new Error('Database query failed');
+    jest.spyOn(AnswerModel, 'countDocuments').mockRejectedValueOnce(error);
+
+    const result = await getUserActivityData(testUsername, viewerUsername);
+
+    expect('error' in result).toBe(true);
+    if ('error' in result) {
+      expect(result.error).toContain('Error occurred when retrieving user activity');
+    }
+  });
+
+  it('should handle QuestionModel.find failure when fetching questions', async () => {
+    jest.spyOn(UserModel, 'findOne').mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue(mockUserDoc),
+      }),
+    } as unknown as Query<typeof mockUserDoc, typeof UserModel>);
+
+    jest.spyOn(QuestionModel, 'countDocuments').mockResolvedValueOnce(2);
+    jest.spyOn(AnswerModel, 'countDocuments').mockResolvedValueOnce(1);
+
+    const error = new Error('Database query failed');
+    const questionFindMock = {
+      populate: jest.fn().mockReturnThis(),
+      select: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockRejectedValue(error),
+    };
+    jest.spyOn(QuestionModel, 'find').mockReturnValueOnce(questionFindMock as any);
+
+    const result = await getUserActivityData(testUsername, viewerUsername);
+
+    expect('error' in result).toBe(true);
+    if ('error' in result) {
+      expect(result.error).toContain('Error occurred when retrieving user activity');
+    }
+  });
+
+  it('should handle AnswerModel.find failure when fetching answers', async () => {
+    jest.spyOn(UserModel, 'findOne').mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue(mockUserDoc),
+      }),
+    } as unknown as Query<typeof mockUserDoc, typeof UserModel>);
+
+    jest.spyOn(QuestionModel, 'countDocuments').mockResolvedValueOnce(2);
+    jest.spyOn(AnswerModel, 'countDocuments').mockResolvedValueOnce(1);
+
+    const mockQuestions = [
+      {
+        ...QUESTIONS[0],
+        tags: [tag1, tag2],
+      },
+    ];
+
+    const questionFindMock = {
+      populate: jest.fn().mockReturnThis(),
+      select: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockResolvedValue(mockQuestions),
+    };
+    jest.spyOn(QuestionModel, 'find').mockReturnValueOnce(questionFindMock as any);
+
+    const error = new Error('Database query failed');
+    const answerFindMock = {
+      select: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockRejectedValue(error),
+    };
+    jest.spyOn(AnswerModel, 'find').mockReturnValueOnce(answerFindMock as any);
+
+    const result = await getUserActivityData(testUsername, viewerUsername);
+
+    expect('error' in result).toBe(true);
+    if ('error' in result) {
+      expect(result.error).toContain('Error occurred when retrieving user activity');
+    }
+  });
+
+  it('should handle QuestionModel.find failure when fetching questions for answers', async () => {
+    jest.spyOn(UserModel, 'findOne').mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue(mockUserDoc),
+      }),
+    } as unknown as Query<typeof mockUserDoc, typeof UserModel>);
+
+    jest.spyOn(QuestionModel, 'countDocuments').mockResolvedValueOnce(2);
+    jest.spyOn(AnswerModel, 'countDocuments').mockResolvedValueOnce(1);
+
+    const mockQuestions = [
+      {
+        ...QUESTIONS[0],
+        tags: [tag1, tag2],
+      },
+    ];
+
+    const questionFindMock = {
+      populate: jest.fn().mockReturnThis(),
+      select: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockResolvedValue(mockQuestions),
+    };
+    jest.spyOn(QuestionModel, 'find').mockReturnValueOnce(questionFindMock as any);
+
+    const mockAnswers = [ans1];
+    const answerFindMock = {
+      select: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockResolvedValue(mockAnswers),
+    };
+    jest.spyOn(AnswerModel, 'find').mockReturnValueOnce(answerFindMock as any);
+
+    // Mock QuestionModel.find for answers' related questions - this one fails
+    const error = new Error('Database query failed');
+    const questionForAnswerFindMock = {
+      select: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockRejectedValue(error),
+    };
+    jest.spyOn(QuestionModel, 'find').mockReturnValueOnce(questionForAnswerFindMock as any);
+
+    const result = await getUserActivityData(testUsername, viewerUsername);
+
+    expect('error' in result).toBe(true);
+    if ('error' in result) {
+      expect(result.error).toContain('Error occurred when retrieving user activity');
+    }
+  });
+
+  it('should handle empty answers array', async () => {
+    jest.spyOn(UserModel, 'findOne').mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue(mockUserDoc),
+      }),
+    } as unknown as Query<typeof mockUserDoc, typeof UserModel>);
+
+    jest.spyOn(QuestionModel, 'countDocuments').mockResolvedValueOnce(2);
+    jest.spyOn(AnswerModel, 'countDocuments').mockResolvedValueOnce(0);
+
+    const mockQuestions = [
+      {
+        ...QUESTIONS[0],
+        tags: [tag1, tag2],
+      },
+    ];
+
+    const questionFindMock = {
+      populate: jest.fn().mockReturnThis(),
+      select: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockResolvedValue(mockQuestions),
+    };
+    jest.spyOn(QuestionModel, 'find').mockReturnValueOnce(questionFindMock as any);
+
+    // Empty answers array
+    const answerFindMock = {
+      select: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockResolvedValue([]),
+    };
+    jest.spyOn(AnswerModel, 'find').mockReturnValueOnce(answerFindMock as any);
+
+    const result = await getUserActivityData(testUsername, viewerUsername);
+
+    expect('error' in result).toBe(false);
+    if (!('error' in result)) {
+      expect(result.answers).toEqual([]);
+      expect(result.questions.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('should handle undefined username', async () => {
+    jest.spyOn(UserModel, 'findOne').mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue(null),
+      }),
+    } as unknown as Query<null, typeof UserModel>);
+
+    const result = await getUserActivityData(undefined as any, viewerUsername);
+
+    expect('error' in result).toBe(true);
+    if ('error' in result) {
+      expect(result.error).toContain('User not found');
+      expect(result.statusCode).toBe(404);
+    }
+  });
+
+  it('should handle QuestionModel.find populate failure for tags', async () => {
+    jest.spyOn(UserModel, 'findOne').mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue(mockUserDoc),
+      }),
+    } as unknown as Query<typeof mockUserDoc, typeof UserModel>);
+
+    jest.spyOn(QuestionModel, 'countDocuments').mockResolvedValueOnce(2);
+    jest.spyOn(AnswerModel, 'countDocuments').mockResolvedValueOnce(0);
+
+    // Mock QuestionModel.find with populate that fails
+    const error = new Error('Populate failed');
+    const questionFindMock = {
+      populate: jest.fn().mockReturnThis(),
+      select: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockRejectedValue(error),
+    };
+    jest.spyOn(QuestionModel, 'find').mockReturnValueOnce(questionFindMock as any);
+
+    const result = await getUserActivityData(testUsername, viewerUsername);
+
+    expect('error' in result).toBe(true);
+    if ('error' in result) {
+      expect(result.error).toContain('Error occurred when retrieving user activity');
+    }
+  });
 });

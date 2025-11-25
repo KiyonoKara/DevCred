@@ -87,6 +87,47 @@ describe('Resume Service', () => {
       expect(result._id).toEqual(mockResumeId);
       expect(ResumeModel.create).toHaveBeenCalledWith(resumeWithDMFile);
     });
+
+    it('should return error for missing required fields', async () => {
+      const incompleteResume = {
+        userId: MOCK_USER_ID,
+        // Missing fileName, fileData, contentType, etc.
+      } as any;
+
+      const error = new Error('Validation failed');
+      jest.spyOn(ResumeModel, 'create').mockRejectedValueOnce(error);
+
+      const result = await createResumeOrPDF(incompleteResume);
+
+      expect('error' in result).toBe(true);
+      if ('error' in result) {
+        expect(result.error).toContain('Error creating resume');
+      }
+    });
+
+    it('should handle null resume parameter', async () => {
+      const error = new Error('Cannot read properties of null');
+      jest.spyOn(ResumeModel, 'create').mockRejectedValueOnce(error);
+
+      const result = await createResumeOrPDF(null as any);
+
+      expect('error' in result).toBe(true);
+      if ('error' in result) {
+        expect(result.error).toContain('Error creating resume');
+      }
+    });
+
+    it('should handle undefined resume parameter', async () => {
+      const error = new Error('Cannot read properties of undefined');
+      jest.spyOn(ResumeModel, 'create').mockRejectedValueOnce(error);
+
+      const result = await createResumeOrPDF(undefined as any);
+
+      expect('error' in result).toBe(true);
+      if ('error' in result) {
+        expect(result.error).toContain('Error creating resume');
+      }
+    });
   });
 
   describe('getUserResumes', () => {
@@ -133,6 +174,28 @@ describe('Resume Service', () => {
       if ('error' in result) {
         expect(result.error).toContain('Error finding user resumes');
       }
+    });
+
+    it('should handle empty userId', async () => {
+      jest.spyOn(ResumeModel, 'find').mockReturnValue({
+        select: jest.fn().mockResolvedValue([]),
+      } as any);
+
+      const result = (await getUserResumes('')) as SafeDatabaseResume[];
+
+      expect(result).toEqual([]);
+      expect(ResumeModel.find).toHaveBeenCalledWith({ userId: '', isDMFile: false });
+    });
+
+    it('should handle undefined userId', async () => {
+      jest.spyOn(ResumeModel, 'find').mockReturnValue({
+        select: jest.fn().mockResolvedValue([]),
+      } as any);
+
+      const result = (await getUserResumes(undefined as any)) as SafeDatabaseResume[];
+
+      expect(result).toEqual([]);
+      expect(ResumeModel.find).toHaveBeenCalledWith({ userId: undefined, isDMFile: false });
     });
   });
 
@@ -199,6 +262,32 @@ describe('Resume Service', () => {
         expect(result.error).toContain('Error downloading resume');
       }
     });
+
+    it('should handle empty resumeId', async () => {
+      jest.spyOn(ResumeModel, 'findById').mockReturnValue({
+        select: jest.fn().mockResolvedValue(null),
+      } as any);
+
+      const result = await downloadResume('');
+
+      expect('error' in result).toBe(true);
+      if ('error' in result) {
+        expect(result.error).toContain('Error downloading resume');
+      }
+    });
+
+    it('should handle undefined resumeId', async () => {
+      jest.spyOn(ResumeModel, 'findById').mockReturnValue({
+        select: jest.fn().mockResolvedValue(null),
+      } as any);
+
+      const result = await downloadResume(undefined as any);
+
+      expect('error' in result).toBe(true);
+      if ('error' in result) {
+        expect(result.error).toContain('Error downloading resume');
+      }
+    });
   });
 
   describe('deleteResume', () => {
@@ -249,6 +338,32 @@ describe('Resume Service', () => {
       } as any);
 
       const result = await deleteResume(invalidId);
+
+      expect('error' in result).toBe(true);
+      if ('error' in result) {
+        expect(result.error).toContain('Error deleting resume');
+      }
+    });
+
+    it('should handle empty resumeId', async () => {
+      jest.spyOn(ResumeModel, 'findByIdAndDelete').mockReturnValue({
+        select: jest.fn().mockResolvedValue(null),
+      } as any);
+
+      const result = await deleteResume('');
+
+      expect('error' in result).toBe(true);
+      if ('error' in result) {
+        expect(result.error).toContain('Error deleting resume');
+      }
+    });
+
+    it('should handle undefined resumeId', async () => {
+      jest.spyOn(ResumeModel, 'findByIdAndDelete').mockReturnValue({
+        select: jest.fn().mockResolvedValue(null),
+      } as any);
+
+      const result = await deleteResume(undefined as any);
 
       expect('error' in result).toBe(true);
       if ('error' in result) {
@@ -335,6 +450,62 @@ describe('Resume Service', () => {
       } as any);
 
       const result = await setActiveResume(MOCK_USER_ID, invalidId);
+
+      expect('error' in result).toBe(true);
+      if ('error' in result) {
+        expect(result.error).toContain('Error setting active resume');
+      }
+    });
+
+    it('should handle empty userId', async () => {
+      jest.spyOn(ResumeModel, 'updateMany').mockResolvedValueOnce({} as any);
+      jest.spyOn(ResumeModel, 'findByIdAndUpdate').mockReturnValue({
+        select: jest.fn().mockResolvedValue(null),
+      } as any);
+
+      const result = await setActiveResume('', mockResumeId.toString());
+
+      expect('error' in result).toBe(true);
+      if ('error' in result) {
+        expect(result.error).toContain('Error setting active resume');
+      }
+    });
+
+    it('should handle empty resumeId', async () => {
+      jest.spyOn(ResumeModel, 'updateMany').mockResolvedValueOnce({} as any);
+      jest.spyOn(ResumeModel, 'findByIdAndUpdate').mockReturnValue({
+        select: jest.fn().mockResolvedValue(null),
+      } as any);
+
+      const result = await setActiveResume(MOCK_USER_ID, '');
+
+      expect('error' in result).toBe(true);
+      if ('error' in result) {
+        expect(result.error).toContain('Error setting active resume');
+      }
+    });
+
+    it('should handle undefined userId', async () => {
+      jest.spyOn(ResumeModel, 'updateMany').mockResolvedValueOnce({} as any);
+      jest.spyOn(ResumeModel, 'findByIdAndUpdate').mockReturnValue({
+        select: jest.fn().mockResolvedValue(null),
+      } as any);
+
+      const result = await setActiveResume(undefined as any, mockResumeId.toString());
+
+      expect('error' in result).toBe(true);
+      if ('error' in result) {
+        expect(result.error).toContain('Error setting active resume');
+      }
+    });
+
+    it('should handle undefined resumeId', async () => {
+      jest.spyOn(ResumeModel, 'updateMany').mockResolvedValueOnce({} as any);
+      jest.spyOn(ResumeModel, 'findByIdAndUpdate').mockReturnValue({
+        select: jest.fn().mockResolvedValue(null),
+      } as any);
+
+      const result = await setActiveResume(MOCK_USER_ID, undefined as any);
 
       expect('error' in result).toBe(true);
       if ('error' in result) {
