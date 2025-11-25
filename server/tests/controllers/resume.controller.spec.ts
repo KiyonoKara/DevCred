@@ -17,7 +17,7 @@ const mockSafeResume: SafeDatabaseResume = {
   isActive: true,
 };
 
-const createResumeSpy = jest.spyOn(resumeService, 'createResume');
+const createResumeSpy = jest.spyOn(resumeService, 'createResumeOrPDF');
 const getUserResumesSpy = jest.spyOn(resumeService, 'getUserResumes');
 const downloadResumeSpy = jest.spyOn(resumeService, 'downloadResume');
 const deleteResumeSpy = jest.spyOn(resumeService, 'deleteResume');

@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 import ResumeModel from '../../models/resume.model';
 import {
-  createResume,
+  createResumeOrPDF,
   getUserResumes,
   downloadResume,
   deleteResume,
@@ -43,11 +43,11 @@ describe('Resume Service', () => {
     jest.clearAllMocks();
   });
 
-  describe('createResume', () => {
+  describe('createResumeOrPDF', () => {
     it('should create a resume and return safe resume object', async () => {
       jest.spyOn(ResumeModel, 'create').mockResolvedValueOnce(mockDatabaseResume as any);
 
-      const result = (await createResume(mockResume)) as SafeDatabaseResume;
+      const result = (await createResumeOrPDF(mockResume)) as SafeDatabaseResume;
 
       expect(result._id).toEqual(mockResumeId);
       expect(result.userId).toEqual(MOCK_USER_ID);
@@ -63,7 +63,7 @@ describe('Resume Service', () => {
       const error = new Error('Database error');
       jest.spyOn(ResumeModel, 'create').mockRejectedValueOnce(error);
 
-      const result = await createResume(mockResume);
+      const result = await createResumeOrPDF(mockResume);
 
       expect('error' in result).toBe(true);
       if ('error' in result) {
@@ -91,7 +91,7 @@ describe('Resume Service', () => {
       const result = (await getUserResumes(MOCK_USER_ID)) as SafeDatabaseResume[];
 
       expect(result).toEqual(mockResumes);
-      expect(ResumeModel.find).toHaveBeenCalledWith({ userId: MOCK_USER_ID });
+      expect(ResumeModel.find).toHaveBeenCalledWith({ userId: MOCK_USER_ID, isDMFile: false });
     });
 
     it('should return empty array if user has no resumes', async () => {
