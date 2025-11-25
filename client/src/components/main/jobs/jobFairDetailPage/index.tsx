@@ -248,7 +248,7 @@ const JobFairDetailPage = () => {
               />
             </div>
           )}
-          {activeTab === 'tournament' && jobFairId && jobFair.codingTournamentEnabled && isHost && (
+          {activeTab === 'tournament' && jobFairId && jobFair.codingTournamentEnabled && (
             <div>
               <CodingTournamentPage jobFairId={jobFairId} />
             </div>
