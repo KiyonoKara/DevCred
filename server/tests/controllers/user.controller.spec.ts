@@ -34,6 +34,7 @@ const updatedUserSpy = jest.spyOn(util, 'updateUser');
 const getUserByUsernameSpy = jest.spyOn(util, 'getUserByUsername');
 const getUsersListSpy = jest.spyOn(util, 'getUsersList');
 const deleteUserByUsernameSpy = jest.spyOn(util, 'deleteUserByUsername');
+const updateUserPrivacySettingsSpy = jest.spyOn(util, 'updateUserPrivacySettings');
 
 describe('Test userController', () => {
   describe('POST /signup', () => {
@@ -446,6 +447,218 @@ describe('Test userController', () => {
       expect(response.text).toContain(
         'Error when updating user biography: Error: Error updating user',
       );
+    });
+  });
+
+  describe('PATCH /updatePrivacySettings', () => {
+    it('should successfully update privacy settings with profileVisibility and dmEnabled', async () => {
+      const mockReqBody = {
+        username: mockUser.username,
+        profileVisibility: 'private' as const,
+        dmEnabled: false,
+      };
+
+      const updatedUserWithPrivacy = {
+        ...mockSafeUser,
+        profileVisibility: 'private' as const,
+        dmEnabled: false,
+      };
+
+      updateUserPrivacySettingsSpy.mockResolvedValueOnce(updatedUserWithPrivacy);
+
+      const response = await supertest(app)
+        .patch('/api/user/updatePrivacySettings')
+        .send(mockReqBody);
+
+      expect(response.status).toBe(200);
+      expect(response.body.profileVisibility).toBe('private');
+      expect(response.body.dmEnabled).toBe(false);
+      expect(updateUserPrivacySettingsSpy).toHaveBeenCalledWith(mockUser.username, {
+        profileVisibility: 'private',
+        dmEnabled: false,
+      });
+    });
+
+    it('should successfully update privacy settings to public-metrics-only', async () => {
+      const mockReqBody = {
+        username: mockUser.username,
+        profileVisibility: 'public-metrics-only' as const,
+        dmEnabled: true,
+      };
+
+      const updatedUserWithPrivacy = {
+        ...mockSafeUser,
+        profileVisibility: 'public-metrics-only' as const,
+        dmEnabled: true,
+      };
+
+      updateUserPrivacySettingsSpy.mockResolvedValueOnce(updatedUserWithPrivacy);
+
+      const response = await supertest(app)
+        .patch('/api/user/updatePrivacySettings')
+        .send(mockReqBody);
+
+      expect(response.status).toBe(200);
+      expect(response.body.profileVisibility).toBe('public-metrics-only');
+      expect(response.body.dmEnabled).toBe(true);
+    });
+
+    it('should successfully update privacy settings to public-full', async () => {
+      const mockReqBody = {
+        username: mockUser.username,
+        profileVisibility: 'public-full' as const,
+        dmEnabled: true,
+      };
+
+      const updatedUserWithPrivacy = {
+        ...mockSafeUser,
+        profileVisibility: 'public-full' as const,
+        dmEnabled: true,
+      };
+
+      updateUserPrivacySettingsSpy.mockResolvedValueOnce(updatedUserWithPrivacy);
+
+      const response = await supertest(app)
+        .patch('/api/user/updatePrivacySettings')
+        .send(mockReqBody);
+
+      expect(response.status).toBe(200);
+      expect(response.body.profileVisibility).toBe('public-full');
+    });
+
+    it('should handle disabled DM + public profile combination', async () => {
+      const mockReqBody = {
+        username: mockUser.username,
+        profileVisibility: 'public-full' as const,
+        dmEnabled: false,
+      };
+
+      const updatedUserWithPrivacy = {
+        ...mockSafeUser,
+        profileVisibility: 'public-full' as const,
+        dmEnabled: false,
+      };
+
+      updateUserPrivacySettingsSpy.mockResolvedValueOnce(updatedUserWithPrivacy);
+
+      const response = await supertest(app)
+        .patch('/api/user/updatePrivacySettings')
+        .send(mockReqBody);
+
+      expect(response.status).toBe(200);
+      expect(response.body.profileVisibility).toBe('public-full');
+      expect(response.body.dmEnabled).toBe(false);
+    });
+
+    it('should return 400 for request missing username', async () => {
+      const mockReqBody = {
+        profileVisibility: 'private' as const,
+        dmEnabled: false,
+      };
+
+      const response = await supertest(app)
+        .patch('/api/user/updatePrivacySettings')
+        .send(mockReqBody);
+
+      const openApiError = JSON.parse(response.text);
+
+      expect(response.status).toBe(400);
+      expect(openApiError.errors[0].path).toBe('/body/username');
+    });
+
+    it('should return 400 for invalid profileVisibility enum value', async () => {
+      const mockReqBody = {
+        username: mockUser.username,
+        profileVisibility: 'invalid-value',
+        dmEnabled: true,
+      };
+
+      const response = await supertest(app)
+        .patch('/api/user/updatePrivacySettings')
+        .send(mockReqBody);
+
+      expect(response.status).toBe(400);
+    });
+
+    it('should return 500 if updateUserPrivacySettings returns an error', async () => {
+      const mockReqBody = {
+        username: mockUser.username,
+        profileVisibility: 'private' as const,
+        dmEnabled: false,
+      };
+
+      updateUserPrivacySettingsSpy.mockResolvedValueOnce({
+        error: 'Error updating privacy settings',
+      });
+
+      const response = await supertest(app)
+        .patch('/api/user/updatePrivacySettings')
+        .send(mockReqBody);
+
+      expect(response.status).toBe(500);
+      expect(response.text).toContain('Error when updating user privacy settings');
+    });
+
+    it('should return 400 for empty username string', async () => {
+      const mockReqBody = {
+        username: '',
+        profileVisibility: 'private' as const,
+        dmEnabled: false,
+      };
+
+      const response = await supertest(app)
+        .patch('/api/user/updatePrivacySettings')
+        .send(mockReqBody);
+
+      const openApiError = JSON.parse(response.text);
+      expect(response.status).toBe(400);
+      expect(openApiError.errors[0].path).toBe('/body/username');
+    });
+
+    it('should handle missing both profileVisibility and dmEnabled', async () => {
+      const mockReqBody = {
+        username: mockUser.username,
+        // Neither profileVisibility nor dmEnabled provided
+      };
+
+      // Should still work - updateUser can handle empty updates
+      updateUserPrivacySettingsSpy.mockResolvedValueOnce(mockSafeUser);
+
+      const response = await supertest(app)
+        .patch('/api/user/updatePrivacySettings')
+        .send(mockReqBody);
+
+      expect(response.status).toBe(200);
+    });
+
+    it('should handle undefined username (OpenAPI validation)', async () => {
+      const mockReqBody = {
+        username: undefined,
+        profileVisibility: 'private' as const,
+        dmEnabled: false,
+      };
+
+      const response = await supertest(app)
+        .patch('/api/user/updatePrivacySettings')
+        .send(mockReqBody);
+
+      // OpenAPI validation should catch undefined required field
+      expect(response.status).toBe(400);
+    });
+
+    it('should handle null username (OpenAPI validation)', async () => {
+      const mockReqBody = {
+        username: null,
+        profileVisibility: 'private' as const,
+        dmEnabled: false,
+      };
+
+      const response = await supertest(app)
+        .patch('/api/user/updatePrivacySettings')
+        .send(mockReqBody);
+
+      // OpenAPI validation should catch null required field
+      expect(response.status).toBe(400);
     });
   });
 });

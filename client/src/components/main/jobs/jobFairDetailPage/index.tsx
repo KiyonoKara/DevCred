@@ -218,13 +218,14 @@ const JobFairDetailPage = () => {
                 onClick={() => setActiveTab('chat')}>
                 💬 Live Chat
               </button>
-              {jobFair.codingTournamentEnabled && (
-                <button
-                  className={`tab-btn ${activeTab === 'tournament' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('tournament')}>
-                  🏆 Coding Tournament
-                </button>
-              )}
+              {jobFair.codingTournamentEnabled &&
+                (isHost || (isParticipant && jobFair.status === 'live')) && (
+                  <button
+                    className={`tab-btn ${activeTab === 'tournament' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('tournament')}>
+                    Coding Tournament
+                  </button>
+                )}
             </>
           )}
         </div>

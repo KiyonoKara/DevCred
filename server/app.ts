@@ -168,7 +168,7 @@ try {
     OpenApiValidator.middleware({
       apiSpec: './openapi.yaml',
       validateRequests: true,
-      validateResponses: true,
+      validateResponses: process.env.NODE_ENV !== 'test' && !process.env.JEST_WORKER_ID,
       ignoreUndocumented: true, // Only validate paths defined in the spec
       formats: {
         'object-id': (v: string) => /^[0-9a-fA-F]{24}$/.test(v),

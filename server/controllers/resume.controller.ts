@@ -42,12 +42,17 @@ const resumeController = (socket: FakeSOSocket) => {
   const uploadPDFRoute = async (req: UploadResumeRequest, res: Response): Promise<void> => {
     const { userId } = req.body;
     let { isActive = true } = req.body;
-    const { isDMFile = false } = req.body;
+    let { isDMFile = false } = req.body;
     const file = req.file;
 
     // Get isActive from string to boolean if it came as a string from FormData
     if (typeof isActive === 'string') {
       isActive = isActive === 'true' || isActive === '1';
+    }
+
+    // Get isDMFile from string to boolean if it came as a string from FormData
+    if (typeof isDMFile === 'string') {
+      isDMFile = isDMFile === 'true' || isDMFile === '1';
     }
 
     if (!file) {
