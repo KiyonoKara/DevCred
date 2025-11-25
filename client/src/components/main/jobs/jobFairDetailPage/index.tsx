@@ -249,14 +249,11 @@ const JobFairDetailPage = () => {
               />
             </div>
           )}
-          {activeTab === 'tournament' &&
-            jobFairId &&
-            jobFair.codingTournamentEnabled &&
-            (isHost || (isParticipant && jobFair.status === 'live')) && (
-              <div>
-                <CodingTournamentPage jobFairId={jobFairId} />
-              </div>
-            )}
+          {activeTab === 'tournament' && jobFairId && jobFair.codingTournamentEnabled && (
+            <div>
+              <CodingTournamentPage jobFairId={jobFairId} />
+            </div>
+          )}
         </div>
       </div>
     </div>
