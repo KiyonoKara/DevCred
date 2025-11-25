@@ -70,6 +70,23 @@ describe('Resume Service', () => {
         expect(result.error).toContain('Error creating resume');
       }
     });
+
+    it('should handle isDMFile flag when creating resume', async () => {
+      const resumeWithDMFile = {
+        ...mockResume,
+        isDMFile: true,
+      };
+      const databaseResumeWithDMFile = {
+        ...mockDatabaseResume,
+        isDMFile: true,
+      };
+      jest.spyOn(ResumeModel, 'create').mockResolvedValueOnce(databaseResumeWithDMFile as any);
+
+      const result = (await createResumeOrPDF(resumeWithDMFile)) as SafeDatabaseResume;
+
+      expect(result._id).toEqual(mockResumeId);
+      expect(ResumeModel.create).toHaveBeenCalledWith(resumeWithDMFile);
+    });
   });
 
   describe('getUserResumes', () => {
@@ -168,6 +185,20 @@ describe('Resume Service', () => {
         expect(result.error).toContain('Error downloading resume');
       }
     });
+
+    it('should return error for invalid ObjectId format', async () => {
+      const invalidId = 'invalid-id-format';
+      jest.spyOn(ResumeModel, 'findById').mockReturnValue({
+        select: jest.fn().mockResolvedValue(null),
+      } as any);
+
+      const result = await downloadResume(invalidId);
+
+      expect('error' in result).toBe(true);
+      if ('error' in result) {
+        expect(result.error).toContain('Error downloading resume');
+      }
+    });
   });
 
   describe('deleteResume', () => {
@@ -204,6 +235,20 @@ describe('Resume Service', () => {
       } as any);
 
       const result = await deleteResume(mockResumeId.toString());
+
+      expect('error' in result).toBe(true);
+      if ('error' in result) {
+        expect(result.error).toContain('Error deleting resume');
+      }
+    });
+
+    it('should return error for invalid ObjectId format', async () => {
+      const invalidId = 'invalid-id-format';
+      jest.spyOn(ResumeModel, 'findByIdAndDelete').mockReturnValue({
+        select: jest.fn().mockResolvedValue(null),
+      } as any);
+
+      const result = await deleteResume(invalidId);
 
       expect('error' in result).toBe(true);
       if ('error' in result) {
@@ -263,6 +308,33 @@ describe('Resume Service', () => {
       } as any);
 
       const result = await setActiveResume(MOCK_USER_ID, mockResumeId.toString());
+
+      expect('error' in result).toBe(true);
+      if ('error' in result) {
+        expect(result.error).toContain('Error setting active resume');
+      }
+    });
+
+    it('should return error if updateMany fails', async () => {
+      const error = new Error('Database error');
+      jest.spyOn(ResumeModel, 'updateMany').mockRejectedValueOnce(error);
+
+      const result = await setActiveResume(MOCK_USER_ID, mockResumeId.toString());
+
+      expect('error' in result).toBe(true);
+      if ('error' in result) {
+        expect(result.error).toContain('Error setting active resume');
+      }
+    });
+
+    it('should return error for invalid ObjectId format', async () => {
+      const invalidId = 'invalid-id-format';
+      jest.spyOn(ResumeModel, 'updateMany').mockResolvedValueOnce({} as any);
+      jest.spyOn(ResumeModel, 'findByIdAndUpdate').mockReturnValue({
+        select: jest.fn().mockResolvedValue(null),
+      } as any);
+
+      const result = await setActiveResume(MOCK_USER_ID, invalidId);
 
       expect('error' in result).toBe(true);
       if ('error' in result) {

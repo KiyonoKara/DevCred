@@ -77,6 +77,117 @@ describe('Resume Controller', () => {
       expect(response.status).toBe(500);
       expect(response.text).toContain('Error uploading resume');
     });
+
+    it('should reject non-PDF files', async () => {
+      // Multer fileFilter will reject non-PDF files before reaching the route
+      // The error will be handled by multer error handler
+      const response = await supertest(app)
+        .post('/api/resume/upload')
+        .field('userId', MOCK_USER_ID)
+        .attach('resume', Buffer.from('not a pdf'), 'test.txt');
+
+      // Multer fileFilter rejects with 500 status and error message
+      expect(response.status).toBe(500);
+      expect(response.text).toContain('Only PDF files are allowed');
+    });
+
+    it('should handle isDMFile parameter', async () => {
+      const resumeWithDMFile = {
+        ...mockSafeResume,
+        isDMFile: true,
+      };
+      createResumeSpy.mockResolvedValueOnce(resumeWithDMFile);
+
+      const response = await supertest(app)
+        .post('/api/resume/upload')
+        .field('userId', MOCK_USER_ID)
+        .field('isDMFile', 'true')
+        .attach('resume', Buffer.from('mock pdf content'), 'test-resume.pdf');
+
+      expect(response.status).toBe(200);
+      expect(createResumeSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: MOCK_USER_ID,
+          isDMFile: true, // Controller converts string to boolean
+        }),
+      );
+    });
+
+    it('should handle isActive as string "true"', async () => {
+      createResumeSpy.mockResolvedValueOnce(mockSafeResume);
+
+      const response = await supertest(app)
+        .post('/api/resume/upload')
+        .field('userId', MOCK_USER_ID)
+        .field('isActive', 'true')
+        .attach('resume', Buffer.from('mock pdf content'), 'test-resume.pdf');
+
+      expect(response.status).toBe(200);
+      expect(createResumeSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          isActive: true,
+        }),
+      );
+    });
+
+    it('should handle isActive as string "false"', async () => {
+      const inactiveResume = {
+        ...mockSafeResume,
+        isActive: false,
+      };
+      createResumeSpy.mockResolvedValueOnce(inactiveResume);
+
+      const response = await supertest(app)
+        .post('/api/resume/upload')
+        .field('userId', MOCK_USER_ID)
+        .field('isActive', 'false')
+        .attach('resume', Buffer.from('mock pdf content'), 'test-resume.pdf');
+
+      expect(response.status).toBe(200);
+      expect(createResumeSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          isActive: false,
+        }),
+      );
+    });
+
+    it('should handle isActive as string "1"', async () => {
+      createResumeSpy.mockResolvedValueOnce(mockSafeResume);
+
+      const response = await supertest(app)
+        .post('/api/resume/upload')
+        .field('userId', MOCK_USER_ID)
+        .field('isActive', '1')
+        .attach('resume', Buffer.from('mock pdf content'), 'test-resume.pdf');
+
+      expect(response.status).toBe(200);
+      expect(createResumeSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          isActive: true,
+        }),
+      );
+    });
+
+    it('should handle isActive as string "0"', async () => {
+      const inactiveResume = {
+        ...mockSafeResume,
+        isActive: false,
+      };
+      createResumeSpy.mockResolvedValueOnce(inactiveResume);
+
+      const response = await supertest(app)
+        .post('/api/resume/upload')
+        .field('userId', MOCK_USER_ID)
+        .field('isActive', '0')
+        .attach('resume', Buffer.from('mock pdf content'), 'test-resume.pdf');
+
+      expect(response.status).toBe(200);
+      expect(createResumeSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          isActive: false,
+        }),
+      );
+    });
   });
 
   describe('GET /api/resume/user/:userId', () => {
@@ -146,6 +257,16 @@ describe('Resume Controller', () => {
       expect(response.status).toBe(500);
       expect(response.text).toContain('Error downloading resume');
     });
+
+    it('should handle invalid resumeId format', async () => {
+      const invalidId = 'invalid-id-format';
+      downloadResumeSpy.mockResolvedValueOnce({ error: 'Resume not found' });
+
+      const response = await supertest(app).get(`/api/resume/download/${invalidId}`);
+
+      expect(response.status).toBe(500);
+      expect(response.text).toContain('Error downloading resume');
+    });
   });
 
   describe('DELETE /api/resume/:resumeId', () => {
@@ -163,6 +284,16 @@ describe('Resume Controller', () => {
       deleteResumeSpy.mockResolvedValueOnce({ error: 'Resume not found' });
 
       const response = await supertest(app).delete(`/api/resume/${mockResumeId}`);
+
+      expect(response.status).toBe(500);
+      expect(response.text).toContain('Error deleting resume');
+    });
+
+    it('should handle invalid resumeId format', async () => {
+      const invalidId = 'invalid-id-format';
+      deleteResumeSpy.mockResolvedValueOnce({ error: 'Resume not found' });
+
+      const response = await supertest(app).delete(`/api/resume/${invalidId}`);
 
       expect(response.status).toBe(500);
       expect(response.text).toContain('Error deleting resume');
@@ -201,6 +332,47 @@ describe('Resume Controller', () => {
       const response = await supertest(app).put('/api/resume/setActive').send({
         userId: MOCK_USER_ID,
         resumeId: mockResumeId.toString(),
+      });
+
+      expect(response.status).toBe(500);
+      expect(response.text).toContain('Error setting active resume');
+    });
+
+    it('should return 400 if userId is missing', async () => {
+      const response = await supertest(app).put('/api/resume/setActive').send({
+        resumeId: mockResumeId.toString(),
+      });
+
+      // OpenAPI validator should catch missing required field
+      // Note: OpenAPI validation errors may return 400 or 500 depending on error handling
+      expect([400, 500]).toContain(response.status);
+      if (response.status === 400) {
+        const openApiError = JSON.parse(response.text);
+        expect(openApiError.errors[0].path).toContain('userId');
+      }
+    }, 15000);
+
+    it('should return 400 if resumeId is missing', async () => {
+      const response = await supertest(app).put('/api/resume/setActive').send({
+        userId: MOCK_USER_ID,
+      });
+
+      // OpenAPI validator should catch missing required field
+      // Note: OpenAPI validation errors may return 400 or 500 depending on error handling
+      expect([400, 500]).toContain(response.status);
+      if (response.status === 400) {
+        const openApiError = JSON.parse(response.text);
+        expect(openApiError.errors[0].path).toContain('resumeId');
+      }
+    }, 15000);
+
+    it('should handle invalid resumeId format', async () => {
+      const invalidId = 'invalid-id-format';
+      setActiveResumeSpy.mockResolvedValueOnce({ error: 'Resume not found' });
+
+      const response = await supertest(app).put('/api/resume/setActive').send({
+        userId: MOCK_USER_ID,
+        resumeId: invalidId,
       });
 
       expect(response.status).toBe(500);

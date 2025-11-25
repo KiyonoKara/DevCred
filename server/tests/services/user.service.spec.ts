@@ -1,5 +1,7 @@
 import mongoose, { Query } from 'mongoose';
 import UserModel from '../../models/users.model';
+import QuestionModel from '../../models/questions.model';
+import AnswerModel from '../../models/answers.model';
 import {
   deleteUserByUsername,
   getUserByUsername,
@@ -8,9 +10,10 @@ import {
   loginUser,
   saveUser,
   updateUser,
+  getUserActivityData,
 } from '../../services/user.service';
 import { SafeDatabaseUser, User, UserCredentials } from '../../types/types';
-import { safeUser, user } from '../mockData.models';
+import { safeUser, user, QUESTIONS, ans1, tag1, tag2 } from '../mockData.models';
 
 describe('User model', () => {
   beforeEach(() => {
@@ -396,5 +399,240 @@ describe('updateUser', () => {
     const result = await incrementUserPoint(user.username);
 
     expect(result).toHaveProperty('error');
+  });
+});
+
+describe('getUserActivityData', () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+  });
+
+  const testUsername = 'testuser';
+  const viewerUsername = 'viewer';
+  const mockUserDoc = {
+    username: testUsername,
+    biography: 'Test biography',
+    dateJoined: new Date('2024-01-01'),
+    profileVisibility: 'public-full',
+    points: 100,
+  };
+
+  it('should return full activity data for public-full profile when viewed by others', async () => {
+    jest.spyOn(UserModel, 'findOne').mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue(mockUserDoc),
+      }),
+    } as unknown as Query<typeof mockUserDoc, typeof UserModel>);
+
+    jest.spyOn(QuestionModel, 'countDocuments').mockResolvedValueOnce(2);
+    jest.spyOn(AnswerModel, 'countDocuments').mockResolvedValueOnce(1);
+
+    const mockQuestions = [
+      {
+        ...QUESTIONS[0],
+        tags: [tag1, tag2],
+      },
+      {
+        ...QUESTIONS[1],
+        tags: [tag1],
+      },
+    ];
+
+    const mockAnswers = [ans1];
+    const mockQuestionForAnswer = QUESTIONS[0];
+
+    // Mock QuestionModel.find for questions
+    const questionFindMock = {
+      populate: jest.fn().mockReturnThis(),
+      select: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockResolvedValue(mockQuestions),
+    };
+    jest.spyOn(QuestionModel, 'find').mockReturnValueOnce(questionFindMock as any);
+
+    // Mock AnswerModel.find
+    const answerFindMock = {
+      select: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockResolvedValue(mockAnswers),
+    };
+    jest.spyOn(AnswerModel, 'find').mockReturnValueOnce(answerFindMock as any);
+
+    // Mock QuestionModel.find for answers' related questions
+    const questionForAnswerFindMock = {
+      select: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockResolvedValue([mockQuestionForAnswer]),
+    };
+    jest.spyOn(QuestionModel, 'find').mockReturnValueOnce(questionForAnswerFindMock as any);
+
+    const result = await getUserActivityData(testUsername, viewerUsername);
+
+    expect('error' in result).toBe(false);
+    if (!('error' in result)) {
+      expect(result.visibility).toBe('public-full');
+      expect(result.canViewDetails).toBe(true);
+      expect(result.isOwner).toBe(false);
+      expect(result.questions.length).toBeGreaterThan(0);
+      expect(result.answers.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('should return only summary for private profile when viewed by others', async () => {
+    const privateUserDoc = {
+      ...mockUserDoc,
+      profileVisibility: 'private',
+    };
+
+    jest.spyOn(UserModel, 'findOne').mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue(privateUserDoc),
+      }),
+    } as unknown as Query<typeof privateUserDoc, typeof UserModel>);
+
+    jest.spyOn(QuestionModel, 'countDocuments').mockResolvedValueOnce(2);
+    jest.spyOn(AnswerModel, 'countDocuments').mockResolvedValueOnce(1);
+
+    const result = await getUserActivityData(testUsername, viewerUsername);
+
+    expect('error' in result).toBe(false);
+    if (!('error' in result)) {
+      expect(result.visibility).toBe('private');
+      expect(result.canViewDetails).toBe(false);
+      expect(result.isOwner).toBe(false);
+      expect(result.questions).toEqual([]);
+      expect(result.answers).toEqual([]);
+      expect(result.summary.totalQuestions).toBe(2);
+      expect(result.summary.totalAnswers).toBe(1);
+    }
+  });
+
+  it('should return only summary for public-metrics-only profile when viewed by others', async () => {
+    const metricsOnlyUserDoc = {
+      ...mockUserDoc,
+      profileVisibility: 'public-metrics-only',
+    };
+
+    jest.spyOn(UserModel, 'findOne').mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue(metricsOnlyUserDoc),
+      }),
+    } as unknown as Query<typeof metricsOnlyUserDoc, typeof UserModel>);
+
+    jest.spyOn(QuestionModel, 'countDocuments').mockResolvedValueOnce(2);
+    jest.spyOn(AnswerModel, 'countDocuments').mockResolvedValueOnce(1);
+
+    const result = await getUserActivityData(testUsername, viewerUsername);
+
+    expect('error' in result).toBe(false);
+    if (!('error' in result)) {
+      expect(result.visibility).toBe('public-metrics-only');
+      expect(result.canViewDetails).toBe(false);
+      expect(result.isOwner).toBe(false);
+      expect(result.questions).toEqual([]);
+      expect(result.answers).toEqual([]);
+      expect(result.summary.totalQuestions).toBe(2);
+      expect(result.summary.totalAnswers).toBe(1);
+    }
+  });
+
+  it('should return full data for owner regardless of privacy settings', async () => {
+    const privateUserDoc = {
+      ...mockUserDoc,
+      profileVisibility: 'private',
+    };
+
+    jest.spyOn(UserModel, 'findOne').mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue(privateUserDoc),
+      }),
+    } as unknown as Query<typeof privateUserDoc, typeof UserModel>);
+
+    jest.spyOn(QuestionModel, 'countDocuments').mockResolvedValueOnce(2);
+    jest.spyOn(AnswerModel, 'countDocuments').mockResolvedValueOnce(1);
+
+    const mockQuestions = [
+      {
+        ...QUESTIONS[0],
+        tags: [tag1, tag2],
+      },
+    ];
+
+    const mockAnswers = [ans1];
+    const mockQuestionForAnswer = QUESTIONS[0];
+
+    // Mock QuestionModel.find for questions
+    const questionFindMock = {
+      populate: jest.fn().mockReturnThis(),
+      select: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockResolvedValue(mockQuestions),
+    };
+    jest.spyOn(QuestionModel, 'find').mockReturnValueOnce(questionFindMock as any);
+
+    // Mock AnswerModel.find
+    const answerFindMock = {
+      select: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockResolvedValue(mockAnswers),
+    };
+    jest.spyOn(AnswerModel, 'find').mockReturnValueOnce(answerFindMock as any);
+
+    // Mock QuestionModel.find for answers' related questions
+    const questionForAnswerFindMock = {
+      select: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockResolvedValue([mockQuestionForAnswer]),
+    };
+    jest.spyOn(QuestionModel, 'find').mockReturnValueOnce(questionForAnswerFindMock as any);
+
+    const result = await getUserActivityData(testUsername, testUsername);
+
+    expect('error' in result).toBe(false);
+    if (!('error' in result)) {
+      expect(result.visibility).toBe('private');
+      expect(result.canViewDetails).toBe(true);
+      expect(result.isOwner).toBe(true);
+      expect(result.questions.length).toBeGreaterThan(0);
+      expect(result.answers.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('should handle private profile + public biography combination', async () => {
+    const privateUserWithBio = {
+      ...mockUserDoc,
+      profileVisibility: 'private',
+      biography: 'Public biography text',
+    };
+
+    jest.spyOn(UserModel, 'findOne').mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue(privateUserWithBio),
+      }),
+    } as unknown as Query<typeof privateUserWithBio, typeof UserModel>);
+
+    jest.spyOn(QuestionModel, 'countDocuments').mockResolvedValueOnce(0);
+    jest.spyOn(AnswerModel, 'countDocuments').mockResolvedValueOnce(0);
+
+    const result = await getUserActivityData(testUsername, viewerUsername);
+
+    expect('error' in result).toBe(false);
+    if (!('error' in result)) {
+      expect(result.profile.biography).toBe('Public biography text');
+      expect(result.visibility).toBe('private');
+      expect(result.canViewDetails).toBe(false);
+      expect(result.questions).toEqual([]);
+      expect(result.answers).toEqual([]);
+    }
+  });
+
+  it('should return error when user is not found', async () => {
+    jest.spyOn(UserModel, 'findOne').mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue(null),
+      }),
+    } as unknown as Query<null, typeof UserModel>);
+
+    const result = await getUserActivityData('nonexistent', viewerUsername);
+
+    expect('error' in result).toBe(true);
+    if ('error' in result) {
+      expect(result.error).toContain('User not found');
+      expect(result.statusCode).toBe(404);
+    }
   });
 });
