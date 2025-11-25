@@ -135,6 +135,7 @@ const ProfileSettings: React.FC = () => {
                   <label className='notification-toggle'>
                     <input
                       type='checkbox'
+                      className='notifications-checkbox'
                       checked={notificationSettings.enabled}
                       onChange={e => handleNotificationSettingChange('enabled', e.target.checked)}
                     />
