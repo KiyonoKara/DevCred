@@ -1,10 +1,10 @@
-import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import useJobFairPage from '../../../../hooks/useJobFairPage';
 import useUserContext from '../../../../hooks/useUserContext';
 import jobFairService from '../../../../services/jobFairService';
-import JobFairChatPage from '../jobFairChatPage/index';
 import CodingTournamentPage from '../codingTournamentPage/index';
+import JobFairChatPage from '../jobFairChatPage/index';
 import './index.css';
 
 // JobFairDetailPage component for showing details of a job fair

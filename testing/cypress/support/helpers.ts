@@ -155,6 +155,13 @@ export const goToCommunities = () => {
 };
 
 /**
+ * Navigates back to the My Job Postings page for recruiter
+ */
+export const goToMyJobPostings = () => {
+  cy.contains("My Job Postings").click().wait(1000);
+};
+
+/**
  * Navigate to a Community Card
  */
 export const viewCommunityCard = (CommunityName: string) => {
