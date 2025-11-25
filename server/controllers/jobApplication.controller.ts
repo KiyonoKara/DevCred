@@ -51,8 +51,6 @@ const jobApplicationController = (socket: FakeSOSocket) => {
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).send(`Error when applying to job: ${err.message}`);
-      } else {
-        res.status(500).send('Error when applying to job');
       }
     }
   };
@@ -102,8 +100,6 @@ const jobApplicationController = (socket: FakeSOSocket) => {
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).send(`Error when deleting application: ${err.message}`);
-      } else {
-        res.status(500).send('Error when deleting application');
       }
     }
   };
@@ -115,11 +111,6 @@ const jobApplicationController = (socket: FakeSOSocket) => {
    */
   const getAllApplicationsRoute = async (req: Request, res: Response): Promise<void> => {
     const username = req.params.username;
-
-    if (!username) {
-      res.status(401).send('Authentication required');
-      return;
-    }
 
     try {
       const applications = await getAllApplications(username);
@@ -136,8 +127,6 @@ const jobApplicationController = (socket: FakeSOSocket) => {
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).send(`Error when fetching applications: ${err.message}`);
-      } else {
-        res.status(500).send('Error when fetching applications');
       }
     }
   };
@@ -180,8 +169,6 @@ const jobApplicationController = (socket: FakeSOSocket) => {
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).send(`Error when fetching applications: ${err.message}`);
-      } else {
-        res.status(500).send('Error when fetching applications');
       }
     }
   };
@@ -211,8 +198,6 @@ const jobApplicationController = (socket: FakeSOSocket) => {
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).send(`Error when checking application status: ${err.message}`);
-      } else {
-        res.status(500).send('Error when checking application status');
       }
     }
   };

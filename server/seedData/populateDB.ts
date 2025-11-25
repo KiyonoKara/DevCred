@@ -1,25 +1,25 @@
 /* eslint-disable no-console */
-import mongoose from 'mongoose';
 import 'dotenv/config';
+import mongoose from 'mongoose';
 
 import AnswerModel from '../models/answers.model';
 import CommentModel from '../models/comments.model';
+import MessageModel from '../models/messages.model';
 import QuestionModel from '../models/questions.model';
 import TagModel from '../models/tags.model';
 import UserModel from '../models/users.model';
-import MessageModel from '../models/messages.model';
 
 import answersResolver from './resolvers/answer';
-import questionsResolver from './resolvers/question';
 import identityResolver from './resolvers/identity';
+import questionsResolver from './resolvers/question';
 
 import { type InsertedDocs } from '../types/populate';
 
-import { collectionDependencies } from './collectionDependencies';
-import { computeImportOrder, loadJSON, processCollection } from './utils';
-import CommunityModel from '../models/community.model';
 import CollectionModel from '../models/collection.model';
+import CommunityModel from '../models/community.model';
+import { collectionDependencies } from './collectionDependencies';
 import collectionsResolver from './resolvers/collection';
+import { computeImportOrder, loadJSON, processCollection } from './utils';
 
 // Compute the import order based on dependencies
 const IMPORT_ORDER = computeImportOrder(collectionDependencies);

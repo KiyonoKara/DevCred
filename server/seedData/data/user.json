@@ -202,5 +202,12 @@
     "password": "C1CD@ut0mat3!",
     "dateJoined": "2024-01-11T16:44:37Z",
     "biography": "DevOps engineer specializing in containerization, orchestration, and infrastructure as code. Making deployment smooth and reliable."
+  },
+  "JohnDoe": {
+    "username": "recruiterJohnDoe",
+    "password": "secUr3Pass",
+    "dateJoined": "2024-01-12T16:44:37Z",
+    "biography": "Recruiter for Amazon.com",
+    "userType": "recruiter"
   }
 }
