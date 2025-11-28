@@ -22,6 +22,7 @@ const useNotifications = () => {
   const [error, setError] = useState<string | null>(null);
   const [showNotification, setShowNotification] = useState<DatabaseNotification | null>(null);
   const notificationsRef = useRef<DatabaseNotification[]>([]);
+  const skipPollingUpdateRef = useRef<boolean>(false);
 
   // Track currently viewing content (not historical - only while actively viewing)
   const currentlyViewingChatRef = useRef<string | null>(null);
@@ -380,6 +381,11 @@ const useNotifications = () => {
         );
         const newUnread = notifs.filter(n => !currentUnreadIds.has(n._id.toString()));
 
+        // Skip polling updates if we just marked all as read or cleared all
+        if (skipPollingUpdateRef.current) {
+          return;
+        }
+
         if (newUnread.length > 0) {
           // For summary notifications, always include them (don't filter by shouldShowNotification)
           // For other notifications, filter based on context
@@ -446,6 +452,11 @@ const useNotifications = () => {
           // Update unread count with filtered count (excluding summary notifications)
           setUnreadCount(filteredCount);
         } else {
+          // Skip polling updates if we just marked all as read or cleared all
+          if (skipPollingUpdateRef.current) {
+            return;
+          }
+
           // Even if no new notifications, update the list to include any existing summary notifications
           // and filter based on context for non-summary notifications
           setNotifications(prev => {
@@ -523,32 +534,39 @@ const useNotifications = () => {
   // Mark all as read
   const handleMarkAllAsRead = useCallback(async () => {
     try {
-      await markAllNotificationsAsRead();
-      // Refresh notifications from server to ensure consistency
-      const notifs = await getNotifications(false);
-      // Filter notifications based on current page context
-      const filteredNotifs = notifs.filter(n => {
-        const isSummary =
-          n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:');
-        return isSummary || shouldShowNotification(n);
-      });
-      setNotifications(filteredNotifs);
+      // Clear auto-mark timer since user is manually marking as read
+      if (autoMarkTimerRef.current) {
+        clearTimeout(autoMarkTimerRef.current);
+        autoMarkTimerRef.current = null;
+      }
 
-      // Recalculate unread count (excluding summary notifications)
-      const unreadNotifs = filteredNotifs.filter(
-        n =>
-          !n.read &&
-          !(n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:')),
-      );
-      setUnreadCount(unreadNotifs.length);
+      // IMMEDIATELY mark all as read in local state - don't wait for server
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      setUnreadCount(0);
+
+      // Set flag to skip polling updates temporarily
+      skipPollingUpdateRef.current = true;
+
+      // Update server in background
+      markAllNotificationsAsRead().catch(() => {
+        // Silently fail - UI already updated
+      });
+
+      // Re-enable polling updates after a short delay
+      setTimeout(() => {
+        skipPollingUpdateRef.current = false;
+      }, 2000);
     } catch (err) {
+      skipPollingUpdateRef.current = false;
       setError((err as Error).message || 'Failed to mark all as read');
     }
-  }, [shouldShowNotification]);
+  }, []);
 
   // Clear all notifications
   const handleClearAll = useCallback(async () => {
     try {
+      // Set flag to skip polling updates temporarily
+      skipPollingUpdateRef.current = true;
       await clearAllNotifications();
       // Refresh notifications from server to ensure consistency
       // This ensures any real-time updates or polling don't repopulate immediately
@@ -568,7 +586,13 @@ const useNotifications = () => {
           !(n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:')),
       );
       setUnreadCount(unreadNotifs.length);
+
+      // Re-enable polling updates after a short delay
+      setTimeout(() => {
+        skipPollingUpdateRef.current = false;
+      }, 2000);
     } catch (err) {
+      skipPollingUpdateRef.current = false;
       setError((err as Error).message || 'Failed to clear notifications');
     }
   }, [shouldShowNotification]);
@@ -580,42 +604,70 @@ const useNotifications = () => {
 
   // Track the last pathname to detect navigation to notification page
   const lastPathnameRef = useRef<string>(location.pathname);
+  const autoMarkTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Auto-mark summary notifications as read when user visits notification page
+  // Auto-mark all notifications as read when navigating to notification page or after 5 seconds
   useEffect(() => {
+    const isOnNotificationPage = location.pathname === '/notifications';
     const justNavigatedToNotifications =
-      location.pathname === '/notifications' && lastPathnameRef.current !== '/notifications';
+      isOnNotificationPage && lastPathnameRef.current !== '/notifications';
 
-    if (justNavigatedToNotifications) {
-      // User just navigated to notification page - mark all unread summary notifications as read
-      const unreadSummaries = notifications.filter(
-        n =>
-          !n.read && n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:'),
-      );
+    // Clear any existing timer
+    if (autoMarkTimerRef.current) {
+      clearTimeout(autoMarkTimerRef.current);
+      autoMarkTimerRef.current = null;
+    }
 
-      if (unreadSummaries.length > 0) {
-        // Mark each summary notification as read
-        Promise.all(unreadSummaries.map(notif => markNotificationAsRead(notif._id.toString())))
-          .then(() => {
-            // Update local state
-            setNotifications(prev =>
-              prev.map(n =>
-                !n.read &&
-                n.title === 'Daily Notification Summary' &&
-                n.message.startsWith('Summary:')
-                  ? { ...n, read: true }
-                  : n,
-              ),
-            );
-          })
+    if (isOnNotificationPage) {
+      // If just navigated to notifications page, mark all as read IMMEDIATELY
+      if (justNavigatedToNotifications) {
+        // IMMEDIATELY mark all as read in local state - badge disappears right away
+        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+        setUnreadCount(0);
+
+        // Update server in background
+        skipPollingUpdateRef.current = true;
+        markAllNotificationsAsRead()
           .catch(() => {
-            // Silently fail - notification marking is best effort
+            // Silently fail - UI already updated
+          })
+          .finally(() => {
+            setTimeout(() => {
+              skipPollingUpdateRef.current = false;
+            }, 2000);
           });
+      } else {
+        // Set timer to mark all as read after 5 seconds if still on page
+        autoMarkTimerRef.current = setTimeout(() => {
+          // IMMEDIATELY mark all as read in local state - don't wait for server
+          setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+          setUnreadCount(0);
+
+          // Update server in background
+          skipPollingUpdateRef.current = true;
+          markAllNotificationsAsRead()
+            .catch(() => {
+              // Silently fail - UI already updated
+            })
+            .finally(() => {
+              setTimeout(() => {
+                skipPollingUpdateRef.current = false;
+              }, 2000);
+            });
+        }, 5000);
       }
     }
 
     // Update last pathname
     lastPathnameRef.current = location.pathname;
+
+    // Cleanup timer on unmount or navigation away
+    return () => {
+      if (autoMarkTimerRef.current) {
+        clearTimeout(autoMarkTimerRef.current);
+        autoMarkTimerRef.current = null;
+      }
+    };
   }, [location.pathname, notifications]);
 
   // Check if there are any unread summary notifications

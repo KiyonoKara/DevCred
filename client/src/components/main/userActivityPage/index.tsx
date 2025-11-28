@@ -55,10 +55,14 @@ const UserActivityPage = () => {
                 Joined {new Date(profile.dateJoined).toLocaleDateString()}
               </p>
             )}
-            <p className='user-activity-joined'>User Points: {activity.userPoints || 0}</p>
-            <p className='user-activity-bio'>
-              {profile.biography?.trim() ? profile.biography : 'No biography available.'}
-            </p>
+            {canViewDetails && (
+              <p className='user-activity-joined'>User Points: {activity.userPoints || 0}</p>
+            )}
+            {canViewDetails && (
+              <p className='user-activity-bio'>
+                {profile.biography?.trim() ? profile.biography : 'No biography available.'}
+              </p>
+            )}
           </div>
           <div className='user-activity-header-actions'>
             {canEditProfile && (
@@ -74,16 +78,30 @@ const UserActivityPage = () => {
           </div>
         </div>
 
-        <div className='user-activity-summary'>
-          <div className='summary-card'>
-            <p className='summary-count'>{summary.totalQuestions}</p>
-            <p className='summary-label'>Questions Asked</p>
+        {canViewDetails && (
+          <div className='user-activity-summary'>
+            <div className='summary-card'>
+              <p className='summary-count'>{summary.totalQuestions}</p>
+              <p className='summary-label'>Questions Asked</p>
+            </div>
+            <div className='summary-card'>
+              <p className='summary-count'>{summary.totalAnswers}</p>
+              <p className='summary-label'>Answers Posted</p>
+            </div>
           </div>
-          <div className='summary-card'>
-            <p className='summary-count'>{summary.totalAnswers}</p>
-            <p className='summary-label'>Answers Posted</p>
+        )}
+        {!canViewDetails && visibility === 'public-metrics-only' && (
+          <div className='user-activity-summary'>
+            <div className='summary-card'>
+              <p className='summary-count'>{summary.totalQuestions}</p>
+              <p className='summary-label'>Questions Asked</p>
+            </div>
+            <div className='summary-card'>
+              <p className='summary-count'>{summary.totalAnswers}</p>
+              <p className='summary-label'>Answers Posted</p>
+            </div>
           </div>
-        </div>
+        )}
 
         {canViewDetails && (
           <div className='user-activity-search'>

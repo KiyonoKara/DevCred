@@ -397,20 +397,20 @@ export const getUserActivityData = async (
       return {
         profile: {
           username: userDoc.username,
-          biography: userDoc.biography ?? '',
+          biography: '', // Hide biography for private profiles
           dateJoined: userDoc.dateJoined ?? null,
           profileVisibility,
         },
         summary: {
-          totalQuestions,
-          totalAnswers,
+          totalQuestions: 0, // Hide metrics for private profiles
+          totalAnswers: 0,
         },
         visibility: profileVisibility,
         canViewDetails,
         isOwner,
         questions: [],
         answers: [],
-        userPoints: userDoc.points,
+        userPoints: 0, // Hide user points for private profiles
       };
     }
 

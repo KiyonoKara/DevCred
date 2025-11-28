@@ -504,8 +504,12 @@ describe('getUserActivityData', () => {
       expect(result.isOwner).toBe(false);
       expect(result.questions).toEqual([]);
       expect(result.answers).toEqual([]);
-      expect(result.summary.totalQuestions).toBe(2);
-      expect(result.summary.totalAnswers).toBe(1);
+      // Private profiles hide metrics from non-owners
+      expect(result.summary.totalQuestions).toBe(0);
+      expect(result.summary.totalAnswers).toBe(0);
+      expect(result.userPoints).toBe(0);
+      // Private profiles hide biography from non-owners
+      expect(result.profile.biography).toBe('');
     }
   });
 
@@ -617,11 +621,16 @@ describe('getUserActivityData', () => {
 
     expect('error' in result).toBe(false);
     if (!('error' in result)) {
-      expect(result.profile.biography).toBe('Public biography text');
+      // Private profiles hide biography from non-owners, even if biography exists
+      expect(result.profile.biography).toBe('');
       expect(result.visibility).toBe('private');
       expect(result.canViewDetails).toBe(false);
       expect(result.questions).toEqual([]);
       expect(result.answers).toEqual([]);
+      // Private profiles also hide metrics
+      expect(result.summary.totalQuestions).toBe(0);
+      expect(result.summary.totalAnswers).toBe(0);
+      expect(result.userPoints).toBe(0);
     }
   });
 

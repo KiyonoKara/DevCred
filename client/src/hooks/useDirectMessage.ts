@@ -137,8 +137,10 @@ const useDirectMessage = () => {
       const chat = await getChatById(chatID);
       setSelectedChat(chat);
       handleJoinChat(chatID);
+      // Update URL with chatId so notification filtering can detect we're viewing this chat
+      setSearchParams({ chatId: String(chatID) });
     },
-    [handleJoinChat],
+    [handleJoinChat, setSearchParams],
   );
 
   const handleUserSelect = (selectedUser: SafeDatabaseUser) => {
