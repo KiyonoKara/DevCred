@@ -496,20 +496,23 @@ const useNotifications = () => {
     async (notificationId: string) => {
       try {
         await markNotificationAsRead(notificationId);
-        setNotifications(prev => {
-          const updated = prev.map(n =>
-            n._id.toString() === notificationId ? { ...n, read: true } : n,
-          );
-          // Recalculate unread count excluding notifications for current page
-          const unreadNotifs = updated.filter(
-            n =>
-              !n.read &&
-              !(n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:')),
-          );
-          const filteredUnread = unreadNotifs.filter(n => shouldShowNotification(n));
-          setUnreadCount(filteredUnread.length);
-          return updated;
+        // Refresh notifications from server to ensure consistency
+        const notifs = await getNotifications(false);
+        // Filter notifications based on current page context
+        const filteredNotifs = notifs.filter(n => {
+          const isSummary =
+            n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:');
+          return isSummary || shouldShowNotification(n);
         });
+        setNotifications(filteredNotifs);
+
+        // Recalculate unread count (excluding summary notifications)
+        const unreadNotifs = filteredNotifs.filter(
+          n =>
+            !n.read &&
+            !(n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:')),
+        );
+        setUnreadCount(unreadNotifs.length);
       } catch (err) {
         setError((err as Error).message || 'Failed to mark notification as read');
       }
@@ -521,13 +524,27 @@ const useNotifications = () => {
   const handleMarkAllAsRead = useCallback(async () => {
     try {
       await markAllNotificationsAsRead();
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-      // All notifications are now read, so unread count is 0
-      setUnreadCount(0);
+      // Refresh notifications from server to ensure consistency
+      const notifs = await getNotifications(false);
+      // Filter notifications based on current page context
+      const filteredNotifs = notifs.filter(n => {
+        const isSummary =
+          n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:');
+        return isSummary || shouldShowNotification(n);
+      });
+      setNotifications(filteredNotifs);
+
+      // Recalculate unread count (excluding summary notifications)
+      const unreadNotifs = filteredNotifs.filter(
+        n =>
+          !n.read &&
+          !(n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:')),
+      );
+      setUnreadCount(unreadNotifs.length);
     } catch (err) {
       setError((err as Error).message || 'Failed to mark all as read');
     }
-  }, []);
+  }, [shouldShowNotification]);
 
   // Clear all notifications
   const handleClearAll = useCallback(async () => {
