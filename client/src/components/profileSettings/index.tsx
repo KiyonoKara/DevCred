@@ -181,43 +181,38 @@ const ProfileSettings: React.FC = () => {
                         </div>
                       )}
 
-                      {!notificationSettings.summarized && (
-                        <div className='notification-checkboxes'>
-                          <label className='notification-checkbox'>
-                            <input
-                              type='checkbox'
-                              checked={notificationSettings.dmEnabled}
-                              onChange={e =>
-                                handleNotificationSettingChange('dmEnabled', e.target.checked)
-                              }
-                            />
-                            <span>DM messages</span>
-                          </label>
-                          <label className='notification-checkbox'>
-                            <input
-                              type='checkbox'
-                              checked={notificationSettings.jobFairEnabled}
-                              onChange={e =>
-                                handleNotificationSettingChange('jobFairEnabled', e.target.checked)
-                              }
-                            />
-                            <span>Job fair updates</span>
-                          </label>
-                          <label className='notification-checkbox'>
-                            <input
-                              type='checkbox'
-                              checked={notificationSettings.communityEnabled}
-                              onChange={e =>
-                                handleNotificationSettingChange(
-                                  'communityEnabled',
-                                  e.target.checked,
-                                )
-                              }
-                            />
-                            <span>Community updates</span>
-                          </label>
-                        </div>
-                      )}
+                      <div className='notification-checkboxes'>
+                        <label className='notification-checkbox'>
+                          <input
+                            type='checkbox'
+                            checked={notificationSettings.dmEnabled}
+                            onChange={e =>
+                              handleNotificationSettingChange('dmEnabled', e.target.checked)
+                            }
+                          />
+                          <span>DM messages</span>
+                        </label>
+                        <label className='notification-checkbox'>
+                          <input
+                            type='checkbox'
+                            checked={notificationSettings.jobFairEnabled}
+                            onChange={e =>
+                              handleNotificationSettingChange('jobFairEnabled', e.target.checked)
+                            }
+                          />
+                          <span>Job fair updates</span>
+                        </label>
+                        <label className='notification-checkbox'>
+                          <input
+                            type='checkbox'
+                            checked={notificationSettings.communityEnabled}
+                            onChange={e =>
+                              handleNotificationSettingChange('communityEnabled', e.target.checked)
+                            }
+                          />
+                          <span>Community updates</span>
+                        </label>
+                      </div>
                     </>
                   )}
 
@@ -303,7 +298,7 @@ const ProfileSettings: React.FC = () => {
               </>
             )}
 
-            {canEditProfile && (
+            {canEditProfile && userData?.userType !== 'recruiter' && (
               <>
                 <h4>Resume Management</h4>
                 <div className='resume-upload'>

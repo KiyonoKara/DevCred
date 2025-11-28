@@ -162,6 +162,7 @@ describe('loginUser', () => {
         lean: jest.fn().mockResolvedValue(safeUser),
       }),
     } as unknown as Query<SafeDatabaseUser, typeof UserModel>);
+    jest.spyOn(UserModel, 'updateOne').mockResolvedValue({} as any);
 
     const credentials: UserCredentials = {
       username: user.username,
@@ -172,7 +173,11 @@ describe('loginUser', () => {
 
     expect(loggedInUser.username).toEqual(user.username);
     expect(loggedInUser.dateJoined).toEqual(user.dateJoined);
-  });
+    expect(UserModel.updateOne).toHaveBeenCalledWith(
+      { username: user.username },
+      expect.objectContaining({ lastLogin: expect.any(Date) }),
+    );
+  }, 10000);
 
   it('should return the user if the password fails', async () => {
     jest.spyOn(UserModel, 'findOne').mockResolvedValueOnce(null);

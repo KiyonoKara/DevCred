@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import useNotifications from '../../../hooks/useNotifications';
+import SummaryNotificationCard from './SummaryNotificationCard';
 import './index.css';
 
 /**
@@ -17,6 +18,16 @@ const NotificationPage = () => {
     handleMarkAllAsRead,
     handleClearAll,
   } = useNotifications();
+
+  /**
+   * Checks if a notification is a summary notification.
+   */
+  const isSummaryNotification = (notification: (typeof notifications)[0]): boolean => {
+    return (
+      notification.title === 'Daily Notification Summary' &&
+      notification.message.startsWith('Summary:')
+    );
+  };
 
   const handleNotificationClick = (notification: (typeof notifications)[0]) => {
     // Mark as read if unread
@@ -84,26 +95,40 @@ const NotificationPage = () => {
 
       {!loading && notifications.length > 0 && (
         <div className='notifications-list'>
-          {notifications.map(notification => (
-            <div
-              key={notification._id.toString()}
-              className={`notification-item ${notification.read ? 'read' : 'unread'}`}
-              onClick={() => handleNotificationClick(notification)}>
-              <div className='notification-icon'>
-                {notification.type === 'dm' && '💬'}
-                {notification.type === 'jobFair' && '🏢'}
-                {notification.type === 'community' && '👥'}
-              </div>
-              <div className='notification-content'>
-                <div className='notification-title'>{notification.title}</div>
-                <div className='notification-message'>{notification.message}</div>
-                <div className='notification-time'>
-                  {new Date(notification.createdAt).toLocaleString()}
+          {notifications.map(notification => {
+            // Use SummaryNotificationCard for summary notifications
+            if (isSummaryNotification(notification)) {
+              return (
+                <SummaryNotificationCard
+                  key={notification._id.toString()}
+                  notification={notification}
+                  onMarkAsRead={handleMarkAsRead}
+                />
+              );
+            }
+
+            // Use regular notification item for other notifications
+            return (
+              <div
+                key={notification._id.toString()}
+                className={`notification-item ${notification.read ? 'read' : 'unread'}`}
+                onClick={() => handleNotificationClick(notification)}>
+                <div className='notification-icon'>
+                  {notification.type === 'dm' && '💬'}
+                  {notification.type === 'jobFair' && '🏢'}
+                  {notification.type === 'community' && '👥'}
                 </div>
+                <div className='notification-content'>
+                  <div className='notification-title'>{notification.title}</div>
+                  <div className='notification-message'>{notification.message}</div>
+                  <div className='notification-time'>
+                    {new Date(notification.createdAt).toLocaleString()}
+                  </div>
+                </div>
+                {!notification.read && <div className='unread-indicator' />}
               </div>
-              {!notification.read && <div className='unread-indicator' />}
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

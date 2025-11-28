@@ -216,7 +216,8 @@ const jobFairController = (socket: FakeSOSocket) => {
           if (
             participantUser &&
             participantUser.notificationPreferences?.enabled &&
-            participantUser.notificationPreferences?.jobFairEnabled
+            participantUser.notificationPreferences?.jobFairEnabled &&
+            !participantUser.notificationPreferences?.summarized
           ) {
             const notification = await createNotification({
               recipient: participant,

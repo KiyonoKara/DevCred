@@ -154,6 +154,9 @@ export const loginUser = async (loginCredentials: UserCredentials): Promise<User
       throw Error('Authentication failed');
     }
 
+    // Update lastLogin timestamp separately
+    await UserModel.updateOne({ username }, { lastLogin: new Date() });
+
     // Ensure notificationPreferences exists with defaults if missing
     if (!user.notificationPreferences) {
       user.notificationPreferences = {

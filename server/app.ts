@@ -53,7 +53,10 @@ function connectDatabase() {
 }
 
 function startServer() {
-  connectDatabase();
+  connectDatabase().then(() => {
+    // Start notification summary scheduler after database is connected
+    startNotificationScheduler();
+  });
   server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
   });
@@ -95,44 +98,146 @@ socket.on('connection', conn => {
 // Check every minute if it's time to send summaries
 // Only run in non-test environments
 let notificationSummaryInterval: NodeJS.Timeout | null = null;
-if (process.env.NODE_ENV !== 'test' && !process.env.JEST_WORKER_ID) {
-  notificationSummaryInterval = setInterval(async () => {
-    try {
-      const UserModel = (await import('./models/users.model')).default;
-      const generateSummaryNotification = (await import('./services/notificationSummary.service'))
-        .default;
 
-      const now = new Date();
-      const currentHour = now.getHours();
-      const currentMinute = now.getMinutes();
-      const currentTime = `${String(currentHour).padStart(2, '0')}:${String(currentMinute).padStart(2, '0')}`;
+/**
+ * Processes summary notifications for users whose summary time matches the current time.
+ * This function is extracted to be reusable and testable.
+ * @internal - Exported for testing purposes only
+ */
+export async function processSummaryNotifications(io?: FakeSOSocket) {
+  try {
+    // Check if database connection exists and is connected
+    if (!mongoose.connection) {
+      console.error('[Notification Scheduler] Mongoose connection object is undefined');
+      return;
+    }
 
-      // Find all users with summarized notifications enabled
-      const users = await UserModel.find({
-        'notificationPreferences.enabled': true,
-        'notificationPreferences.summarized': true,
-      }).select('username notificationPreferences');
+    // Check connection state: 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+    const connectedState = 1;
+    const isConnected = Number(mongoose.connection.readyState) === connectedState;
+    if (!isConnected) {
+      // Database not connected, skip this run
+      return;
+    }
 
-      for (const user of users) {
-        const summaryTime = user.notificationPreferences?.summaryTime || '09:00';
+    // Use provided socket or fall back to module-level socket
+    const socketInstance = io || socket;
 
-        // Check if current time matches user's summary time (within 1 minute window)
-        if (summaryTime === currentTime) {
-          try {
-            const summary = await generateSummaryNotification(user.username);
-            if (!('error' in summary)) {
-              // Emit notification via socket
-              socket.to(`user_${user.username}`).emit('notification', summary);
+    const UserModel = (await import('./models/users.model')).default;
+    const generateSummaryNotification = (await import('./services/notificationSummary.service'))
+      .default;
+    const { checkPendingSummaryContents } = await import('./services/notificationSummary.service');
+
+    const now = new Date();
+    // Use server local time for comparison (assumes stored summaryTime is in server local timezone)
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+
+    // Find all users with summarized notifications enabled
+    const users = await UserModel.find({
+      'notificationPreferences.enabled': true,
+      'notificationPreferences.summarized': true,
+    }).select('username notificationPreferences');
+
+    // Check pending summary contents for each user (no logging)
+    for (const user of users) {
+      await checkPendingSummaryContents(user.username).catch(err => {
+        console.error(
+          `[Notification Scheduler] Error checking pending summary for ${user.username}:`,
+          err,
+        );
+      });
+    }
+
+    for (const user of users) {
+      const summaryTime = user.notificationPreferences?.summaryTime || '09:00';
+
+      // Parse summary time (format: "HH:MM")
+      const timeParts = summaryTime.split(':');
+      if (timeParts.length !== 2) {
+        console.error(
+          `[Notification Scheduler] Invalid summaryTime format for user ${user.username}: ${summaryTime}`,
+        );
+        continue;
+      }
+
+      const summaryHour = parseInt(timeParts[0], 10);
+      const summaryMinute = parseInt(timeParts[1], 10);
+
+      if (
+        isNaN(summaryHour) ||
+        isNaN(summaryMinute) ||
+        summaryHour < 0 ||
+        summaryHour > 23 ||
+        summaryMinute < 0 ||
+        summaryMinute > 59
+      ) {
+        console.error(
+          `[Notification Scheduler] Invalid summaryTime values for user ${user.username}: ${summaryTime}`,
+        );
+        continue;
+      }
+
+      // Check if current time matches user's summary time (exact minute match)
+      // Since scheduler runs every minute, we check if we're in the right minute
+      const timeMatches = currentHour === summaryHour && currentMinute === summaryMinute;
+
+      if (timeMatches) {
+        try {
+          const summary = await generateSummaryNotification(user.username);
+          if (!('error' in summary)) {
+            // Verify socket is available before emitting
+            if (socketInstance && typeof socketInstance.to === 'function') {
+              // Emit notification via socket to user's room
+              socketInstance.to(`user_${user.username}`).emit('notification', summary);
+            } else {
+              console.error(
+                `[Notification Scheduler] Socket instance not available, cannot emit notification for ${user.username}`,
+              );
             }
-          } catch (error) {
-            console.error(`Error generating summary for ${user.username}:`, error);
+          } else {
+            // Only log errors (not "No new notifications" which is expected)
+            if (!summary.error.includes('No new notifications')) {
+              console.error(
+                `[Notification Scheduler] Summary generation error for ${user.username}:`,
+                summary.error,
+              );
+            }
+          }
+        } catch (error) {
+          console.error(
+            `[Notification Scheduler] Error generating summary for ${user.username}:`,
+            error,
+          );
+          if (error instanceof Error) {
+            console.error(`[Notification Scheduler] Error stack:`, error.stack);
           }
         }
       }
-    } catch (error) {
-      console.error('Error in notification summary scheduler:', error);
     }
-  }, 60000); // Check every minute
+  } catch (error) {
+    console.error('[Notification Scheduler] ✗ Error in notification summary scheduler:', error);
+    if (error instanceof Error) {
+      console.error('[Notification Scheduler] Error stack:', error.stack);
+    }
+  }
+}
+
+function startNotificationScheduler() {
+  if (process.env.NODE_ENV !== 'test' && !process.env.JEST_WORKER_ID) {
+    // Run immediately on startup, then schedule to run every minute
+    // Pass socket instance to ensure it's available
+    processSummaryNotifications(socket).catch(err => {
+      console.error('[Notification Scheduler] Error in initial run:', err);
+    });
+
+    notificationSummaryInterval = setInterval(() => {
+      // Pass socket instance to ensure it's available
+      processSummaryNotifications(socket).catch(err => {
+        console.error('[Notification Scheduler] Error in scheduled run:', err);
+      });
+    }, 60000); // Check every minute
+  }
 }
 
 // Export cleanup function for tests

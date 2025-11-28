@@ -80,3 +80,48 @@ export const clearAllNotifications = async (): Promise<{ success: boolean }> => 
 
   return res.data;
 };
+
+/**
+ * Gets detailed breakdown for a summary notification.
+ * @param notificationId - The ID of the summary notification.
+ * @returns Detailed breakdown with messages by chat, questions by community, and job fairs.
+ */
+export interface SummaryBreakdown {
+  dmMessages: {
+    [chatId: string]: {
+      otherUser: string;
+      count: number;
+      chatId: string;
+      isDeleted?: boolean;
+    };
+  };
+  communityQuestions: {
+    [communityId: string]: {
+      communityName: string;
+      count: number;
+      questions: Array<{
+        _id: string;
+        title: string;
+        askedBy: string;
+        askDateTime: string;
+      }>;
+    };
+  };
+  jobFairs: Array<{
+    _id: string;
+    title: string;
+    status: string;
+    startTime?: string;
+    endTime?: string;
+  }>;
+}
+
+export const getSummaryBreakdown = async (notificationId: string): Promise<SummaryBreakdown> => {
+  const res = await api.get(`${NOTIFICATION_API_URL}/${notificationId}/summary-breakdown`);
+
+  if (res.status !== 200) {
+    throw new Error('Error retrieving summary breakdown.');
+  }
+
+  return res.data;
+};

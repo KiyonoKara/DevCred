@@ -84,6 +84,10 @@ const userSchema: Schema = new Schema(
         default: true,
       },
     },
+    lastLogin: {
+      type: Date,
+      required: false,
+    },
   },
   { collection: 'User' },
 );

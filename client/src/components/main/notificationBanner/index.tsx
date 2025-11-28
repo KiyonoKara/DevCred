@@ -30,7 +30,19 @@ const NotificationBanner = ({ notification, onDismiss }: NotificationBannerProps
   };
 
   const handleBannerClick = () => {
-    // Navigate based on notification type and relatedId
+    // Check if this is a summary notification
+    const isSummaryNotification =
+      notification.title === 'Daily Notification Summary' &&
+      notification.message.startsWith('Summary:');
+
+    // For summary notifications, always navigate to notifications page
+    if (isSummaryNotification) {
+      navigate('/notifications');
+      onDismiss();
+      return;
+    }
+
+    // For real-time notifications, navigate based on notification type and relatedId
     if (notification.relatedId) {
       if (notification.type === 'dm') {
         navigate(`/messaging/direct-message?chatId=${notification.relatedId}`);

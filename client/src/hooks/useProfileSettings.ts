@@ -161,19 +161,6 @@ const useProfileSettings = () => {
     setNotificationSettings(prev => {
       const updated = { ...prev, [key]: value };
 
-      // If enabling summarized, disable individual checkboxes
-      if (key === 'summarized' && value === true) {
-        updated.dmEnabled = false;
-        updated.jobFairEnabled = false;
-        updated.communityEnabled = false;
-      }
-      // If enabling individual checkbox, disable summarized
-      if (
-        (key === 'dmEnabled' || key === 'jobFairEnabled' || key === 'communityEnabled') &&
-        value === true
-      ) {
-        updated.summarized = false;
-      }
       // If disabling notifications, disable everything
       if (key === 'enabled' && value === false) {
         updated.summarized = false;
@@ -193,6 +180,7 @@ const useProfileSettings = () => {
     if (!username) return;
     try {
       setNotificationSaving(true);
+      // Store time as-is (assumes server and user are in same timezone, or treat as server local time)
       const updatedUser = await updateNotificationPreferences(username, notificationSettings);
 
       setUserData(updatedUser);

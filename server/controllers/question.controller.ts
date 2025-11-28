@@ -153,7 +153,8 @@ const questionController = (socket: FakeSOSocket) => {
               if (
                 participantUser &&
                 participantUser.notificationPreferences?.enabled &&
-                participantUser.notificationPreferences?.communityEnabled
+                participantUser.notificationPreferences?.communityEnabled &&
+                !participantUser.notificationPreferences?.summarized
               ) {
                 const notification = await createNotification({
                   recipient: participant,

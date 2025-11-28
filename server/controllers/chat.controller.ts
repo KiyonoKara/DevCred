@@ -177,7 +177,8 @@ const chatController = (socket: FakeSOSocket) => {
         if (
           recipientUser &&
           recipientUser.notificationPreferences?.enabled &&
-          recipientUser.notificationPreferences?.dmEnabled
+          recipientUser.notificationPreferences?.dmEnabled &&
+          !recipientUser.notificationPreferences?.summarized
         ) {
           const notification = await createNotification({
             recipient,

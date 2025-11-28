@@ -59,8 +59,12 @@ const useNotifications = () => {
           }
           return true;
         });
-        // Recalculate unread count
-        const unreadNotifs = filtered.filter(n => !n.read);
+        // Recalculate unread count (excluding summary notifications)
+        const unreadNotifs = filtered.filter(
+          n =>
+            !n.read &&
+            !(n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:')),
+        );
         setUnreadCount(unreadNotifs.length);
         return filtered;
       });
@@ -88,8 +92,12 @@ const useNotifications = () => {
           }
           return true;
         });
-        // Recalculate unread count
-        const unreadNotifs = filtered.filter(n => !n.read);
+        // Recalculate unread count (excluding summary notifications)
+        const unreadNotifs = filtered.filter(
+          n =>
+            !n.read &&
+            !(n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:')),
+        );
         setUnreadCount(unreadNotifs.length);
         return filtered;
       });
@@ -117,8 +125,12 @@ const useNotifications = () => {
           }
           return true;
         });
-        // Recalculate unread count
-        const unreadNotifs = filtered.filter(n => !n.read);
+        // Recalculate unread count (excluding summary notifications)
+        const unreadNotifs = filtered.filter(
+          n =>
+            !n.read &&
+            !(n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:')),
+        );
         setUnreadCount(unreadNotifs.length);
         return filtered;
       });
@@ -197,30 +209,88 @@ const useNotifications = () => {
 
       // Listen for real-time notifications
       const handleNotification = (notification: DatabaseNotification) => {
-        // Use the shouldShowNotification function which checks both current context and viewed history
-        if (!shouldShowNotification(notification)) {
+        const isSummary =
+          notification.title === 'Daily Notification Summary' &&
+          notification.message.startsWith('Summary:');
+
+        // For summary notifications, always show them (don't filter by shouldShowNotification)
+        // as they are time-based summaries, not context-specific
+        if (!isSummary && !shouldShowNotification(notification)) {
           // Don't add to list, don't increment unread count, don't show banner
           // User is viewing or has viewed the related content, so they don't need the notification
           return;
         }
 
-        setNotifications(prev => [notification, ...prev]);
-        setUnreadCount(prev => prev + 1);
+        // Add notification to the list IMMEDIATELY
+        setNotifications(prev => {
+          // Check if notification already exists (by ID) to avoid duplicates
+          const exists = prev.some(n => n._id.toString() === notification._id.toString());
+          if (exists) {
+            return prev; // Don't add duplicate
+          }
+          // Force immediate state update - return new array reference
+          return [notification, ...prev];
+        });
 
-        // Show pop-up notification banner if user has notifications enabled
-        if (user.notificationPreferences?.enabled && !user.notificationPreferences?.summarized) {
-          // Check if the notification type is enabled
-          const typeEnabled =
-            (notification.type === 'dm' && user.notificationPreferences.dmEnabled) ||
-            (notification.type === 'jobFair' && user.notificationPreferences.jobFairEnabled) ||
-            (notification.type === 'community' && user.notificationPreferences.communityEnabled);
+        // Only increment unread count if not a summary notification
+        // Summary notifications are tracked separately via hasUnreadSummary
+        if (!isSummary) {
+          setUnreadCount(prev => prev + 1);
+        }
+        // Note: hasUnreadSummary is computed reactively from notifications state,
+        // so it will automatically update when a summary notification is added
 
-          if (typeEnabled) {
+        // For summary notifications, show pop-up banner and refresh from server
+        if (isSummary) {
+          // Show pop-up banner for summary notifications
+          if (user.notificationPreferences?.enabled && user.notificationPreferences?.summarized) {
             setShowNotification(notification);
-            // Auto-hide after 5 seconds
+            // Auto-hide after 10 seconds (longer for summary notifications)
             setTimeout(() => {
               setShowNotification(null);
-            }, 5000);
+            }, 10000);
+          }
+
+          // Refresh notifications from server after a short delay to ensure consistency
+          setTimeout(async () => {
+            try {
+              const notifs = await getNotifications(false);
+              const filteredNotifs = notifs.filter(n => {
+                const isSummaryNotif =
+                  n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:');
+                return isSummaryNotif || shouldShowNotification(n);
+              });
+              setNotifications(filteredNotifs);
+
+              // Recalculate unread counts
+              const unreadNotifs = filteredNotifs.filter(
+                n =>
+                  !n.read &&
+                  !(n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:')),
+              );
+              setUnreadCount(unreadNotifs.length);
+            } catch (err) {
+              // Silently fail - socket notification already added the notification
+              // eslint-disable-next-line no-console
+              console.error('Error refreshing notifications:', err);
+            }
+          }, 500);
+        } else {
+          // Show pop-up notification banner for real-time notifications (if user has notifications enabled and not summarized)
+          if (user.notificationPreferences?.enabled && !user.notificationPreferences?.summarized) {
+            // Check if the notification type is enabled
+            const typeEnabled =
+              (notification.type === 'dm' && user.notificationPreferences.dmEnabled) ||
+              (notification.type === 'jobFair' && user.notificationPreferences.jobFairEnabled) ||
+              (notification.type === 'community' && user.notificationPreferences.communityEnabled);
+
+            if (typeEnabled) {
+              setShowNotification(notification);
+              // Auto-hide after 5 seconds
+              setTimeout(() => {
+                setShowNotification(null);
+              }, 5000);
+            }
           }
         }
       };
@@ -244,12 +314,22 @@ const useNotifications = () => {
       const notifs = await getNotifications(false);
 
       // Filter notifications based on current page context - don't show notifications for content user is viewing
-      const filteredNotifs = notifs.filter(n => shouldShowNotification(n));
+      // Always include summary notifications regardless of context
+      const filteredNotifs = notifs.filter(n => {
+        const isSummary =
+          n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:');
+        return isSummary || shouldShowNotification(n);
+      });
       setNotifications(filteredNotifs);
 
-      // Calculate unread count from filtered notifications
-      const unreadNotifs = filteredNotifs.filter(n => !n.read);
+      // Calculate unread count from filtered notifications (excluding summary notifications)
+      const unreadNotifs = filteredNotifs.filter(
+        n =>
+          !n.read &&
+          !(n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:')),
+      );
       setUnreadCount(unreadNotifs.length);
+      // Note: hasUnreadSummary is computed reactively from notifications state
     } catch (err) {
       setError((err as Error).message || 'Failed to fetch notifications');
     } finally {
@@ -264,21 +344,31 @@ const useNotifications = () => {
   // Re-filter notifications when URL changes (user navigates to/from related pages)
   useEffect(() => {
     // Re-filter the current notifications list based on new page context
+    // Always include summary notifications regardless of context
     setNotifications(prev => {
-      const filtered = prev.filter(shouldShowNotification);
-      // Recalculate unread count
-      const unreadNotifs = filtered.filter(n => !n.read);
+      const filtered = prev.filter(n => {
+        const isSummary =
+          n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:');
+        return isSummary || shouldShowNotification(n);
+      });
+      // Recalculate unread count (excluding summary notifications)
+      const unreadNotifs = filtered.filter(
+        n =>
+          !n.read &&
+          !(n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:')),
+      );
       setUnreadCount(unreadNotifs.length);
       return filtered;
     });
   }, [location.pathname, location.search, shouldShowNotification]);
 
-  // Poll for new notifications every second if user has notifications enabled
+  // Poll for new notifications if user has notifications enabled
+  // For summarized notifications, poll less frequently (every 30 seconds) as a fallback
+  // For real-time notifications, poll every second
   useEffect(() => {
     if (!user || !user.notificationPreferences?.enabled) return;
 
-    // Don't poll if summarized notifications are enabled (they're handled by the server scheduler)
-    if (user.notificationPreferences.summarized) return;
+    const pollIntervalMs = user.notificationPreferences.summarized ? 30000 : 1000; // 30s for summarized, 1s for real-time
 
     const pollInterval = setInterval(async () => {
       try {
@@ -291,12 +381,22 @@ const useNotifications = () => {
         const newUnread = notifs.filter(n => !currentUnreadIds.has(n._id.toString()));
 
         if (newUnread.length > 0) {
-          // Filter out notifications that shouldn't be shown based on current context and viewed history
-          const filteredNewUnread = newUnread.filter(shouldShowNotification);
+          // For summary notifications, always include them (don't filter by shouldShowNotification)
+          // For other notifications, filter based on context
+          const filteredNewUnread = newUnread.filter(n => {
+            const isSummary =
+              n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:');
+            return isSummary || shouldShowNotification(n);
+          });
 
-          // Calculate unread count excluding notifications for current page and viewed content
-          const allUnread = notifs.filter(shouldShowNotification);
-          const filteredCount = allUnread.length;
+          // Calculate unread count (excluding summary notifications from numeric count)
+          const allUnread = notifs.filter(
+            n =>
+              !n.read &&
+              !(n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:')),
+          );
+          const filteredUnread = allUnread.filter(shouldShowNotification);
+          const filteredCount = filteredUnread.length;
 
           // Update notifications list - only add filtered notifications
           setNotifications(prev => {
@@ -304,10 +404,24 @@ const useNotifications = () => {
             const newNotifications = filteredNewUnread.filter(
               n => !existingIds.has(n._id.toString()),
             );
-            return [...newNotifications, ...prev];
+            if (newNotifications.length > 0) {
+              return [...newNotifications, ...prev];
+            }
+            return prev;
           });
 
-          // Show the first filtered new notification as a banner
+          // Show pop-up banner for summary notifications found via polling
+          const summaryNotifications = filteredNewUnread.filter(
+            n => n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:'),
+          );
+          if (summaryNotifications.length > 0 && user.notificationPreferences?.summarized) {
+            setShowNotification(summaryNotifications[0]);
+            setTimeout(() => {
+              setShowNotification(null);
+            }, 10000);
+          }
+
+          // Show the first filtered new notification as a banner (for real-time notifications)
           if (
             filteredNewUnread.length > 0 &&
             filteredNewUnread[0] &&
@@ -329,22 +443,50 @@ const useNotifications = () => {
             }
           }
 
-          // Update unread count with filtered count
+          // Update unread count with filtered count (excluding summary notifications)
           setUnreadCount(filteredCount);
         } else {
-          // Recalculate unread count and filter notifications list based on current context and viewed history
-          const allUnread = notifs.filter(shouldShowNotification);
-          setUnreadCount(allUnread.length);
+          // Even if no new notifications, update the list to include any existing summary notifications
+          // and filter based on context for non-summary notifications
+          setNotifications(prev => {
+            const existingIds = new Set(prev.map(n => n._id.toString()));
+            const allUnreadNotifs = notifs.filter(n => {
+              const isSummary =
+                n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:');
+              // Always include summary notifications, filter others by context
+              return isSummary || shouldShowNotification(n);
+            });
 
-          // Also filter the existing notifications list to remove any that shouldn't be shown
-          setNotifications(prev => prev.filter(shouldShowNotification));
+            // Merge with existing notifications, avoiding duplicates
+            const merged = [...prev];
+            allUnreadNotifs.forEach(n => {
+              if (!existingIds.has(n._id.toString())) {
+                merged.push(n);
+              }
+            });
+
+            // Filter to only include notifications that should be shown or are summaries
+            return merged.filter(n => {
+              const isSummary =
+                n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:');
+              return isSummary || shouldShowNotification(n);
+            });
+          });
+
+          // Recalculate unread count (excluding summary notifications from the numeric count)
+          const allUnread = notifs.filter(
+            n =>
+              !n.read &&
+              !(n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:')),
+          );
+          const filteredUnread = allUnread.filter(shouldShowNotification);
+          setUnreadCount(filteredUnread.length);
         }
       } catch (err) {
         // Silently fail polling errors
         // console.error('Error polling notifications:', err);
       }
-      // Poll every second
-    }, 1000);
+    }, pollIntervalMs);
 
     return () => clearInterval(pollInterval);
   }, [user, shouldShowNotification]);
@@ -359,7 +501,11 @@ const useNotifications = () => {
             n._id.toString() === notificationId ? { ...n, read: true } : n,
           );
           // Recalculate unread count excluding notifications for current page
-          const unreadNotifs = updated.filter(n => !n.read);
+          const unreadNotifs = updated.filter(
+            n =>
+              !n.read &&
+              !(n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:')),
+          );
           const filteredUnread = unreadNotifs.filter(n => shouldShowNotification(n));
           setUnreadCount(filteredUnread.length);
           return updated;
@@ -387,21 +533,89 @@ const useNotifications = () => {
   const handleClearAll = useCallback(async () => {
     try {
       await clearAllNotifications();
-      setNotifications([]);
-      setUnreadCount(0);
+      // Refresh notifications from server to ensure consistency
+      // This ensures any real-time updates or polling don't repopulate immediately
+      const notifs = await getNotifications(false);
+      // Filter notifications based on current page context
+      const filteredNotifs = notifs.filter(n => {
+        const isSummary =
+          n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:');
+        return isSummary || shouldShowNotification(n);
+      });
+      setNotifications(filteredNotifs);
+
+      // Recalculate unread count (excluding summary notifications)
+      const unreadNotifs = filteredNotifs.filter(
+        n =>
+          !n.read &&
+          !(n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:')),
+      );
+      setUnreadCount(unreadNotifs.length);
     } catch (err) {
       setError((err as Error).message || 'Failed to clear notifications');
     }
-  }, []);
+  }, [shouldShowNotification]);
 
   // Dismiss pop-up notification
   const handleDismissNotification = useCallback(() => {
     setShowNotification(null);
   }, []);
 
+  // Track the last pathname to detect navigation to notification page
+  const lastPathnameRef = useRef<string>(location.pathname);
+
+  // Auto-mark summary notifications as read when user visits notification page
+  useEffect(() => {
+    const justNavigatedToNotifications =
+      location.pathname === '/notifications' && lastPathnameRef.current !== '/notifications';
+
+    if (justNavigatedToNotifications) {
+      // User just navigated to notification page - mark all unread summary notifications as read
+      const unreadSummaries = notifications.filter(
+        n =>
+          !n.read && n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:'),
+      );
+
+      if (unreadSummaries.length > 0) {
+        // Mark each summary notification as read
+        Promise.all(unreadSummaries.map(notif => markNotificationAsRead(notif._id.toString())))
+          .then(() => {
+            // Update local state
+            setNotifications(prev =>
+              prev.map(n =>
+                !n.read &&
+                n.title === 'Daily Notification Summary' &&
+                n.message.startsWith('Summary:')
+                  ? { ...n, read: true }
+                  : n,
+              ),
+            );
+          })
+          .catch(() => {
+            // Silently fail - notification marking is best effort
+          });
+      }
+    }
+
+    // Update last pathname
+    lastPathnameRef.current = location.pathname;
+  }, [location.pathname, notifications]);
+
+  // Check if there are any unread summary notifications
+  const hasUnreadSummary = notifications.some(
+    n => !n.read && n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:'),
+  );
+
+  // Calculate non-summary unread count
+  const nonSummaryUnreadCount = notifications.filter(
+    n => !n.read && !(n.title === 'Daily Notification Summary' && n.message.startsWith('Summary:')),
+  ).length;
+
   return {
     notifications,
     unreadCount,
+    nonSummaryUnreadCount,
+    hasUnreadSummary,
     loading,
     error,
     showNotification,

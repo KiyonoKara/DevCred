@@ -13,7 +13,7 @@ import './index.css';
 const Header = () => {
   const { val, handleInputChange, handleKeyDown, handleSignOut } = useHeader();
   const { user: currentUser } = useUserContext();
-  const { unreadCount } = useNotifications();
+  const { nonSummaryUnreadCount, hasUnreadSummary } = useNotifications();
   const navigate = useNavigate();
   const isRecruiter = currentUser.userType === 'recruiter';
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -81,7 +81,10 @@ const Header = () => {
           onClick={() => navigate('/notifications')}
           title='Notifications'>
           Notification
-          {unreadCount > 0 && <span className='notification-badge'>{unreadCount}</span>}
+          {hasUnreadSummary && <span className='notification-badge summary-badge'>S</span>}
+          {!hasUnreadSummary && nonSummaryUnreadCount > 0 && (
+            <span className='notification-badge'>{nonSummaryUnreadCount}</span>
+          )}
         </button>
         <button onClick={handleSignOut} className='logout-button'>
           Log out
