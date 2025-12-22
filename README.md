@@ -1,12 +1,8 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/Uq-6GvbM)
-The team project for this class is designed to mirror the experiences of a software engineer: by virtue of your individual projects, you have been _onboarded_ to our codebase, made several individual contributions, and have formed a team to propose, develop and implement new features. The codebase that we’ll be developing on is a Fake Stack Overflow project (let’s call it HuskyFlow). You will get an opportunity to work with the starter code which provides basic skeleton for the app and then additional features will be proposed and implemented by you! All implementation will take place in the TypeScript programming language, using React for the user interface.
+Communities like Stack Overflow provide valuable spaces to share knowledge, solve technical problems, and allow programmers to demonstrate their expertise across different topics. This take on Stack Overflow is job-oriented with online job boards and fairs. This would allow community members to optionally make their profiles, contributions, and metrics visible so recruiters on the platform can gain a better understanding of applicants’ skills. Users can choose to participate in the Q&A community, the job board, or both. A virtual job fair feature was incorporated, where recruiters and job seekers could interact in real time through live chat sessions, Q&A panels, and coding tournaments. The platform also lets users take more control of direct messages like deleting them, uploading files, and turning DMs on/off. 
 
 ## Getting Started
 
 Run `npm install` in the root directory to install all dependencies for the `client`, `server`, and `shared` folders.
-
-> [!NOTE]
-> Refer to [IP1](https://neu-se.github.io/CS4530-Spring-2025/assignments/ip1) and [IP2](https://neu-se.github.io/CS4530-Spring-2025/assignments/ip2) for further instructions related to setting up MongoDB, setting environment variables, and running the client and server.
 
 ## Codebase Folder Structure
 
