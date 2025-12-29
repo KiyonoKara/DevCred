@@ -63,7 +63,7 @@ describe('POST /create', () => {
       const response = await supertest(app).post('/api/games/create').send({ gameType: 'Nim' });
 
       expect(response.status).toEqual(500);
-      expect(response.text).toContain('Error when creating game: test error');
+      expect(response.text).toContain("{\"error\":\"Error when creating game\"}");
       expect(addGameSpy).toHaveBeenCalledWith('Nim');
     });
 
@@ -73,7 +73,7 @@ describe('POST /create', () => {
       const response = await supertest(app).post('/api/games/create').send({ gameType: 'Nim' });
 
       expect(response.status).toEqual(500);
-      expect(response.text).toContain('Error when creating game: test error');
+      expect(response.text).toContain("{\"error\":\"Error when creating game\"}");
       expect(addGameSpy).toHaveBeenCalledWith('Nim');
     });
   });
@@ -146,7 +146,7 @@ describe('POST /join', () => {
         .send({ gameID: '65e9b716ff0e892116b2de01', playerID: 'user1' });
 
       expect(response.status).toEqual(500);
-      expect(response.text).toContain('Error when joining game: test error');
+      expect(response.text).toContain("{\"error\":\"Error when joining game\"}");
     });
 
     it('should return 500 if joinGame throws an error', async () => {
@@ -157,7 +157,7 @@ describe('POST /join', () => {
         .send({ gameID: '65e9b716ff0e892116b2de01', playerID: 'user1' });
 
       expect(response.status).toEqual(500);
-      expect(response.text).toContain('Error when joining game: test error');
+      expect(response.text).toContain("{\"error\":\"Error when joining game\"}");
     });
   });
 });
@@ -229,7 +229,7 @@ describe('POST /leave', () => {
         .send({ gameID: '65e9b716ff0e892116b2de01', playerID: 'user1' });
 
       expect(response.status).toEqual(500);
-      expect(response.text).toContain('Error when leaving game: test error');
+      expect(response.text).toContain("{\"error\":\"Error when leaving game\"}");
     });
 
     it('should return 500 if leaveGame throws an error', async () => {
@@ -240,7 +240,7 @@ describe('POST /leave', () => {
         .send({ gameID: '65e9b716ff0e892116b2de01', playerID: 'user1' });
 
       expect(response.status).toEqual(500);
-      expect(response.text).toContain('Error when leaving game: test error');
+      expect(response.text).toContain("{\"error\":\"Error when leaving game\"}");
     });
   });
 });
@@ -290,7 +290,7 @@ describe('GET /games', () => {
         .query({ gameType: 'Nim', status: 'WAITING_TO_START' });
 
       expect(response.status).toEqual(500);
-      expect(response.text).toContain('Error when getting games: test error');
+      expect(response.text).toContain("{\"error\":\"Error when getting games\"}");
     });
   });
 });
