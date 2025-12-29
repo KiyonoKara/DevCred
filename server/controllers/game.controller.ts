@@ -35,7 +35,7 @@ const gameController = (socket: FakeSOSocket) => {
 
       res.status(200).json(newGame);
     } catch (error) {
-      res.status(500).send(`Error when creating game: ${(error as Error).message}`);
+      res.status(500).json({ error: 'Error when creating game' });
     }
   };
 
@@ -57,7 +57,7 @@ const gameController = (socket: FakeSOSocket) => {
       socket.to(gameID).emit('gameUpdate', { gameInstance: game });
       res.status(200).json(game);
     } catch (error) {
-      res.status(500).send(`Error when joining game: ${(error as Error).message}`);
+      res.status(500).json({ error: 'Error when joining game' });
     }
   };
 
@@ -79,7 +79,7 @@ const gameController = (socket: FakeSOSocket) => {
       socket.to(gameID).emit('gameUpdate', { gameInstance: game });
       res.status(200).json(game);
     } catch (error) {
-      res.status(500).send(`Error when leaving game: ${(error as Error).message}`);
+      res.status(500).json({ error: 'Error when leaving game' });
     }
   };
 
@@ -96,7 +96,7 @@ const gameController = (socket: FakeSOSocket) => {
 
       res.status(200).json(games);
     } catch (error) {
-      res.status(500).send(`Error when getting games: ${(error as Error).message}`);
+      res.status(500).json({ error: 'Error when getting games' });
     }
   };
 
