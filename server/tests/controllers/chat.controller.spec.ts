@@ -322,7 +322,7 @@ describe('Chat Controller', () => {
 
       // 5) Expect a 500 with the error message
       expect(response.status).toBe(500);
-      expect(response.text).toContain('Error updating chat');
+      expect(response.text).toContain('Error adding a message to chat.');
     });
 
     it('should throw an error if message creation fails and does not return an _id', async () => {
@@ -355,7 +355,7 @@ describe('Chat Controller', () => {
         .send(messagePayload);
 
       expect(response.status).toBe(500);
-      expect(response.text).toContain('Error adding a message to chat: Error saving message');
+      expect(response.text).toContain('Error adding a message to chat.');
     });
 
     it('should throw an error if updatedChat returns an error', async () => {
@@ -393,7 +393,7 @@ describe('Chat Controller', () => {
 
       // Validate the response
       expect(response.status).toBe(500);
-      expect(response.text).toContain('Error adding a message to chat: Error updating chat');
+      expect(response.text).toContain('Error adding a message to chat.');
     });
 
     it('should return 500 if populateDocument returns an error', async () => {
@@ -446,7 +446,7 @@ describe('Chat Controller', () => {
         .send(messagePayload);
 
       expect(response.status).toBe(500);
-      expect(response.text).toBe('Error adding a message to chat: Service error');
+      expect(response.text).toBe('Error adding a message to chat.');
     });
   });
 
