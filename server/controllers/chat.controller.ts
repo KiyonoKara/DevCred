@@ -198,7 +198,6 @@ const chatController = (socket: FakeSOSocket) => {
 
       res.json(populatedChat2);
     } catch (err: unknown) {
-      console.error('Error adding a message to chat:', err);
       res.status(500).send('Error adding a message to chat.');
     }
   };
